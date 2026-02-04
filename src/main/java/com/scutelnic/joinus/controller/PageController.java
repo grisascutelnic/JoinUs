@@ -41,8 +41,4 @@ public class PageController {
         return "activities";
     }
 
-    @GetMapping("/notifications")
-    public String notifications() {
-        return "notifications";
-    }
 }

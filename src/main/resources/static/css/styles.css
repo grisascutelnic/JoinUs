@@ -42,6 +42,278 @@ https://templatemo.com/tm-587-tiya-golf-club
   --font-weight-bold:             700;
 }
 
+/* JoinUs custom styles (index + activities) */
+.page-index .activity-list,
+.page-activities .activity-list {
+  position: relative;
+  max-height: none;
+  overflow: visible;
+}
+
+.page-index .activity-list-fade,
+.page-activities .activity-list-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 120px;
+  background: linear-gradient(180deg, rgba(244, 241, 222, 0) 0%, rgba(244, 241, 222, 1) 70%);
+  pointer-events: none;
+  display: none;
+}
+
+.page-index .activity-card,
+.page-activities .activity-card {
+  border: 1px solid rgba(61, 64, 91, 0.08);
+}
+
+.page-index .activity-card-premium,
+.page-activities .activity-card-premium {
+  border: 2px solid var(--custom-btn-bg-color);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.page-index .activity-badge,
+.page-activities .activity-badge {
+  background: var(--custom-btn-bg-color);
+  color: var(--white-color);
+  border-radius: var(--border-radius-large);
+  font-size: 12px;
+  padding: 4px 10px;
+}
+
+.page-index .activity-badge-premium,
+.page-activities .activity-badge-premium {
+  background: var(--custom-btn-bg-hover-color);
+}
+
+.page-index .create-activity-btn,
+.page-activities .create-activity-btn {
+  position: fixed;
+  right: 30px;
+  bottom: 30px;
+  z-index: 99;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+}
+
+.page-index .notification-item,
+.page-activities .notification-item {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+}
+
+.page-index .notification-item:last-child,
+.page-activities .notification-item:last-child {
+  border-bottom: 0;
+  margin-bottom: 0;
+}
+
+.page-index .notification-item p,
+.page-index .notification-item small,
+.page-activities .notification-item p,
+.page-activities .notification-item small {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.page-index .hero-section,
+.page-activities .hero-section {
+  background-image: none !important;
+  height: 40vh;
+  min-height: 340px;
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+
+.page-index .hero-section {
+  background-color: #1F2A44 !important;
+}
+
+.page-activities .hero-section {
+  background-color: #3D405B !important;
+}
+
+.page-index .hero-section .section-overlay,
+.page-activities .hero-section .section-overlay {
+  display: none;
+}
+
+.page-index .hero-section .hero-content,
+.page-activities .hero-section .hero-content {
+  margin-top: -30px;
+}
+
+.page-index .activity-card .row,
+.page-activities .activity-card .row {
+  --bs-gutter-x: 0;
+  flex-direction: column;
+}
+
+.page-index .activity-card .col-4,
+.page-index .activity-card .col-8,
+.page-activities .activity-card .col-4,
+.page-activities .activity-card .col-8 {
+  max-width: 100%;
+  width: 100%;
+}
+
+.page-index .activity-card .custom-block-image-wrap,
+.page-activities .activity-card .custom-block-image-wrap {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.page-index .activity-card .custom-block-image,
+.page-activities .activity-card .custom-block-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: var(--border-radius-medium);
+}
+
+.page-index #section_activities,
+.page-activities #section_activities {
+  margin-top: -200px;
+  padding-top: 150px;
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 150px, var(--section-bg-color) 150px);
+}
+
+.page-index .landing-theme,
+.page-activities .landing-theme {
+  --primary-color: #2C6FB7;
+  --secondary-color: #1F2A44;
+  --section-bg-color: #F4F1DE;
+  --custom-btn-bg-color: #C9A227;
+  --custom-btn-bg-hover-color: #A8831F;
+  --link-hover-color: #C9A227;
+  background-color: #1F2A44;
+}
+
+.page-index .landing-theme .custom-block-bg,
+.page-activities .landing-theme .custom-block-bg {
+  background-color: #FFFFFF;
+}
+
+.page-index .landing-theme .activity-card,
+.page-activities .landing-theme .activity-card {
+  border: 1px solid rgba(31, 42, 68, 0.12);
+}
+
+.page-index .landing-theme .activity-badge,
+.page-activities .landing-theme .activity-badge {
+  background: #C9A227;
+}
+
+.page-index .landing-theme .sticky-wrapper.is-sticky .navbar,
+.page-activities .landing-theme .sticky-wrapper.is-sticky .navbar {
+  background-color: var(--secondary-color);
+}
+
+.page-activities .landing-theme .navbar,
+.page-activities .landing-theme .sticky-wrapper,
+.page-activities .landing-theme .sticky-wrapper.is-sticky .navbar {
+  background-color: #1F2A44 !important;
+}
+
+@media (max-width: 768px) {
+  .page-index .hero-section,
+  .page-activities .hero-section {
+    height: 20vh;
+    min-height: 260px;
+    padding-top: 120px;
+    padding-bottom: 20px;
+    top: 0;
+    margin-bottom: 0;
+  }
+
+  .page-index .hero-section .hero-content,
+  .page-activities .hero-section .hero-content {
+    margin-top: 0;
+  }
+
+  .page-index .hero-section h1,
+  .page-activities .hero-section h1 {
+    font-size: 28px;
+  }
+
+  .page-index .hero-section h2,
+  .page-activities .hero-section h2 {
+    font-size: 22px;
+  }
+
+  .page-index #section_activities,
+  .page-activities #section_activities {
+    margin-top: -120px;
+    padding-top: 140px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 120px, var(--section-bg-color) 120px);
+  }
+
+  .page-index .landing-theme .navbar,
+  .page-index .landing-theme .sticky-wrapper,
+  .page-activities .landing-theme .navbar,
+  .page-activities .landing-theme .sticky-wrapper {
+    background-color: var(--secondary-color);
+  }
+}
+
+/* Footer theme */
+.footer-theme {
+  background-color: #1F2A44;
+  position: relative;
+  padding-top: 160px;
+  overflow: hidden;
+  padding-bottom: 20px;
+  width: 100%;
+  min-height: 0;
+  display: block;
+}
+
+.footer-theme.site-footer {
+  padding-bottom: 20px;
+  margin-bottom: 0;
+}
+
+.footer-theme .site-footer-title,
+.footer-theme .navbar-brand-text,
+.footer-theme p,
+.footer-theme span,
+.footer-theme a,
+.footer-theme .copyright-text {
+  color: #F4F1DE;
+}
+
+.footer-theme a:hover {
+  color: #C9A227;
+}
+
+.footer-theme .container {
+  padding-top: 0;
+  padding-bottom: 0;
+  position: relative;
+  z-index: 2;
+  margin-top: 0;
+}
+
+.footer-theme .row {
+  align-items: flex-start;
+  min-height: 0;
+}
+
+.footer-wave {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 300px;
+  display: block;
+  transform: scaleY(-1);
+  pointer-events: none;
+  z-index: 1;
+}
+
 body {
   background-color: var(--white-color);
   font-family: var(--body-font-family); 
@@ -1286,4 +1558,3 @@ strong {
     padding: 4px 12px;
   }
 }
-
