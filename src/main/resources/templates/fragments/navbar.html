@@ -1,0 +1,58 @@
+<nav th:fragment="navbar" class="navbar navbar-expand-lg">                
+                    <div class="container">
+                    <a class="navbar-brand d-flex align-items-center" href="/" th:href="@{/}">
+                        <span class="navbar-brand-text">
+                            JoinUs
+                            <small>Community Hub</small>
+                        </span>
+                    </a>
+
+                    <div class="d-lg-none ms-auto me-3">
+                        <a class="btn custom-btn custom-border-btn" href="login.html">Logare</a>
+                    </div>
+    
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+    
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav ms-lg-auto">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/" th:href="@{/}">Home</a>
+                            </li>
+    
+                            <li class="nav-item">
+                                <a class="nav-link" href="/activities" th:href="@{/activities}">Activitati</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="/profile" th:href="@{/profile}">Profil</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="/calendar" th:href="@{/calendar}">Calendar</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="/chat" th:href="@{/chat}">Chat</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="/map" th:href="@{/map}">Harta</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="/forum" th:href="@{/forum}">Forum</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="/notifications" th:href="@{/notifications}">Notificari</a>
+                            </li>
+                        </ul>
+
+                        <div class="d-none d-lg-block ms-lg-3">
+                            <a class="btn custom-btn custom-border-btn" href="login.html">Logare</a>
+                        </div>
+                    </div>
+                </div>
+                </nav>

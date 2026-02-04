@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="ro" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta name="description" content="Toate activitatile JoinUs. Descopera evenimentele disponibile si inscrie-te usor.">
+        <meta name="author" content="">
+
+        <title>Activitati - JoinUs</title>
+
+        <!-- CSS FILES -->                
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+        <link href="/css/bootstrap.min.css" rel="stylesheet">
+        <link href="/css/bootstrap-icons.css" rel="stylesheet">
+        <link href="/css/templatemo-tiya-golf-club.css" rel="stylesheet">
+
+        <style>
+            .activity-list {
+                position: relative;
+                max-height: none;
+                overflow: visible;
+            }
+
+            .activity-card {
+                border: 1px solid rgba(61, 64, 91, 0.08);
+            }
+
+            .activity-card-premium {
+                border: 2px solid var(--custom-btn-bg-color);
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            }
+
+            .activity-badge {
+                background: var(--custom-btn-bg-color);
+                color: var(--white-color);
+                border-radius: var(--border-radius-large);
+                font-size: 12px;
+                padding: 4px 10px;
+            }
+
+            .activity-badge-premium {
+                background: var(--custom-btn-bg-hover-color);
+            }
+
+            .create-activity-btn {
+                position: fixed;
+                right: 30px;
+                bottom: 30px;
+                z-index: 99;
+                box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+            }
+
+            .notification-item {
+                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+                padding-bottom: 15px;
+                margin-bottom: 15px;
+            }
+
+            .notification-item:last-child {
+                border-bottom: 0;
+                margin-bottom: 0;
+            }
+
+            .notification-item p,
+            .notification-item small {
+                color: rgba(255, 255, 255, 0.85);
+            }
+
+            .hero-section {
+                background-image: none !important;
+                background-color: #3D405B !important;
+                height: 40vh;
+                min-height: 340px;
+                padding-top: 40px;
+                padding-bottom: 40px;
+            }
+
+            .hero-section .section-overlay {
+                display: none;
+            }
+
+            .hero-section .hero-content {
+                margin-top: -30px;
+            }
+
+            .activity-card .row {
+                --bs-gutter-x: 0;
+                flex-direction: column;
+            }
+
+            .activity-card .col-4,
+            .activity-card .col-8 {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .activity-card .custom-block-image-wrap {
+                width: 100%;
+                margin-bottom: 16px;
+            }
+
+            .activity-card .custom-block-image {
+                width: 100%;
+                height: 180px;
+                object-fit: cover;
+                border-radius: var(--border-radius-medium);
+            }
+
+            #section_activities {
+                margin-top: -200px;
+                padding-top: 150px;
+                position: relative;
+                z-index: 2;
+                background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 150px, var(--section-bg-color) 150px);
+            }
+
+            .landing-theme {
+                --primary-color: #2C6FB7;
+                --secondary-color: #1F2A44;
+                --section-bg-color: #F4F1DE;
+                --custom-btn-bg-color: #C9A227;
+                --custom-btn-bg-hover-color: #A8831F;
+                --link-hover-color: #C9A227;
+                background-color: #1F2A44;
+            }
+
+            .landing-theme .custom-block-bg {
+                background-color: #FFFFFF;
+            }
+
+            .landing-theme .navbar {
+                background-color: #1F2A44 !important;
+            }
+
+            .landing-theme .sticky-wrapper,
+            .landing-theme .sticky-wrapper.is-sticky .navbar {
+                background-color: #1F2A44 !important;
+            }
+
+            .landing-theme .activity-card {
+                border: 1px solid rgba(31, 42, 68, 0.12);
+            }
+
+            .landing-theme .activity-badge {
+                background: #C9A227;
+            }
+
+            .landing-theme .sticky-wrapper.is-sticky .navbar {
+                background-color: var(--secondary-color);
+            }
+
+            @media (max-width: 768px) {
+                .hero-section {
+                    height: 20vh;
+                    min-height: 260px;
+                    padding-top: 120px;
+                    padding-bottom: 20px;
+                    top: 0;
+                    margin-bottom: 0;
+                }
+
+                .hero-section .hero-content {
+                    margin-top: 0;
+                }
+
+                .hero-section h1 {
+                    font-size: 28px;
+                }
+
+                .hero-section h2 {
+                    font-size: 22px;
+                }
+
+                #section_activities {
+                    margin-top: -120px;
+                    padding-top: 140px;
+                    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 120px, var(--section-bg-color) 120px);
+                }
+
+                .landing-theme .navbar,
+                .landing-theme .sticky-wrapper {
+                    background-color: var(--secondary-color);
+                }
+            }
+        </style>
+    </head>
+    
+    <body>
+        <main>
+            <div class="landing-theme">
+                <header th:replace="~{fragments/navbar :: navbar}"></header>
+
+                <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="notificationsPanel" aria-labelledby="notificationsPanelLabel">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title text-white" id="notificationsPanelLabel">Notificari</h5>
+
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+
+                    <div class="offcanvas-body d-flex flex-column">
+                        <div class="notification-item">
+                            <strong class="text-white">Alergare in parc</strong>
+                            <p class="mb-1">Activitatea ta a fost aprobata si publicata.</p>
+                            <small>Acum 5 minute</small>
+                        </div>
+
+                        <div class="notification-item">
+                            <strong class="text-white">Yoga la apus</strong>
+                            <p class="mb-1">S-au inscris inca 3 persoane.</p>
+                            <small>Acum 24 de minute</small>
+                        </div>
+
+                        <div class="notification-item">
+                            <strong class="text-white">Tur ciclist premium</strong>
+                            <p class="mb-1">Locurile sunt aproape epuizate.</p>
+                            <small>Astazi</small>
+                        </div>
+
+                        <div class="notification-item">
+                            <strong class="text-white">Forum</strong>
+                            <p class="mb-1">Ai un raspuns nou la discutia despre trasee montane.</p>
+                            <small>Ieri</small>
+                        </div>
+
+                        <div class="mt-auto">
+                            <a href="/notifications" class="btn custom-btn custom-border-btn w-100">Vezi toate notificarile</a>
+                        </div>
+                    </div>
+                </div>
+
+                <section class="hero-section d-flex justify-content-center align-items-center" id="section_home" style="background-image: url('images/anna-rosar-ew-olGvgCCs-unsplash.jpg');">
+                    <div class="section-overlay"></div>
+
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="#3D405B" fill-opacity="1" d="M0,224L34.3,192C68.6,160,137,96,206,90.7C274.3,85,343,139,411,144C480,149,549,107,617,122.7C685.7,139,754,213,823,240C891.4,267,960,245,1029,224C1097.1,203,1166,181,1234,160C1302.9,139,1371,117,1406,106.7L1440,96L1440,0L1405.7,0C1371.4,0,1303,0,1234,0C1165.7,0,1097,0,1029,0C960,0,891,0,823,0C754.3,0,686,0,617,0C548.6,0,480,0,411,0C342.9,0,274,0,206,0C137.1,0,69,0,34,0L0,0Z"></path></svg>
+
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-8 col-12 mb-5 mb-lg-0 mx-auto text-center hero-content">
+                                <h2 class="text-white">Descopera toate activitatile</h2>
+                                <h1 class="cd-headline rotate-1 text-white mb-4 pb-2">
+                                    <span>Activitati</span>
+                                    <span class="cd-words-wrapper">
+                                        <b class="is-visible">sportive</b>
+                                        <b>sociale</b>
+                                        <b>comunitare</b>
+                                    </span>
+                                </h1>
+                            </div>
+                        </div>
+                    </div>
+
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+                        <path fill="var(--section-bg-color)" fill-opacity="1" d="M0,224 C240,160 480,288 720,224 C960,160 1200,288 1440,224 L1440,320 L0,320 Z"></path>
+                    </svg>
+                </section>
+
+                <section class="events-section section-bg section-padding" id="section_activities">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-12 col-12 text-center mb-5">
+                                <h2 class="mb-3">Toate activitatile</h2>
+                                <p>Vezi toate activitatile disponibile in comunitate.</p>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-10 col-12 mx-auto">
+                                <div class="activity-list activity-list--section row g-4">
+                                    <div class="col-lg-4 col-md-6 col-12">
+                                        <div class="custom-block custom-block-bg activity-card mb-3">
+                                            <div class="row align-items-center">
+                                                <div class="col-4 col-md-3">
+                                                    <div class="custom-block-image-wrap">
+                                                        <img src="/images/anna-rosar-ZxFyVBHMK-c-unsplash.jpg" class="custom-block-image img-fluid" alt="Alergare in parc">
+                                                    </div>
+                                                </div>
+                                                <div class="col-8 col-md-9">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <a href="event-detail.html" class="events-title me-2">Alergare in parc</a>
+                                                        <span class="activity-badge">Sport</span>
+                                                    </div>
+                                                    <p class="mb-2">Grup deschis pentru 5 km relaxat.</p>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Data:</span>
+                                                        <p class="mb-0">Miercuri, 12 Feb</p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Ora:</span>
+                                                        <p class="mb-0">19:00</p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Locatie:</span>
+                                                        <p class="mb-0">Parcul Central</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-6 col-12">
+                                        <div class="custom-block custom-block-bg activity-card mb-3">
+                                            <div class="row align-items-center">
+                                                <div class="col-4 col-md-3">
+                                                    <div class="custom-block-image-wrap">
+                                                        <img src="/images/frederik-rosar-NDSZcCfnsbY-unsplash.jpg" class="custom-block-image img-fluid" alt="Yoga la apus">
+                                                    </div>
+                                                </div>
+                                                <div class="col-8 col-md-9">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <a href="event-detail.html" class="events-title me-2">Yoga la apus</a>
+                                                        <span class="activity-badge">Wellness</span>
+                                                    </div>
+                                                    <p class="mb-2">Sedinta de relaxare in aer liber.</p>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Data:</span>
+                                                        <p class="mb-0">Joi, 13 Feb</p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Ora:</span>
+                                                        <p class="mb-0">18:30</p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Locatie:</span>
+                                                        <p class="mb-0">Lacul Morii</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-6 col-12">
+                                        <div class="custom-block custom-block-bg activity-card mb-3">
+                                            <div class="row align-items-center">
+                                                <div class="col-4 col-md-3">
+                                                    <div class="custom-block-image-wrap">
+                                                        <img src="/images/anna-rosar-ew-olGvgCCs-unsplash.jpg" class="custom-block-image img-fluid" alt="Fotbal de cartier">
+                                                    </div>
+                                                </div>
+                                                <div class="col-8 col-md-9">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <a href="event-detail.html" class="events-title me-2">Fotbal de cartier</a>
+                                                        <span class="activity-badge">Sport</span>
+                                                    </div>
+                                                    <p class="mb-2">Meci amical 5v5, nivel mixt.</p>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Data:</span>
+                                                        <p class="mb-0">Vineri, 14 Feb</p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Ora:</span>
+                                                        <p class="mb-0">20:00</p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Locatie:</span>
+                                                        <p class="mb-0">Terenul Vitan</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-6 col-12">
+                                        <div class="custom-block custom-block-bg activity-card mb-3">
+                                            <div class="row align-items-center">
+                                                <div class="col-4 col-md-3">
+                                                    <div class="custom-block-image-wrap">
+                                                        <img src="/images/girl-taking-selfie-with-friends-golf-field.jpg" class="custom-block-image img-fluid" alt="Picnic comunitar">
+                                                    </div>
+                                                </div>
+                                                <div class="col-8 col-md-9">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <a href="event-detail.html" class="events-title me-2">Picnic comunitar</a>
+                                                        <span class="activity-badge">Social</span>
+                                                    </div>
+                                                    <p class="mb-2">Socializare si jocuri de echipa.</p>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Data:</span>
+                                                        <p class="mb-0">Sambata, 15 Feb</p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Ora:</span>
+                                                        <p class="mb-0">16:00</p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Locatie:</span>
+                                                        <p class="mb-0">Gradina Botanica</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-6 col-12">
+                                        <div class="custom-block custom-block-bg activity-card mb-3">
+                                            <div class="row align-items-center">
+                                                <div class="col-4 col-md-3">
+                                                    <div class="custom-block-image-wrap">
+                                                        <img src="/images/anna-rosar-ZxFyVBHMK-c-unsplash.jpg" class="custom-block-image img-fluid" alt="Drumetie usoara">
+                                                    </div>
+                                                </div>
+                                                <div class="col-8 col-md-9">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <a href="event-detail.html" class="events-title me-2">Drumetie usoara</a>
+                                                        <span class="activity-badge">Outdoor</span>
+                                                    </div>
+                                                    <p class="mb-2">Traseu de 8 km cu pauze dese.</p>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Data:</span>
+                                                        <p class="mb-0">Duminica, 16 Feb</p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Ora:</span>
+                                                        <p class="mb-0">10:00</p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Locatie:</span>
+                                                        <p class="mb-0">Padurea Baneasa</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-6 col-12">
+                                        <div class="custom-block custom-block-bg activity-card mb-3">
+                                            <div class="row align-items-center">
+                                                <div class="col-4 col-md-3">
+                                                    <div class="custom-block-image-wrap">
+                                                        <img src="/images/frederik-rosar-NDSZcCfnsbY-unsplash.jpg" class="custom-block-image img-fluid" alt="Club de lectura">
+                                                    </div>
+                                                </div>
+                                                <div class="col-8 col-md-9">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <a href="event-detail.html" class="events-title me-2">Club de lectura</a>
+                                                        <span class="activity-badge">Cultura</span>
+                                                    </div>
+                                                    <p class="mb-2">Discutie despre carti scurte si inspiratie.</p>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Data:</span>
+                                                        <p class="mb-0">Marti, 18 Feb</p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Ora:</span>
+                                                        <p class="mb-0">19:30</p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Locatie:</span>
+                                                        <p class="mb-0">Biblioteca de cartier</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <a href="create-activity.html" class="btn custom-btn create-activity-btn">Creeaza activitate</a>
+
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+        <!-- JAVASCRIPT FILES -->
+        <script src="/js/jquery.min.js"></script>
+        <script src="/js/bootstrap.bundle.min.js"></script>
+        <script src="/js/jquery.sticky.js"></script>
+        <script src="/js/click-scroll.js"></script>
+        <script src="/js/animated-headline.js"></script>
+        <script src="/js/modernizr.js"></script>
+        <script src="/js/custom.js"></script>
+    </body>
+</html>

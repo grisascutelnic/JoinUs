@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ro" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta name="description" content="Forum JoinUs. Schimba idei si cere sfaturi comunitatii.">
+        <meta name="author" content="">
+
+        <title>Forum - JoinUs</title>
+
+        <!-- CSS FILES -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+        <link href="/css/bootstrap.min.css" rel="stylesheet">
+        <link href="/css/bootstrap-icons.css" rel="stylesheet">
+        <link href="/css/templatemo-tiya-golf-club.css" rel="stylesheet">
+
+        <style>
+            .notification-item {
+                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+                padding-bottom: 15px;
+                margin-bottom: 15px;
+            }
+
+            .notification-item:last-child {
+                border-bottom: 0;
+                margin-bottom: 0;
+            }
+
+            .notification-item p,
+            .notification-item small {
+                color: rgba(255, 255, 255, 0.85);
+            }
+
+            .hero-section {
+                background-image: none !important;
+                background-color: var(--secondary-color);
+                height: 30vh;
+                min-height: 260px;
+                padding-top: 40px;
+                padding-bottom: 40px;
+            }
+
+            .hero-section .section-overlay {
+                display: none;
+            }
+
+            .hero-section .hero-content {
+                margin-top: -10px;
+            }
+
+            .landing-theme {
+                --primary-color: #2C6FB7;
+                --secondary-color: #1F2A44;
+                --section-bg-color: #F5F7FA;
+                --custom-btn-bg-color: #C9A227;
+                --custom-btn-bg-hover-color: #A8831F;
+                --link-hover-color: #C9A227;
+            }
+
+            .landing-theme .custom-block-bg {
+                background-color: #FFFFFF;
+            }
+
+            .landing-theme .sticky-wrapper.is-sticky .navbar {
+                background-color: var(--secondary-color);
+            }
+
+            @media (max-width: 768px) {
+                .hero-section {
+                    height: 20vh;
+                    min-height: 220px;
+                    padding-top: 120px;
+                    padding-bottom: 20px;
+                    top: 0;
+                    margin-bottom: 0;
+                }
+
+                .landing-theme .navbar,
+                .landing-theme .sticky-wrapper {
+                    background-color: var(--secondary-color);
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <main>
+            <div class="landing-theme">
+                <header th:replace="~{fragments/navbar :: navbar}"></header>
+
+                <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="notificationsPanel" aria-labelledby="notificationsPanelLabel">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title text-white" id="notificationsPanelLabel">Notificari</h5>
+
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+
+                    <div class="offcanvas-body d-flex flex-column">
+                        <div class="notification-item">
+                            <strong class="text-white">Alergare in parc</strong>
+                            <p class="mb-1">Activitatea ta a fost aprobata si publicata.</p>
+                            <small>Acum 5 minute</small>
+                        </div>
+
+                        <div class="notification-item">
+                            <strong class="text-white">Yoga la apus</strong>
+                            <p class="mb-1">S-au inscris inca 3 persoane.</p>
+                            <small>Acum 24 de minute</small>
+                        </div>
+
+                        <div class="notification-item">
+                            <strong class="text-white">Tur ciclist premium</strong>
+                            <p class="mb-1">Locurile sunt aproape epuizate.</p>
+                            <small>Astazi</small>
+                        </div>
+
+                        <div class="notification-item">
+                            <strong class="text-white">Forum</strong>
+                            <p class="mb-1">Ai un raspuns nou la discutia despre trasee montane.</p>
+                            <small>Ieri</small>
+                        </div>
+
+                        <div class="mt-auto">
+                            <a href="/notifications" class="btn custom-btn custom-border-btn w-100">Vezi toate notificarile</a>
+                        </div>
+                    </div>
+                </div>
+
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="#3D405B" fill-opacity="1" d="M0,224L34.3,192C68.6,160,137,96,206,90.7C274.3,85,343,139,411,144C480,149,549,107,617,122.7C685.7,139,754,213,823,240C891.4,267,960,245,1029,224C1097.1,203,1166,181,1234,160C1302.9,139,1371,117,1406,106.7L1440,96L1440,320L1405.7,320C1371.4,320,1303,320,1234,320C1165.7,320,1097,320,1029,320C960,320,891,320,823,320C754.3,320,686,320,617,320C548.6,320,480,320,411,320C342.9,320,274,320,206,320C137.1,320,69,320,34,320L0,320Z"></path></svg>
+            </div>
+
+            <section class="hero-section d-flex justify-content-center align-items-center">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-8 col-12 mx-auto text-center hero-content">
+                            <h2 class="text-white">Forum</h2>
+                            <h1 class="text-white mb-0">Idei si recomandari</h1>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section-padding section-bg" id="section_forum">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12 col-12 text-center mb-5">
+                            <h2 class="mb-3">Forum</h2>
+                            <p>Schimba idei, ofera recomandari si cere sfaturi comunitatii.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-4 col-md-6 col-12 mb-3">
+                            <div class="custom-block custom-block-bg h-100">
+                                <a href="#" class="events-title mb-2 d-block">Cele mai bune trasee de alergare</a>
+                                <p class="mb-2">Recomandari pentru trasee sigure si pitoresti.</p>
+                                <div class="d-flex flex-wrap">
+                                    <span class="custom-block-span">Raspunsuri:</span>
+                                    <p class="mb-0">18</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4 col-md-6 col-12 mb-3">
+                            <div class="custom-block custom-block-bg h-100">
+                                <a href="#" class="events-title mb-2 d-block">Idei de activitati de weekend</a>
+                                <p class="mb-2">Sugestii pentru grupuri mari si mici.</p>
+                                <div class="d-flex flex-wrap">
+                                    <span class="custom-block-span">Raspunsuri:</span>
+                                    <p class="mb-0">25</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4 col-md-6 col-12 mb-3">
+                            <div class="custom-block custom-block-bg h-100">
+                                <a href="#" class="events-title mb-2 d-block">Echipament recomandat pentru ciclism</a>
+                                <p class="mb-2">Ce merita investitia la inceput.</p>
+                                <div class="d-flex flex-wrap">
+                                    <span class="custom-block-span">Raspunsuri:</span>
+                                    <p class="mb-0">12</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+        <!-- JAVASCRIPT FILES -->
+        <script src="/js/jquery.min.js"></script>
+        <script src="/js/bootstrap.bundle.min.js"></script>
+        <script src="/js/jquery.sticky.js"></script>
+        <script src="/js/click-scroll.js"></script>
+        <script src="/js/animated-headline.js"></script>
+        <script src="/js/modernizr.js"></script>
+        <script src="/js/custom.js"></script>
+    </body>
+</html>
