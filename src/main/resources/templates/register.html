@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ro" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta name="description" content="Creeaza un cont JoinUs pentru a descoperi activitati locale.">
+        <meta name="author" content="">
+
+        <title>JoinUs - Inregistrare</title>
+
+        <!-- CSS FILES -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+        <link href="/css/bootstrap.min.css" rel="stylesheet">
+        <link href="/css/bootstrap-icons.css" rel="stylesheet">
+        <link href="/css/styles.css" rel="stylesheet">
+    </head>
+
+    <body class="page-auth">
+        <main>
+            <header th:replace="~{fragments/navbar :: navbar}"></header>
+
+            <section class="auth-section section-padding">
+                <div class="container">
+                    <div class="row align-items-center g-5">
+                        <div class="col-lg-5">
+                            <div class="auth-hero">
+                                <p class="auth-eyebrow">Creeaza cont</p>
+                                <h1>Fii parte din comunitate</h1>
+                                <p>Intra in JoinUs si descopera activitati locale, prieteni noi si experiente premium.</p>
+                                <div class="auth-feature">
+                                    <svg class="auth-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                                        <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7z"/>
+                                        <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/>
+                                        <path d="M14 7a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>
+                                        <path d="M2 13s-1 0-1-1 1-4 4-4 4 3 4 4-1 1-1 1H2z"/>
+                                    </svg>
+                                    <span>Grupuri locale active zilnic</span>
+                                </div>
+                                <div class="auth-feature">
+                                    <svg class="auth-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                                        <path d="M8 16s6-5.686 6-10A6 6 0 1 0 2 6c0 4.314 6 10 6 10z"/>
+                                        <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/>
+                                    </svg>
+                                    <span>Recomandari pe baza locatiei tale</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 offset-lg-1">
+                            <div class="auth-card">
+                                <h3 class="mb-3">Inregistrare</h3>
+                                <p class="auth-subtitle">Creeaza cont cu emailul tau sau cu Google.</p>
+
+                                <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+                                <button type="button" class="btn auth-google-btn w-100 mb-3">
+                                    <svg class="auth-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                                        <path d="M15.545 6.558a9.42 9.42 0 0 1 .139 1.626c0 2.434-.87 4.492-2.385 5.822-1.31 1.18-3.04 1.868-5.19 1.868-4.362 0-7.909-3.53-7.909-7.878 0-4.346 3.547-7.877 7.909-7.877 2.26 0 4.152.89 5.533 2.35l-2.24 2.205c-.61-.59-1.48-.99-2.73-.99-2.34 0-4.24 1.92-4.24 4.312 0 2.395 1.9 4.313 4.24 4.313 1.36 0 2.13-.54 2.62-1.03.4-.4.66-.97.76-1.75H8.11V6.56h7.435z"/>
+                                    </svg>
+                                    Continua cu Google
+                                </button>
+
+                                <div class="auth-divider"><span>sau</span></div>
+
+                                <form class="custom-form auth-form" th:action="@{/register}" th:object="${registerRequest}" method="post" role="form">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                    <input type="text" th:field="*{fullName}" class="form-control" placeholder="Nume complet" required>
+                                    <input type="email" th:field="*{email}" class="form-control" placeholder="Email" required>
+                                    <input type="password" th:field="*{password}" class="form-control" placeholder="Parola" required>
+                                    <input type="password" th:field="*{confirmPassword}" class="form-control" placeholder="Confirma parola" required>
+
+                                    <label class="form-check-label auth-check">
+                                        <input class="form-check-input me-2" type="checkbox" required>
+                                        Sunt de acord cu <a href="/terms">Termenii si conditiile</a>.
+                                    </label>
+
+                                    <button type="submit" class="form-control mt-3">Creeaza cont</button>
+                                </form>
+
+                                <p class="auth-footer">Ai deja cont? <a href="/login" th:href="@{/login}">Logheaza-te</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+        <!-- JAVASCRIPT FILES -->
+        <script src="/js/jquery.min.js"></script>
+        <script src="/js/bootstrap.bundle.min.js"></script>
+        <script src="/js/jquery.sticky.js"></script>
+        <script src="/js/custom.js"></script>
+    </body>
+</html>
