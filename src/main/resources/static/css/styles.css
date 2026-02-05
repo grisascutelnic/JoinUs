@@ -17,6 +17,8 @@ https://templatemo.com/tm-587-tiya-golf-club
   --section-bg-color:             #F4F1DE;
   --custom-btn-bg-color:          #F6D79E;
   --custom-btn-bg-hover-color:    #E6B562;
+  --nav-btn-bg-color:             #C9A227;
+  --nav-btn-bg-hover-color:       #A8831F;
   --dark-color:                   #000000;
   --p-color:                      #717275;
   --link-hover-color:             #F2CC8F;
@@ -94,6 +96,16 @@ https://templatemo.com/tm-587-tiya-golf-club
   bottom: 30px;
   z-index: 99;
   box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+  background: var(--nav-btn-bg-color);
+  border-color: var(--nav-btn-bg-color);
+  color: var(--white-color);
+}
+
+.create-activity-btn:hover,
+.create-activity-btn:focus {
+  background: var(--nav-btn-bg-color);
+  border-color: var(--nav-btn-bg-color);
+  color: var(--white-color);
 }
 
 .page-index .notification-item,
@@ -358,6 +370,14 @@ https://templatemo.com/tm-587-tiya-golf-club
 .page-auth .auth-feature .auth-icon {
   width: 20px;
   height: 20px;
+}
+
+.page-auth .auth-icon--check .check-bg {
+  fill: var(--custom-btn-bg-color);
+}
+
+.page-auth .auth-icon--check .check-mark {
+  fill: var(--white-color);
 }
 
 .page-auth .auth-google-btn:hover {
@@ -848,15 +868,15 @@ strong {
 
 /* Navbar auth buttons: static color, no hover shift */
 .navbar .custom-btn.custom-border-btn {
-  background: var(--custom-btn-bg-color);
-  border-color: var(--custom-btn-bg-color);
+  background: var(--nav-btn-bg-color);
+  border-color: var(--nav-btn-bg-color);
   color: var(--white-color);
 }
 
 .navbar .custom-btn.custom-border-btn:hover,
 .navbar .custom-btn.custom-border-btn:focus {
-  background: var(--custom-btn-bg-color);
-  border-color: var(--custom-btn-bg-color);
+  background: var(--nav-btn-bg-color);
+  border-color: var(--nav-btn-bg-color);
   color: var(--white-color);
 }
 
