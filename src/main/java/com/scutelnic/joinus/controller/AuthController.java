@@ -10,6 +10,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class AuthController {
@@ -21,14 +22,31 @@ public class AuthController {
     }
 
     @GetMapping("/login")
-    public String login() {
-        return "login";
+    public String login(
+            @RequestParam(required = false) String error,
+            @RequestParam(required = false) String registered,
+            @RequestParam(required = false) String logout
+    ) {
+        StringBuilder redirect = new StringBuilder("redirect:/?login");
+        if (error != null) {
+            redirect.append("&error");
+        }
+        if (registered != null) {
+            redirect.append("&registered");
+        }
+        if (logout != null) {
+            redirect.append("&logout");
+        }
+        return redirect.toString();
     }
 
     @GetMapping("/register")
-    public String register(Model model) {
-        model.addAttribute("registerRequest", new RegisterRequest());
-        return "register";
+    public String register(@RequestParam(required = false) String error) {
+        StringBuilder redirect = new StringBuilder("redirect:/?register");
+        if (error != null) {
+            redirect.append("&registerError");
+        }
+        return redirect.toString();
     }
 
     @PostMapping("/register")
@@ -39,15 +57,14 @@ public class AuthController {
     ) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("error", "Completeaza toate campurile corect.");
-            return "register";
+            return "redirect:/?register&registerError";
         }
 
         try {
             userService.register(registerRequest);
-            return "redirect:/login?registered";
+            return "redirect:/?login&registered";
         } catch (IllegalArgumentException ex) {
-            model.addAttribute("error", ex.getMessage());
-            return "register";
+            return "redirect:/?register&registerError";
         }
     }
 

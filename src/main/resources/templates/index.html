@@ -8,7 +8,7 @@
         <meta name="description" content="Platforma pentru activitati comunitare, sportive si sociale. Descopera evenimente locale si conecteaza-te cu oameni noi.">
         <meta name="author" content="">
 
-        <title>Tiya Community - Activitati Locale</title>
+        <title>JoinUs Community - Activitati Locale</title>
 
         <!-- CSS FILES -->                
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -130,192 +130,45 @@ https://templatemo.com/tm-587-tiya-golf-club
                     <div class="row">
                         <div class="col-lg-10 col-12 mx-auto">
                             <div class="activity-list activity-list--section row g-4">
-                                <div class="col-lg-4 col-md-6 col-12">
-                                    <div class="custom-block custom-block-bg activity-card mb-3">
-                                    <div class="row align-items-center">
-                                        <div class="col-4 col-md-3">
-                                            <div class="custom-block-image-wrap">
-                                                <img src="/images/anna-rosar-ZxFyVBHMK-c-unsplash.jpg" class="custom-block-image img-fluid" alt="Alergare in parc">
-                                            </div>
-                                        </div>
-                                        <div class="col-8 col-md-9">
-                                            <div class="d-flex align-items-center mb-2">
-                                                <a href="event-detail.html" class="events-title me-2">Alergare in parc</a>
-                                                <span class="activity-badge">Sport</span>
-                                            </div>
-                                            <p class="mb-2">Grup deschis pentru 5 km relaxat.</p>
-                                            <div class="d-flex flex-wrap">
-                                                <span class="custom-block-span">Data:</span>
-                                                <p class="mb-0">Miercuri, 12 Feb</p>
-                                            </div>
-                                            <div class="d-flex flex-wrap">
-                                                <span class="custom-block-span">Ora:</span>
-                                                <p class="mb-0">19:00</p>
-                                            </div>
-                                            <div class="d-flex flex-wrap">
-                                                <span class="custom-block-span">Locatie:</span>
-                                                <p class="mb-0">Parcul Central</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <div class="col-12" th:if="${#lists.isEmpty(recentActivities)}">
+                                    <div class="alert alert-light text-center">Nu exista activitati recente inca.</div>
                                 </div>
 
-                                <div class="col-lg-4 col-md-6 col-12">
+                                <div class="col-lg-4 col-md-6 col-12" th:each="activity : ${recentActivities}">
                                     <div class="custom-block custom-block-bg activity-card mb-3">
-                                    <div class="row align-items-center">
-                                        <div class="col-4 col-md-3">
-                                            <div class="custom-block-image-wrap">
-                                                <img src="/images/frederik-rosar-NDSZcCfnsbY-unsplash.jpg" class="custom-block-image img-fluid" alt="Yoga la apus">
+                                        <div class="row align-items-center">
+                                            <div class="col-4 col-md-3">
+                                                <div class="custom-block-image-wrap">
+                                                    <img th:src="${activity.imageUrl}" class="custom-block-image img-fluid" th:alt="${activity.title}">
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-8 col-md-9">
-                                            <div class="d-flex align-items-center mb-2">
-                                                <a href="event-detail.html" class="events-title me-2">Yoga la apus</a>
-                                                <span class="activity-badge">Wellness</span>
-                                            </div>
-                                            <p class="mb-2">Sedinta de relaxare in aer liber.</p>
-                                            <div class="d-flex flex-wrap">
-                                                <span class="custom-block-span">Data:</span>
-                                                <p class="mb-0">Joi, 13 Feb</p>
-                                            </div>
-                                            <div class="d-flex flex-wrap">
-                                                <span class="custom-block-span">Ora:</span>
-                                                <p class="mb-0">18:30</p>
-                                            </div>
-                                            <div class="d-flex flex-wrap">
-                                                <span class="custom-block-span">Locatie:</span>
-                                                <p class="mb-0">Lacul Morii</p>
+                                            <div class="col-8 col-md-9">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <a href="event-detail.html" class="events-title me-2" th:text="${activity.title}">Activitate</a>
+                                                    <span class="activity-badge" th:text="${activity.category}">Categorie</span>
+                                                </div>
+                                                <p class="mb-2" th:text="${activity.description}">Descriere activitate</p>
+                                                <div class="d-flex flex-wrap">
+                                                    <span class="custom-block-span">Data:</span>
+                                                    <p class="mb-0" th:text="${#temporals.format(activity.date, 'dd MMM yyyy')}">12 Feb 2026</p>
+                                                </div>
+                                                <div class="d-flex flex-wrap">
+                                                    <span class="custom-block-span">Ora:</span>
+                                                    <p class="mb-0" th:text="${#temporals.format(activity.time, 'HH:mm')}">19:00</p>
+                                                </div>
+                                                <div class="d-flex flex-wrap">
+                                                    <span class="custom-block-span">Locatie:</span>
+                                                    <p class="mb-0" th:text="${activity.location}">Locatie</p>
+                                                </div>
+                                                <div class="d-flex flex-wrap">
+                                                    <span class="custom-block-span">Locuri:</span>
+                                                    <p class="mb-0" th:text="${activity.capacity + ' persoane'}">10 persoane</p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                </div>
-
-                                <div class="col-lg-4 col-md-6 col-12">
-                                    <div class="custom-block custom-block-bg activity-card mb-3">
-                                    <div class="row align-items-center">
-                                        <div class="col-4 col-md-3">
-                                            <div class="custom-block-image-wrap">
-                                                <img src="/images/anna-rosar-ew-olGvgCCs-unsplash.jpg" class="custom-block-image img-fluid" alt="Fotbal de cartier">
-                                            </div>
-                                        </div>
-                                        <div class="col-8 col-md-9">
-                                            <div class="d-flex align-items-center mb-2">
-                                                <a href="event-detail.html" class="events-title me-2">Fotbal de cartier</a>
-                                                <span class="activity-badge">Sport</span>
-                                            </div>
-                                            <p class="mb-2">Meci amical 5v5, nivel mixt.</p>
-                                            <div class="d-flex flex-wrap">
-                                                <span class="custom-block-span">Data:</span>
-                                                <p class="mb-0">Vineri, 14 Feb</p>
-                                            </div>
-                                            <div class="d-flex flex-wrap">
-                                                <span class="custom-block-span">Ora:</span>
-                                                <p class="mb-0">20:00</p>
-                                            </div>
-                                            <div class="d-flex flex-wrap">
-                                                <span class="custom-block-span">Locatie:</span>
-                                                <p class="mb-0">Terenul Vitan</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                </div>
-
-                                <div class="col-lg-4 col-md-6 col-12">
-                                    <div class="custom-block custom-block-bg activity-card mb-3">
-                                    <div class="row align-items-center">
-                                        <div class="col-4 col-md-3">
-                                            <div class="custom-block-image-wrap">
-                                                <img src="/images/girl-taking-selfie-with-friends-golf-field.jpg" class="custom-block-image img-fluid" alt="Picnic comunitar">
-                                            </div>
-                                        </div>
-                                        <div class="col-8 col-md-9">
-                                            <div class="d-flex align-items-center mb-2">
-                                                <a href="event-detail.html" class="events-title me-2">Picnic comunitar</a>
-                                                <span class="activity-badge">Social</span>
-                                            </div>
-                                            <p class="mb-2">Socializare si jocuri de echipa.</p>
-                                            <div class="d-flex flex-wrap">
-                                                <span class="custom-block-span">Data:</span>
-                                                <p class="mb-0">Sambata, 15 Feb</p>
-                                            </div>
-                                            <div class="d-flex flex-wrap">
-                                                <span class="custom-block-span">Ora:</span>
-                                                <p class="mb-0">16:00</p>
-                                            </div>
-                                            <div class="d-flex flex-wrap">
-                                                <span class="custom-block-span">Locatie:</span>
-                                                <p class="mb-0">Gradina Botanica</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                </div>
-
-                                <div class="col-lg-4 col-md-6 col-12">
-                                    <div class="custom-block custom-block-bg activity-card mb-3">
-                                    <div class="row align-items-center">
-                                        <div class="col-4 col-md-3">
-                                            <div class="custom-block-image-wrap">
-                                                <img src="/images/anna-rosar-ZxFyVBHMK-c-unsplash.jpg" class="custom-block-image img-fluid" alt="Drumetie usoara">
-                                            </div>
-                                        </div>
-                                        <div class="col-8 col-md-9">
-                                            <div class="d-flex align-items-center mb-2">
-                                                <a href="event-detail.html" class="events-title me-2">Drumetie usoara</a>
-                                                <span class="activity-badge">Outdoor</span>
-                                            </div>
-                                            <p class="mb-2">Traseu de 8 km cu pauze dese.</p>
-                                            <div class="d-flex flex-wrap">
-                                                <span class="custom-block-span">Data:</span>
-                                                <p class="mb-0">Duminica, 16 Feb</p>
-                                            </div>
-                                            <div class="d-flex flex-wrap">
-                                                <span class="custom-block-span">Ora:</span>
-                                                <p class="mb-0">10:00</p>
-                                            </div>
-                                            <div class="d-flex flex-wrap">
-                                                <span class="custom-block-span">Locatie:</span>
-                                                <p class="mb-0">Padurea Baneasa</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                </div>
-
-                                <div class="col-lg-4 col-md-6 col-12">
-                                    <div class="custom-block custom-block-bg activity-card mb-3">
-                                    <div class="row align-items-center">
-                                        <div class="col-4 col-md-3">
-                                            <div class="custom-block-image-wrap">
-                                                <img src="/images/frederik-rosar-NDSZcCfnsbY-unsplash.jpg" class="custom-block-image img-fluid" alt="Club de lectura">
-                                            </div>
-                                        </div>
-                                        <div class="col-8 col-md-9">
-                                            <div class="d-flex align-items-center mb-2">
-                                                <a href="event-detail.html" class="events-title me-2">Club de lectura</a>
-                                                <span class="activity-badge">Cultura</span>
-                                            </div>
-                                            <p class="mb-2">Discutie despre carti scurte si inspiratie.</p>
-                                            <div class="d-flex flex-wrap">
-                                                <span class="custom-block-span">Data:</span>
-                                                <p class="mb-0">Marti, 18 Feb</p>
-                                            </div>
-                                            <div class="d-flex flex-wrap">
-                                                <span class="custom-block-span">Ora:</span>
-                                                <p class="mb-0">19:30</p>
-                                            </div>
-                                            <div class="d-flex flex-wrap">
-                                                <span class="custom-block-span">Locatie:</span>
-                                                <p class="mb-0">Biblioteca de cartier</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                </div>
-                                </div>
+                            </div>
 
                                 <div class="activity-list-fade"></div>
                             </div>
@@ -330,7 +183,7 @@ https://templatemo.com/tm-587-tiya-golf-club
             </div>
         </main>
 
-        <a href="create-activity.html" class="btn custom-btn create-activity-btn">Creeaza activitate</a>
+        <a href="/activities/new" class="btn custom-btn create-activity-btn">Creeaza activitate</a>
 
         <footer th:replace="~{fragments/footer :: footer}"></footer>
 
