@@ -162,33 +162,13 @@
                                 </div>
 
                                 <div class="activity-tab-panel is-active" id="activity-chat-panel" role="tabpanel" data-panel="chat">
-                                    <div class="chat-stream">
-                                        <div class="chat-bubble">
-                                            <strong>Ana</strong>
-                                            <p class="mb-0">Salut! Ne intalnim la intrarea principala din parc?</p>
-                                            <small>18:12</small>
-                                        </div>
-                                        <div class="chat-bubble me">
-                                            <strong>Tu</strong>
-                                            <p class="mb-0">Da, ajung cu 10 minute mai devreme.</p>
-                                            <small>18:14</small>
-                                        </div>
-                                        <div class="chat-bubble">
-                                            <strong>Radu</strong>
-                                            <p class="mb-0">Am pregatit traseul si cateva opriri foto. Va trimit pinul.</p>
-                                            <small>18:16</small>
-                                        </div>
-                                        <div class="chat-bubble">
-                                            <strong>Maria</strong>
-                                            <p class="mb-0">Super! Mai vine cineva cu bicicleta de oras?</p>
-                                            <small>18:20</small>
-                                        </div>
-                                    </div>
+                                    <div class="chat-stream" id="chatStream"></div>
 
                                     <div class="chat-input">
-                                        <input class="form-control" type="text" placeholder="Scrie un mesaj...">
-                                        <button class="btn custom-btn" type="button"><i class="bi bi-send"></i> Trimite</button>
+                                        <input class="form-control" id="chatInput" type="text" placeholder="Scrie un mesaj..." th:disabled="${#authorization.expression('isAnonymous()')}">
+                                        <button class="btn custom-btn" id="chatSendBtn" type="button" th:disabled="${#authorization.expression('isAnonymous()')}"><i class="bi bi-send"></i> Trimite</button>
                                     </div>
+                                    <small class="text-muted mt-2" th:if="${#authorization.expression('isAnonymous()')}">Autentifica-te ca sa participi la chat.</small>
                                 </div>
 
                                 <div class="activity-tab-panel" id="activity-announcements-panel" role="tabpanel" data-panel="announcements">
@@ -278,9 +258,11 @@
         <!-- JAVASCRIPT FILES -->
         <script src="/js/jquery.min.js"></script>
         <script src="/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
         <script src="/js/jquery.sticky.js"></script>
         <script src="/js/custom.js"></script>
-        <script>
+        <script th:inline="javascript">
             const tabButtons = document.querySelectorAll('.activity-tab-btn');
             const tabPanels = document.querySelectorAll('.activity-tab-panel');
 
@@ -297,8 +279,305 @@
                     tabPanels.forEach((panel) => {
                         panel.classList.toggle('is-active', panel.dataset.panel === target);
                     });
+
+                    if (target === 'chat') {
+                        setTimeout(scrollChatToBottom, 0);
+                    }
                 });
             });
+
+            const activityId = Number(/*[[${activity.id}]]*/ 0);
+            const currentUserId = /*[[${currentUserId}]]*/ null;
+            const isAuthenticated = /*[[${#authorization.expression('isAuthenticated()')}]]*/ false;
+            const chatStreamEl = document.getElementById('chatStream');
+            const chatInputEl = document.getElementById('chatInput');
+            const chatSendBtnEl = document.getElementById('chatSendBtn');
+            const activityChatEl = document.querySelector('.activity-chat');
+            const activitySidebarEl = document.querySelector('.activity-sidebar');
+            const activityInfoEl = document.querySelector('.activity-info');
+
+            const messageElements = new Map();
+            const messageState = new Map();
+            let stompClient = null;
+            let seenObserver = null;
+
+            function formatTime(isoDate) {
+                const date = new Date(isoDate);
+                return date.toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' });
+            }
+
+            function isOwnMessageState(state) {
+                return state && currentUserId !== null && Number(state.senderId) === Number(currentUserId);
+            }
+
+            function buildStatusValue(state) {
+                if (!isOwnMessageState(state)) {
+                    return { text: '', className: '' };
+                }
+                if (state.seenCount > 0) {
+                    return { text: '✓✓', className: 'is-seen' };
+                }
+                if (state.deliveredCount > 0) {
+                    return { text: '✓✓', className: 'is-delivered' };
+                }
+                return { text: '✓', className: 'is-sent' };
+            }
+
+            function updateBubbleStatus(messageId) {
+                const bubble = messageElements.get(messageId);
+                const state = messageState.get(messageId);
+                if (!bubble || !state) return;
+                const statusEl = bubble.querySelector('.chat-status');
+                if (!statusEl) return;
+
+                const status = buildStatusValue(state);
+                statusEl.textContent = status.text;
+                statusEl.className = `chat-status ${status.className}`.trim();
+            }
+
+            function renderMessage(message) {
+                if (messageElements.has(message.id)) {
+                    return;
+                }
+                const bubble = document.createElement('div');
+                bubble.className = 'chat-bubble';
+                if (currentUserId !== null && Number(message.senderId) === Number(currentUserId)) {
+                    bubble.classList.add('me');
+                }
+                bubble.dataset.messageId = String(message.id);
+                bubble.dataset.createdAt = message.createdAt;
+                bubble.dataset.senderId = String(message.senderId);
+
+                const content = document.createElement('p');
+                content.className = 'mb-0';
+                content.textContent = message.content;
+
+                const footer = document.createElement('div');
+                footer.className = 'chat-footer';
+
+                const time = document.createElement('span');
+                time.className = 'chat-time';
+                time.textContent = formatTime(message.createdAt);
+
+                const status = document.createElement('span');
+                status.className = 'chat-status';
+                footer.appendChild(status);
+
+                const header = document.createElement('div');
+                header.className = 'chat-header';
+
+                const sender = document.createElement('strong');
+                sender.textContent = message.senderName;
+                header.appendChild(sender);
+                header.appendChild(time);
+
+                bubble.appendChild(header);
+                bubble.appendChild(content);
+                bubble.appendChild(footer);
+
+                chatStreamEl.appendChild(bubble);
+                messageElements.set(message.id, bubble);
+                messageState.set(message.id, {
+                    senderId: message.senderId,
+                    deliveredCount: message.deliveredCount || 0,
+                    seenCount: message.seenCount
+                });
+                updateBubbleStatus(message.id);
+
+                const state = messageState.get(message.id);
+                if (seenObserver && state && !isOwnMessageState(state)) {
+                    seenObserver.observe(bubble);
+                }
+            }
+
+            function updateMessageStatus(messageId, deliveredCount, seenCount) {
+                const bubble = messageElements.get(messageId);
+                if (!bubble) return;
+                const state = messageState.get(messageId);
+                if (!state) return;
+                state.deliveredCount = deliveredCount;
+                state.seenCount = seenCount;
+                messageState.set(messageId, state);
+                updateBubbleStatus(messageId);
+            }
+
+            function scrollChatToBottom() {
+                chatStreamEl.scrollTop = chatStreamEl.scrollHeight;
+            }
+
+            function syncChatPanelHeight() {
+                if (!activityChatEl) return;
+                if (window.innerWidth <= 991) {
+                    activityChatEl.style.height = '';
+                    return;
+                }
+
+                const sidebarHeight = activitySidebarEl ? activitySidebarEl.offsetHeight : 0;
+                const infoHeight = activityInfoEl ? activityInfoEl.offsetHeight : 0;
+                const targetHeight = Math.max(620, sidebarHeight, infoHeight);
+                activityChatEl.style.height = `${targetHeight}px`;
+            }
+
+            function publishSeenForVisibleMessages() {
+                if (!stompClient || !stompClient.connected || !chatStreamEl) return;
+                const streamRect = chatStreamEl.getBoundingClientRect();
+                messageElements.forEach((bubble) => {
+                    if (bubble.dataset.seenPublished === '1') return;
+                    if (currentUserId !== null && Number(bubble.dataset.senderId) === Number(currentUserId)) {
+                        bubble.dataset.seenPublished = '1';
+                        return;
+                    }
+                    const bubbleRect = bubble.getBoundingClientRect();
+                    const visibleTop = Math.max(streamRect.top, bubbleRect.top);
+                    const visibleBottom = Math.min(streamRect.bottom, bubbleRect.bottom);
+                    const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+                    const ratio = visibleHeight / Math.max(1, bubbleRect.height);
+                    if (ratio < 0.9) return;
+
+                    stompClient.publish({
+                        destination: `/app/activities/${activityId}/seen`,
+                        body: JSON.stringify({ messageId: Number(bubble.dataset.messageId) })
+                    });
+                    bubble.dataset.seenPublished = '1';
+                });
+            }
+
+            function publishDeliveredForRenderedMessages() {
+                if (!stompClient || !stompClient.connected) return;
+                messageElements.forEach((bubble, messageId) => {
+                    if (bubble.dataset.deliveryPublished === '1') return;
+                    if (currentUserId !== null && Number(bubble.dataset.senderId) === Number(currentUserId)) {
+                        bubble.dataset.deliveryPublished = '1';
+                        return;
+                    }
+                    stompClient.publish({
+                        destination: `/app/activities/${activityId}/delivered`,
+                        body: JSON.stringify({ messageId: Number(messageId) })
+                    });
+                    bubble.dataset.deliveryPublished = '1';
+                });
+            }
+
+            async function loadInitialMessages() {
+                const response = await fetch(`/api/activities/${activityId}/messages?limit=60`, { credentials: 'same-origin' });
+                if (!response.ok) {
+                    return [];
+                }
+                const messages = await response.json();
+                messages.forEach(renderMessage);
+                scrollChatToBottom();
+                return messages;
+            }
+
+            function setupSeenObserver() {
+                if (!chatStreamEl || !window.IntersectionObserver) {
+                    return;
+                }
+                seenObserver = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (!entry.isIntersecting) return;
+                        const bubble = entry.target;
+                        if (bubble.dataset.seenPublished === '1') {
+                            seenObserver.unobserve(bubble);
+                            return;
+                        }
+                        if (!stompClient || !stompClient.connected) return;
+                        if (currentUserId !== null && Number(bubble.dataset.senderId) === Number(currentUserId)) {
+                            bubble.dataset.seenPublished = '1';
+                            seenObserver.unobserve(bubble);
+                            return;
+                        }
+                        stompClient.publish({
+                            destination: `/app/activities/${activityId}/seen`,
+                            body: JSON.stringify({ messageId: Number(bubble.dataset.messageId) })
+                        });
+                        bubble.dataset.seenPublished = '1';
+                        seenObserver.unobserve(bubble);
+                    });
+                }, {
+                    root: chatStreamEl,
+                    threshold: 0.9
+                });
+
+                messageElements.forEach((bubble) => {
+                    if (bubble.dataset.seenPublished === '1') return;
+                    if (currentUserId !== null && Number(bubble.dataset.senderId) === Number(currentUserId)) return;
+                    seenObserver.observe(bubble);
+                });
+            }
+
+            function connectChatSocket() {
+                stompClient = new StompJs.Client({
+                    webSocketFactory: () => new SockJS('/ws'),
+                    reconnectDelay: 5000
+                });
+
+                stompClient.onConnect = () => {
+                    stompClient.subscribe(`/topic/activities/${activityId}`, (frame) => {
+                        const message = JSON.parse(frame.body);
+                        renderMessage(message);
+                        scrollChatToBottom();
+                        publishDeliveredForRenderedMessages();
+                        publishSeenForVisibleMessages();
+                    });
+
+                    stompClient.subscribe(`/topic/activities/${activityId}/status`, (frame) => {
+                        const event = JSON.parse(frame.body);
+                        updateMessageStatus(event.messageId, event.deliveredCount || 0, event.seenCount || 0);
+                    });
+
+                    publishDeliveredForRenderedMessages();
+                    publishSeenForVisibleMessages();
+                };
+
+                stompClient.activate();
+            }
+
+            function wireSendMessage() {
+                if (!chatInputEl || !chatSendBtnEl) return;
+
+                const send = () => {
+                    if (!stompClient || !stompClient.connected) return;
+                    const content = chatInputEl.value.trim();
+                    if (!content) return;
+                    stompClient.publish({
+                        destination: `/app/activities/${activityId}/chat`,
+                        body: JSON.stringify({ content })
+                    });
+                    chatInputEl.value = '';
+                };
+
+                chatSendBtnEl.addEventListener('click', send);
+                chatInputEl.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        send();
+                    }
+                });
+            }
+
+            if (isAuthenticated && activityId > 0) {
+                loadInitialMessages()
+                        .then(() => {
+                            setupSeenObserver();
+                            connectChatSocket();
+                            wireSendMessage();
+                            syncChatPanelHeight();
+                        })
+                        .catch(() => {
+                            // Ignore initial load failures.
+                        });
+            } else {
+                syncChatPanelHeight();
+            }
+
+            window.addEventListener('resize', syncChatPanelHeight);
+            window.addEventListener('load', syncChatPanelHeight);
+            if (chatStreamEl) {
+                chatStreamEl.addEventListener('scroll', publishSeenForVisibleMessages);
+            }
+
+            setTimeout(syncChatPanelHeight, 0);
         </script>
     </body>
 </html>

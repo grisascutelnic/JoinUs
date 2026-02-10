@@ -454,8 +454,9 @@ https://templatemo.com/tm-587-tiya-golf-club
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 620px;
   height: 100%;
+  min-height: 620px;
+  max-height: none;
 }
 
 .activity-info {
@@ -597,12 +598,14 @@ https://templatemo.com/tm-587-tiya-golf-club
   display: none;
   padding: 16px 24px 24px;
   flex: 1;
+  min-height: 0;
 }
 
 .activity-tab-panel.is-active {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
 }
 
 .chat-stream {
@@ -610,6 +613,7 @@ https://templatemo.com/tm-587-tiya-golf-club
   border-radius: 18px;
   padding: 18px;
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -634,6 +638,53 @@ https://templatemo.com/tm-587-tiya-golf-club
   color: var(--p-color);
   margin-top: 6px;
   font-size: 12px;
+}
+
+.chat-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.chat-time {
+  color: var(--p-color);
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.chat-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.chat-status {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -1px;
+  min-width: 16px;
+  text-align: right;
+}
+
+.chat-status.is-sent {
+  color: #7a869a;
+}
+
+.chat-status.is-delivered {
+  color: #7a869a;
+}
+
+.chat-status.is-seen {
+  color: #2c6fb7;
+}
+
+.chat-bubble:not(.me) .chat-status {
+  display: none;
 }
 
 .chat-input {
@@ -738,6 +789,12 @@ https://templatemo.com/tm-587-tiya-golf-club
 
   .activity-sidebar {
     display: block;
+  }
+
+  .activity-chat {
+    height: auto;
+    min-height: 620px;
+    max-height: none;
   }
 }
 

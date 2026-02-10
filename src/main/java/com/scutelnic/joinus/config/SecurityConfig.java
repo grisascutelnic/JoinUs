@@ -2,6 +2,7 @@ package com.scutelnic.joinus.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.http.HttpMethod;
@@ -10,8 +11,12 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+import com.scutelnic.joinus.service.CustomUserDetailsService;
 import org.thymeleaf.extras.springsecurity6.dialect.SpringSecurityDialect;
 
+import javax.sql.DataSource;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -32,11 +37,23 @@ public class SecurityConfig {
             "registerError"
     };
 
+    private final DataSource dataSource;
+    private final CustomUserDetailsService customUserDetailsService;
+    private final String rememberMeKey;
+
+    public SecurityConfig(DataSource dataSource,
+                          CustomUserDetailsService customUserDetailsService,
+                          @Value("${app.security.remember-me.key}") String rememberMeKey) {
+        this.dataSource = dataSource;
+        this.customUserDetailsService = customUserDetailsService;
+        this.rememberMeKey = rememberMeKey;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/activities")
+                        .ignoringRequestMatchers("/activities", "/ws/**")
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
@@ -69,6 +86,13 @@ public class SecurityConfig {
                         })
                         .failureUrl("/?login&error")
                 )
+                .rememberMe(remember -> remember
+                        .rememberMeParameter("remember-me")
+                        .tokenValiditySeconds(60 * 60 * 24 * 30)
+                        .key(rememberMeKey)
+                        .tokenRepository(persistentTokenRepository())
+                        .userDetailsService(customUserDetailsService)
+                )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessHandler((request, response, authentication) -> {
@@ -93,6 +117,13 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
+    }
+
+    @Bean
+    public PersistentTokenRepository persistentTokenRepository() {
+        JdbcTokenRepositoryImpl repository = new JdbcTokenRepositoryImpl();
+        repository.setDataSource(dataSource);
+        return repository;
     }
 
     private static String sanitizeRedirectUrl(String referer) {
