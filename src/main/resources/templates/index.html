@@ -135,38 +135,39 @@ https://templatemo.com/tm-587-tiya-golf-club
                                 </div>
 
                                 <div class="col-lg-4 col-md-6 col-12" th:each="activity : ${recentActivities}">
-                                    <div class="custom-block custom-block-bg activity-card mb-3">
-                                        <div class="row align-items-center">
-                                            <div class="col-4 col-md-3">
-                                                <div class="custom-block-image-wrap">
-                                                    <img th:src="${activity.imageUrl}" class="custom-block-image img-fluid" th:alt="${activity.title}">
+                                        <a th:href="@{/activities/{id}(id=${activity.id})}" class="activity-card-link">
+                                            <div class="custom-block custom-block-bg activity-card mb-3">
+                                                <div class="row align-items-center">
+                                                    <div class="col-4 col-md-3">
+                                                        <div class="custom-block-image-wrap">
+                                                            <img th:src="${activity.imageUrl}" class="custom-block-image img-fluid" th:alt="${activity.title}">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-8 col-md-9">
+                                                        <div class="d-flex align-items-center mb-2">
+                                                            <span class="events-title me-2" th:text="${activity.title}">Activitate</span>
+                                                            <span class="activity-badge" th:text="${activity.category}">Categorie</span>
+                                                        </div>
+                                                        <div class="d-flex flex-wrap">
+                                                            <span class="custom-block-span">Data:</span>
+                                                            <p class="mb-0" th:text="${#temporals.format(activity.date, 'dd MMM yyyy')}">12 Feb 2026</p>
+                                                        </div>
+                                                        <div class="d-flex flex-wrap">
+                                                            <span class="custom-block-span">Ora:</span>
+                                                            <p class="mb-0" th:text="${#temporals.format(activity.time, 'HH:mm')}">19:00</p>
+                                                        </div>
+                                                        <div class="d-flex flex-wrap">
+                                                            <span class="custom-block-span">Locatie:</span>
+                                                            <p class="mb-0" th:text="${activity.location}">Locatie</p>
+                                                        </div>
+                                                        <div class="d-flex flex-wrap">
+                                                            <span class="custom-block-span">Locuri:</span>
+                                                            <p class="mb-0" th:text="${activity.capacity + ' persoane'}">10 persoane</p>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="col-8 col-md-9">
-                                                <div class="d-flex align-items-center mb-2">
-                                                    <a href="event-detail.html" class="events-title me-2" th:text="${activity.title}">Activitate</a>
-                                                    <span class="activity-badge" th:text="${activity.category}">Categorie</span>
-                                                </div>
-                                                <p class="mb-2" th:text="${activity.description}">Descriere activitate</p>
-                                                <div class="d-flex flex-wrap">
-                                                    <span class="custom-block-span">Data:</span>
-                                                    <p class="mb-0" th:text="${#temporals.format(activity.date, 'dd MMM yyyy')}">12 Feb 2026</p>
-                                                </div>
-                                                <div class="d-flex flex-wrap">
-                                                    <span class="custom-block-span">Ora:</span>
-                                                    <p class="mb-0" th:text="${#temporals.format(activity.time, 'HH:mm')}">19:00</p>
-                                                </div>
-                                                <div class="d-flex flex-wrap">
-                                                    <span class="custom-block-span">Locatie:</span>
-                                                    <p class="mb-0" th:text="${activity.location}">Locatie</p>
-                                                </div>
-                                                <div class="d-flex flex-wrap">
-                                                    <span class="custom-block-span">Locuri:</span>
-                                                    <p class="mb-0" th:text="${activity.capacity + ' persoane'}">10 persoane</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                        </a>
                                 </div>
                             </div>
 
@@ -183,7 +184,8 @@ https://templatemo.com/tm-587-tiya-golf-club
             </div>
         </main>
 
-        <a href="/activities/new" class="btn custom-btn create-activity-btn">Creeaza activitate</a>
+        <a href="/activities/new" class="btn custom-btn create-activity-btn" th:if="${#authorization.expression('isAuthenticated()')}">Creeaza activitate</a>
+        <a href="#" class="btn custom-btn create-activity-btn js-auth-link" data-auth-trigger="login" th:if="${#authorization.expression('isAnonymous()')}">Creeaza activitate</a>
 
         <footer th:replace="~{fragments/footer :: footer}"></footer>
 

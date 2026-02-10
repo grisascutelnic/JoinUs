@@ -130,6 +130,16 @@
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                             <input type="text" name="fullName" class="form-control" placeholder="Nume complet" required>
                             <input type="email" name="email" class="form-control" placeholder="Email" required>
+                            <div class="birthdate-field">
+                                <label class="form-label">Data nasterii</label>
+                                <input type="hidden" name="birthDate" id="birthDateInput">
+                                <div class="birthdate-selects">
+                                    <select id="birthDaySelect" class="form-control birthdate-select" aria-label="Ziua nasterii"></select>
+                                    <select id="birthMonthSelect" class="form-control birthdate-select" aria-label="Luna nasterii"></select>
+                                    <select id="birthYearSelect" class="form-control birthdate-select" aria-label="Anul nasterii"></select>
+                                </div>
+                            </div>
+                            <textarea name="bio" class="form-control" placeholder="Descriere scurta" rows="3"></textarea>
                             <input type="password" name="password" class="form-control" placeholder="Parola" minlength="6" required>
                             <input type="password" name="confirmPassword" class="form-control" placeholder="Confirma parola" minlength="6" required>
 

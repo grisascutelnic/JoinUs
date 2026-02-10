@@ -3,6 +3,7 @@ package com.scutelnic.joinus.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -22,6 +23,14 @@ public class User {
 
     @Column(nullable = false)
     private String password;
+
+    private LocalDate birthDate;
+
+    @Column(length = 300)
+    private String bio;
+
+    @Column(length = 500)
+    private String avatarUrl;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

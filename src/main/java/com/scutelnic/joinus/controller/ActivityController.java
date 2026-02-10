@@ -3,12 +3,15 @@ package com.scutelnic.joinus.controller;
 import com.scutelnic.joinus.dto.ActivityDto;
 import com.scutelnic.joinus.service.ActivityService;
 import com.scutelnic.joinus.service.CloudinaryService;
+import com.scutelnic.joinus.repository.UserRepository;
 import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,10 +33,12 @@ public class ActivityController {
 
     private final ActivityService activityService;
     private final CloudinaryService cloudinaryService;
+    private final UserRepository userRepository;
 
-    public ActivityController(ActivityService activityService, CloudinaryService cloudinaryService) {
+    public ActivityController(ActivityService activityService, CloudinaryService cloudinaryService, UserRepository userRepository) {
         this.activityService = activityService;
         this.cloudinaryService = cloudinaryService;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/activities/new")
@@ -43,10 +48,7 @@ public class ActivityController {
         form.setTime(LocalTime.of(18, 0));
         form.setCapacity(10);
         form.setCategory("Comunitate");
-        model.addAttribute("activityForm", form);
-        model.addAttribute("imageOptions", DEFAULT_IMAGES);
-        model.addAttribute("cloudinaryCloudName", cloudinaryService.getCloudName());
-        model.addAttribute("cloudinaryUploadPreset", cloudinaryService.getUploadPreset());
+        prepareFormModel(model, form, "/activities", "Formular activitate", "Completeaza detaliile si alege o imagine.", "Creeaza activitate", false);
         return "create-activity";
     }
 
@@ -55,12 +57,19 @@ public class ActivityController {
             @Valid @ModelAttribute("activityForm") ActivityDto form,
             BindingResult bindingResult,
             Model model,
-            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+            Authentication authentication
     ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login";
+        }
+
+        String email = authentication.getName();
+        var creator = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
+
         if (bindingResult.hasErrors()) {
-            model.addAttribute("imageOptions", DEFAULT_IMAGES);
-            model.addAttribute("cloudinaryCloudName", cloudinaryService.getCloudName());
-            model.addAttribute("cloudinaryUploadPreset", cloudinaryService.getUploadPreset());
+            prepareFormModel(model, form, "/activities", "Formular activitate", "Completeaza detaliile si alege o imagine.", "Creeaza activitate", false);
             return "create-activity";
         }
 
@@ -68,9 +77,7 @@ public class ActivityController {
                 && (form.getImageUrl() == null || form.getImageUrl().isBlank())) {
             if (!cloudinaryService.isConfigured()) {
                 model.addAttribute("imageError", "Încărcarea nu este configurată. Completează Cloudinary în .env.");
-                model.addAttribute("imageOptions", DEFAULT_IMAGES);
-                model.addAttribute("cloudinaryCloudName", cloudinaryService.getCloudName());
-                model.addAttribute("cloudinaryUploadPreset", cloudinaryService.getUploadPreset());
+                prepareFormModel(model, form, "/activities", "Formular activitate", "Completeaza detaliile si alege o imagine.", "Creeaza activitate", false);
                 return "create-activity";
             }
             try {
@@ -95,10 +102,164 @@ public class ActivityController {
                 form.getCapacity(),
                 normalizeCategory(form.getCategory()),
                 normalizeTags(form.getTags()),
-                imageUrl
+                imageUrl,
+                creator
         );
 
         return "redirect:/activities?created";
+    }
+
+    @GetMapping("/activities/{id}/edit")
+    public String editActivityForm(
+            @PathVariable Long id,
+            Authentication authentication,
+            Model model
+    ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login";
+        }
+
+        var activityOpt = activityService.getById(id);
+        if (activityOpt.isEmpty()) {
+            return "redirect:/activities?missing";
+        }
+
+        var activity = activityOpt.get();
+        if (!isOwner(activity.getCreator().getEmail(), authentication.getName())) {
+            return "redirect:/activities/" + id + "?forbidden";
+        }
+
+        ActivityDto form = new ActivityDto();
+        form.setTitle(activity.getTitle());
+        form.setDescription(activity.getDescription());
+        form.setDate(activity.getDate());
+        form.setTime(activity.getTime());
+        form.setLocation(activity.getLocation());
+        form.setAddress(activity.getAddress());
+        form.setCapacity(activity.getCapacity());
+        form.setCategory(activity.getCategory());
+        form.setTags(activity.getTags());
+
+        String existingImage = activity.getImageUrl();
+        if (existingImage != null && !existingImage.isBlank()) {
+            if (DEFAULT_IMAGES.contains(existingImage)) {
+                form.setImageChoice(existingImage);
+            } else {
+                form.setImageUrl(existingImage);
+            }
+        }
+
+        prepareFormModel(
+                model,
+                form,
+                "/activities/" + id + "/edit",
+                "Editare activitate",
+                "Modifica detaliile activitatii fara sa completezi totul din nou.",
+                "Salveaza modificarile",
+                true
+        );
+        return "create-activity";
+    }
+
+    @PostMapping("/activities/{id}/edit")
+    public String editActivity(
+            @PathVariable Long id,
+            @Valid @ModelAttribute("activityForm") ActivityDto form,
+            BindingResult bindingResult,
+            Model model,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+            Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login";
+        }
+
+        var activityOpt = activityService.getById(id);
+        if (activityOpt.isEmpty()) {
+            return "redirect:/activities?missing";
+        }
+
+        var activity = activityOpt.get();
+        if (!isOwner(activity.getCreator().getEmail(), authentication.getName())) {
+            return "redirect:/activities/" + id + "?forbidden";
+        }
+
+        if (bindingResult.hasErrors()) {
+            prepareFormModel(
+                    model,
+                    form,
+                    "/activities/" + id + "/edit",
+                    "Editare activitate",
+                    "Modifica detaliile activitatii fara sa completezi totul din nou.",
+                    "Salveaza modificarile",
+                    true
+            );
+            return "create-activity";
+        }
+
+        if (imageFile != null && !imageFile.isEmpty()
+                && (form.getImageUrl() == null || form.getImageUrl().isBlank())) {
+            if (!cloudinaryService.isConfigured()) {
+                model.addAttribute("imageError", "Încărcarea nu este configurată. Completează Cloudinary în .env.");
+                prepareFormModel(
+                        model,
+                        form,
+                        "/activities/" + id + "/edit",
+                        "Editare activitate",
+                        "Modifica detaliile activitatii fara sa completezi totul din nou.",
+                        "Salveaza modificarile",
+                        true
+                );
+                return "create-activity";
+            }
+            try {
+                String uploadedUrl = cloudinaryService.uploadImage(imageFile);
+                if (uploadedUrl != null && !uploadedUrl.isBlank()) {
+                    form.setImageUrl(uploadedUrl);
+                    form.setImageChoice(null);
+                }
+            } catch (Exception ignored) {
+                // fallback to selected image/default
+            }
+        }
+
+        activity.setTitle(form.getTitle());
+        activity.setDescription(form.getDescription());
+        activity.setDate(form.getDate());
+        activity.setTime(form.getTime());
+        activity.setLocation(form.getLocation());
+        activity.setAddress(form.getAddress());
+        activity.setCapacity(form.getCapacity());
+        activity.setCategory(normalizeCategory(form.getCategory()));
+        activity.setTags(normalizeTags(form.getTags()));
+        activity.setImageUrl(resolveImageUrlForEdit(form.getImageUrl(), form.getImageChoice(), activity.getImageUrl()));
+        activityService.create(activity);
+
+        return "redirect:/activities/" + id + "?updated";
+    }
+
+    private void prepareFormModel(Model model,
+                                  ActivityDto form,
+                                  String formAction,
+                                  String formTitle,
+                                  String formSubtitle,
+                                  String submitLabel,
+                                  boolean editMode) {
+        model.addAttribute("activityForm", form);
+        model.addAttribute("formAction", formAction);
+        model.addAttribute("formTitle", formTitle);
+        model.addAttribute("formSubtitle", formSubtitle);
+        model.addAttribute("submitLabel", submitLabel);
+        model.addAttribute("editMode", editMode);
+        model.addAttribute("imageOptions", DEFAULT_IMAGES);
+        model.addAttribute("cloudinaryCloudName", cloudinaryService.getCloudName());
+        model.addAttribute("cloudinaryUploadPreset", cloudinaryService.getUploadPreset());
+    }
+
+    private boolean isOwner(String creatorEmail, String authenticatedEmail) {
+        return creatorEmail != null
+                && authenticatedEmail != null
+                && creatorEmail.equalsIgnoreCase(authenticatedEmail);
     }
 
     private String resolveImageUrl(String imageUrl, String imageChoice) {
@@ -107,6 +268,19 @@ public class ActivityController {
         }
         if (imageChoice != null && !imageChoice.isBlank()) {
             return imageChoice;
+        }
+        return DEFAULT_IMAGES.get(0);
+    }
+
+    private String resolveImageUrlForEdit(String imageUrl, String imageChoice, String existingImageUrl) {
+        if (imageUrl != null && !imageUrl.isBlank()) {
+            return imageUrl;
+        }
+        if (imageChoice != null && !imageChoice.isBlank()) {
+            return imageChoice;
+        }
+        if (existingImageUrl != null && !existingImageUrl.isBlank()) {
+            return existingImageUrl;
         }
         return DEFAULT_IMAGES.get(0);
     }

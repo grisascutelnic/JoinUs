@@ -32,6 +32,8 @@ public class UserService {
         user.setFullName(request.getFullName());
         user.setEmail(normalizedEmail);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setBirthDate(request.getBirthDate());
+        user.setBio(request.getBio());
 
         userRepository.save(user);
     }

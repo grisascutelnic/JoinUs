@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 public class RegisterRequest {
@@ -24,4 +26,9 @@ public class RegisterRequest {
     @NotBlank
     @Size(min = 6)
     private String confirmPassword;
+
+    private LocalDate birthDate;
+
+    @Size(max = 300)
+    private String bio;
 }

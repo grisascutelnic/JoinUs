@@ -165,5 +165,60 @@
     if (initialAuth) {
       openAuthModal(initialAuth, false);
     }
+
+    function initBirthDateSelects() {
+      var daySelect = document.getElementById('birthDaySelect');
+      var monthSelect = document.getElementById('birthMonthSelect');
+      var yearSelect = document.getElementById('birthYearSelect');
+      var hiddenInput = document.getElementById('birthDateInput');
+      if (!daySelect || !monthSelect || !yearSelect || !hiddenInput) return;
+
+      function addOption(select, value, text) {
+        var option = document.createElement('option');
+        option.value = value;
+        option.textContent = text;
+        select.appendChild(option);
+      }
+
+      daySelect.innerHTML = '';
+      monthSelect.innerHTML = '';
+      yearSelect.innerHTML = '';
+
+      addOption(daySelect, '', 'Zi');
+      addOption(monthSelect, '', 'Luna');
+      addOption(yearSelect, '', 'An');
+
+      for (var day = 1; day <= 31; day++) {
+        addOption(daySelect, String(day).padStart(2, '0'), String(day));
+      }
+      for (var month = 1; month <= 12; month++) {
+        addOption(monthSelect, String(month).padStart(2, '0'), String(month));
+      }
+
+      var currentYear = new Date().getFullYear();
+      var maxYear = currentYear - 12;
+      var minYear = 1900;
+      for (var year = maxYear; year >= minYear; year--) {
+        addOption(yearSelect, String(year), String(year));
+      }
+
+      function syncHidden() {
+        var day = daySelect.value;
+        var month = monthSelect.value;
+        var year = yearSelect.value;
+        if (day && month && year) {
+          hiddenInput.value = year + '-' + month + '-' + day;
+        } else {
+          hiddenInput.value = '';
+        }
+      }
+
+      daySelect.addEventListener('change', syncHidden);
+      monthSelect.addEventListener('change', syncHidden);
+      yearSelect.addEventListener('change', syncHidden);
+      syncHidden();
+    }
+
+    initBirthDateSelects();
   
   })(window.jQuery);

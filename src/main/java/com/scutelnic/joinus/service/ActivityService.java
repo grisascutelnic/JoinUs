@@ -1,6 +1,7 @@
 package com.scutelnic.joinus.service;
 
 import com.scutelnic.joinus.entity.Activity;
+import com.scutelnic.joinus.entity.User;
 import com.scutelnic.joinus.repository.ActivityRepository;
 import org.springframework.stereotype.Service;
 
@@ -8,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
@@ -33,7 +35,8 @@ public class ActivityService {
                            int capacity,
                            String category,
                            String tags,
-                           String imageUrl) {
+                           String imageUrl,
+                           User creator) {
         Activity activity = new Activity();
         activity.setTitle(title);
         activity.setDescription(description);
@@ -45,6 +48,7 @@ public class ActivityService {
         activity.setCategory(category);
         activity.setTags(tags);
         activity.setImageUrl(imageUrl);
+        activity.setCreator(creator);
         activity.setCreatedAt(LocalDateTime.now());
         return create(activity);
     }
@@ -56,5 +60,9 @@ public class ActivityService {
     public List<Activity> getRecent(int limit) {
         return activityRepository.findAll(PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt")))
                 .getContent();
+    }
+
+    public Optional<Activity> getById(Long id) {
+        return activityRepository.findWithCreatorById(id);
     }
 }

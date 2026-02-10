@@ -4,6 +4,7 @@ import com.scutelnic.joinus.service.ActivityService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
 public class PageController {
@@ -49,6 +50,17 @@ public class PageController {
     public String activities(Model model) {
         model.addAttribute("activities", activityService.getAll());
         return "activities";
+    }
+
+    @GetMapping("/activities/{id}")
+    public String activityDetail(@PathVariable Long id, Model model) {
+        return activityService.getById(id)
+                .map(activity -> {
+                    model.addAttribute("activity", activity);
+                    model.addAttribute("otherActivities", activityService.getRecent(6));
+                    return "activity-detail";
+                })
+                .orElse("redirect:/activities?missing");
     }
 
 }

@@ -4,10 +4,10 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <meta name="description" content="Creeaza o activitate noua in comunitatea JoinUs.">
+        <meta name="description" content="Creeaza sau editeaza o activitate in comunitatea JoinUs.">
         <meta name="author" content="">
 
-        <title>Creare activitate - JoinUs</title>
+        <title th:text="${formTitle != null ? formTitle + ' - JoinUs' : 'Creare activitate - JoinUs'}">Creare activitate - JoinUs</title>
 
         <!-- CSS FILES -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,10 +26,10 @@
                 <div class="container">
                     <div class="row justify-content-center">
                         <div class="col-lg-11 col-xl-10 text-center">
-                            <h3 class="mb-3">Formular activitate</h3>
-                            <p class="auth-subtitle">Completeaza detaliile si alege o imagine.</p>
+                            <h3 class="mb-3" th:text="${formTitle != null ? formTitle : 'Formular activitate'}">Formular activitate</h3>
+                            <p class="auth-subtitle" th:text="${formSubtitle != null ? formSubtitle : 'Completeaza detaliile si alege o imagine.'}">Completeaza detaliile si alege o imagine.</p>
 
-                            <form class="custom-form auth-form activity-form-grid" th:action="@{/activities}" th:object="${activityForm}" method="post" role="form" enctype="multipart/form-data">
+                            <form class="custom-form auth-form activity-form-grid" th:attr="action=${formAction != null ? formAction : '/activities'}" th:object="${activityForm}" method="post" role="form" enctype="multipart/form-data">
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 
                                 <div class="activity-card activity-card-left">
@@ -47,10 +47,13 @@
 
                                     <div class="row g-3">
                                         <div class="col-md-6">
-                                            <input type="date" th:field="*{date}" class="form-control" th:attr="min=${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}" required>
+                                            <input type="date" id="date" name="date" class="form-control"
+                                                   th:value="${activityForm.date != null ? #temporals.format(activityForm.date, 'yyyy-MM-dd') : ''}"
+                                                   th:min="${(editMode != null and editMode) ? null : #temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}" required>
                                         </div>
                                         <div class="col-md-6">
-                                            <input type="time" th:field="*{time}" class="form-control" required>
+                                            <input type="time" id="time" name="time" class="form-control"
+                                                   th:value="${activityForm.time != null ? #temporals.format(activityForm.time, 'HH:mm') : ''}" required>
                                         </div>
                                     </div>
 
@@ -87,6 +90,12 @@
                                         <input type="hidden" th:field="*{imageUrl}" id="cloudinaryUrl">
                                         <input type="hidden" th:field="*{imageChoice}" id="imageChoiceValue">
                                         <div class="small text-muted mt-2" id="cloudinaryStatus">Imaginea se va încărca direct în Cloudinary.</div>
+                                        <div class="mt-2" id="cloudinaryExistingWrap"
+                                             th:if="${activityForm.imageUrl != null and !#strings.isEmpty(activityForm.imageUrl)}">
+                                            <div class="small text-muted mb-1">Imagine curenta</div>
+                                            <img th:src="${activityForm.imageUrl}" alt="Imagine curenta activitate"
+                                                 style="width: 140px; height: 90px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(31, 42, 68, 0.16);">
+                                        </div>
                                         <div class="small text-danger mt-2" th:if="${imageError}" th:text="${imageError}"></div>
                                     </div>
 
@@ -123,7 +132,7 @@
                                 </div>
 
                                 <div class="activity-form-actions">
-                                    <button type="submit" class="form-control" id="submitActivity">Creeaza activitate</button>
+                                    <button type="submit" class="form-control" id="submitActivity" th:text="${submitLabel != null ? submitLabel : 'Creeaza activitate'}">Creeaza activitate</button>
                                 </div>
                             </form>
                         </div>
@@ -185,6 +194,12 @@
                     render();
                 };
 
+                const initialTags = (hidden.value || '')
+                    .split(',')
+                    .map((part) => part.trim())
+                    .filter((part) => part.length > 0);
+                initialTags.forEach((tag) => addTag(tag));
+
                 input.addEventListener('keydown', (event) => {
                     if (event.key === 'Enter' || event.key === ',' || event.key === ' ') {
                         event.preventDefault();
@@ -208,6 +223,7 @@
                 const fileInput = document.getElementById('cloudinaryFile');
                 const urlInput = document.getElementById('cloudinaryUrl');
                 const statusEl = document.getElementById('cloudinaryStatus');
+                const existingWrap = document.getElementById('cloudinaryExistingWrap');
                 const imageChoiceRadios = document.querySelectorAll('input[type="radio"][name="imageChoiceRadio"]');
                 const imageChoiceValue = document.getElementById('imageChoiceValue');
                 const form = document.querySelector('form.auth-form');
@@ -258,6 +274,9 @@
                             });
                             if (imageChoiceValue) {
                                 imageChoiceValue.value = '';
+                            }
+                            if (existingWrap) {
+                                existingWrap.style.display = 'none';
                             }
                             updateStatus('Imagine încărcată cu succes.', false);
                         } catch (error) {
@@ -310,6 +329,9 @@
                     radio.addEventListener('change', () => {
                         if (radio.checked && urlInput) {
                             urlInput.value = '';
+                            if (existingWrap) {
+                                existingWrap.style.display = 'none';
+                            }
                         }
                         syncChoiceValue();
                     });
