@@ -6,7 +6,6 @@ import com.scutelnic.joinus.dto.chat.SeenUpdateEvent;
 import com.scutelnic.joinus.dto.chat.SeenUserResponse;
 import com.scutelnic.joinus.entity.Activity;
 import com.scutelnic.joinus.entity.ActivityMessage;
-import com.scutelnic.joinus.entity.ActivityMessageDelivered;
 import com.scutelnic.joinus.entity.ActivityMessageSeen;
 import com.scutelnic.joinus.entity.User;
 import com.scutelnic.joinus.repository.ActivityMessageDeliveredRepository;
@@ -90,12 +89,8 @@ public class ActivityChatService {
         }
 
         Long senderId = message.getSender().getId();
-        if (!senderId.equals(user.getId()) && !deliveredRepository.existsByMessageIdAndUserId(messageId, user.getId())) {
-            ActivityMessageDelivered delivered = new ActivityMessageDelivered();
-            delivered.setMessage(message);
-            delivered.setUser(user);
-            delivered.setDeliveredAt(LocalDateTime.now());
-            deliveredRepository.save(delivered);
+        if (!senderId.equals(user.getId())) {
+            deliveredRepository.insertIgnoreDuplicate(messageId, user.getId(), LocalDateTime.now());
         }
 
         long deliveredCount = deliveredRepository.countByMessageIdAndUserIdNot(messageId, senderId);
@@ -119,20 +114,8 @@ public class ActivityChatService {
         Long senderId = message.getSender().getId();
 
         if (!senderId.equals(user.getId())) {
-            if (!deliveredRepository.existsByMessageIdAndUserId(messageId, user.getId())) {
-                ActivityMessageDelivered delivered = new ActivityMessageDelivered();
-                delivered.setMessage(message);
-                delivered.setUser(user);
-                delivered.setDeliveredAt(LocalDateTime.now());
-                deliveredRepository.save(delivered);
-            }
-            if (!seenRepository.existsByMessageIdAndUserId(messageId, user.getId())) {
-                ActivityMessageSeen seen = new ActivityMessageSeen();
-                seen.setMessage(message);
-                seen.setUser(user);
-                seen.setSeenAt(LocalDateTime.now());
-                seenRepository.save(seen);
-            }
+            deliveredRepository.insertIgnoreDuplicate(messageId, user.getId(), LocalDateTime.now());
+            seenRepository.insertIgnoreDuplicate(messageId, user.getId(), LocalDateTime.now());
         }
 
         long deliveredCount = deliveredRepository.countByMessageIdAndUserIdNot(messageId, senderId);
