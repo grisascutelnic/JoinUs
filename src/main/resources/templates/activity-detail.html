@@ -157,11 +157,68 @@
 
                             <section class="activity-chat" aria-live="polite">
                                 <div class="activity-tabs" role="tablist">
-                                    <button class="activity-tab-btn is-active" type="button" role="tab" aria-selected="true" aria-controls="activity-chat-panel" data-tab="chat">Chat</button>
+                                    <button class="activity-tab-btn is-active" type="button" role="tab" aria-selected="true" aria-controls="activity-info-panel" data-tab="info">Info</button>
+                                    <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-chat-panel" data-tab="chat">Chat</button>
                                     <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-announcements-panel" data-tab="announcements">Anunturi</button>
                                 </div>
 
-                                <div class="activity-tab-panel is-active" id="activity-chat-panel" role="tabpanel" data-panel="chat">
+                                <div class="activity-tab-panel is-active" id="activity-info-panel" role="tabpanel" data-panel="info">
+                                    <div class="activity-info-section">
+                                        <div class="activity-cover" th:style="'background-image: url(' + ${activity.imageUrl} + ');'">
+                                            <span class="activity-capacity" th:text="${activity.capacity + ' locuri'}">12/20 locuri</span>
+                                        </div>
+                                        <h5 class="mb-3">Detalii rapide</h5>
+                                        <p class="activity-quick-description" th:text="${activity.description}">
+                                            Descriere activitate
+                                        </p>
+                                        <div class="activity-info-list">
+                                            <div class="activity-info-item">
+                                                <span>Adresa</span>
+                                                <strong th:text="${activity.address}">Parcul Kiseleff</strong>
+                                            </div>
+                                            <div class="activity-info-item">
+                                                <span>Categorie</span>
+                                                <strong th:text="${activity.category}">Social</strong>
+                                            </div>
+                                            <div class="activity-info-item">
+                                                <span>Taguri</span>
+                                                <strong th:text="${activity.tags}">urban, foto</strong>
+                                            </div>
+                                            <div class="activity-info-item">
+                                                <span>Creat la</span>
+                                                <strong th:text="${#temporals.format(activity.createdAt, 'dd MMM yyyy, HH:mm')}">12 Feb 2026, 10:00</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="activity-info-section" th:if="${activity.creator != null}">
+                                        <div class="profile-header">
+                                            <img th:src="${activity.creator.avatarUrl != null ? activity.creator.avatarUrl : '/images/members/portrait-young-handsome-businessman-wearing-suit-standing-with-crossed-arms-with-isolated-studio-white-background.jpg'}"
+                                                 alt="Profil organizator" class="profile-avatar">
+                                            <div>
+                                                <h5 class="mb-1" th:text="${activity.creator.fullName}">Radu Ionescu</h5>
+                                                <p class="mb-0 profile-subtitle">Organizator</p>
+                                            </div>
+                                        </div>
+                                        <p class="profile-description" th:text="${activity.creator.bio}">Iubesc activitatile in aer liber si imi place sa aduc oamenii impreuna.</p>
+                                        <div class="profile-info-list">
+                                            <div class="profile-info-item" th:if="${activity.creator.birthDate != null}">
+                                                <span>Data nasterii</span>
+                                                <strong th:text="${#temporals.format(activity.creator.birthDate, 'dd MMM yyyy')}">12 Mar 1996</strong>
+                                            </div>
+                                            <div class="profile-info-item" th:if="${activity.creator.birthDate != null}">
+                                                <span>Varsta</span>
+                                                <strong th:text="${T(java.time.Period).between(activity.creator.birthDate, T(java.time.LocalDate).now()).getYears() + ' ani'}">29 ani</strong>
+                                            </div>
+                                            <div class="profile-info-item">
+                                                <span>Email</span>
+                                                <strong th:text="${activity.creator.email}">radu@joinus.ro</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="activity-tab-panel" id="activity-chat-panel" role="tabpanel" data-panel="chat">
                                     <div class="chat-stream" id="chatStream"></div>
 
                                     <div class="chat-input">
@@ -192,61 +249,6 @@
                                 </div>
                             </section>
 
-                            <aside class="activity-info">
-                                <div class="activity-info-card">
-                                    <div class="activity-cover" th:style="'background-image: url(' + ${activity.imageUrl} + ');'">
-                                        <span class="activity-capacity" th:text="${activity.capacity + ' locuri'}">12/20 locuri</span>
-                                    </div>
-                                    <h5 class="mb-3">Detalii rapide</h5>
-                                    <p class="activity-quick-description" th:text="${activity.description}">
-                                        Descriere activitate
-                                    </p>
-                                    <div class="activity-info-list">
-                                        <div class="activity-info-item">
-                                            <span>Adresa</span>
-                                            <strong th:text="${activity.address}">Parcul Kiseleff</strong>
-                                        </div>
-                                        <div class="activity-info-item">
-                                            <span>Categorie</span>
-                                            <strong th:text="${activity.category}">Social</strong>
-                                        </div>
-                                        <div class="activity-info-item">
-                                            <span>Taguri</span>
-                                            <strong th:text="${activity.tags}">urban, foto</strong>
-                                        </div>
-                                        <div class="activity-info-item">
-                                            <span>Creat la</span>
-                                            <strong th:text="${#temporals.format(activity.createdAt, 'dd MMM yyyy, HH:mm')}">12 Feb 2026, 10:00</strong>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="activity-info-card activity-profile-card" th:if="${activity.creator != null}">
-                                    <div class="profile-header">
-                                        <img th:src="${activity.creator.avatarUrl != null ? activity.creator.avatarUrl : '/images/members/portrait-young-handsome-businessman-wearing-suit-standing-with-crossed-arms-with-isolated-studio-white-background.jpg'}"
-                                             alt="Profil organizator" class="profile-avatar">
-                                        <div>
-                                            <h5 class="mb-1" th:text="${activity.creator.fullName}">Radu Ionescu</h5>
-                                            <p class="mb-0 profile-subtitle">Organizator</p>
-                                        </div>
-                                    </div>
-                                    <p class="profile-description" th:text="${activity.creator.bio}">Iubesc activitatile in aer liber si imi place sa aduc oamenii impreuna.</p>
-                                    <div class="profile-info-list">
-                                        <div class="profile-info-item" th:if="${activity.creator.birthDate != null}">
-                                            <span>Data nasterii</span>
-                                            <strong th:text="${#temporals.format(activity.creator.birthDate, 'dd MMM yyyy')}">12 Mar 1996</strong>
-                                        </div>
-                                        <div class="profile-info-item" th:if="${activity.creator.birthDate != null}">
-                                            <span>Varsta</span>
-                                            <strong th:text="${T(java.time.Period).between(activity.creator.birthDate, T(java.time.LocalDate).now()).getYears() + ' ani'}">29 ani</strong>
-                                        </div>
-                                        <div class="profile-info-item">
-                                            <span>Email</span>
-                                            <strong th:text="${activity.creator.email}">radu@joinus.ro</strong>
-                                        </div>
-                                    </div>
-                                </div>
-                            </aside>
                         </div>
                     </div>
                 </section>
@@ -283,6 +285,7 @@
                     if (target === 'chat') {
                         setTimeout(scrollChatToBottom, 0);
                     }
+                    syncChatPanelHeight();
                 });
             });
 
@@ -293,8 +296,6 @@
             const chatInputEl = document.getElementById('chatInput');
             const chatSendBtnEl = document.getElementById('chatSendBtn');
             const activityChatEl = document.querySelector('.activity-chat');
-            const activitySidebarEl = document.querySelector('.activity-sidebar');
-            const activityInfoEl = document.querySelector('.activity-info');
 
             const messageElements = new Map();
             const messageState = new Map();
@@ -412,9 +413,16 @@
                     return;
                 }
 
-                const sidebarHeight = activitySidebarEl ? activitySidebarEl.offsetHeight : 0;
-                const infoHeight = activityInfoEl ? activityInfoEl.offsetHeight : 0;
-                const targetHeight = Math.max(620, sidebarHeight, infoHeight);
+                const activePanel = document.querySelector('.activity-tab-panel.is-active');
+                if (!activePanel || activePanel.dataset.panel !== 'chat') {
+                    activityChatEl.style.height = '';
+                    return;
+                }
+
+                const navbarEl = document.querySelector('.navbar');
+                const navbarHeight = navbarEl ? navbarEl.offsetHeight : 0;
+                const viewportTarget = window.innerHeight - navbarHeight - 110;
+                const targetHeight = Math.max(620, Math.min(900, viewportTarget));
                 activityChatEl.style.height = `${targetHeight}px`;
             }
 

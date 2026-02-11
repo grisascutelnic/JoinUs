@@ -435,8 +435,8 @@ https://templatemo.com/tm-587-tiya-golf-club
 
 .activity-detail-grid {
   display: grid;
-  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr) minmax(300px, 360px);
-  grid-template-areas: "sidebar main info";
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  grid-template-areas: "sidebar main";
   gap: 24px;
   align-items: stretch;
 }
@@ -464,9 +464,8 @@ https://templatemo.com/tm-587-tiya-golf-club
 }
 
 .activity-info {
-  grid-area: info;
-  position: sticky;
-  top: 110px;
+  display: flex;
+  flex-direction: column;
 }
 
 .activity-sidebar-card,
@@ -611,6 +610,24 @@ https://templatemo.com/tm-587-tiya-golf-club
   flex-direction: column;
   height: 100%;
   min-height: 0;
+}
+
+.activity-tab-panel[data-panel="info"] {
+  height: auto;
+}
+
+.activity-info-section {
+  padding: 22px 0;
+  border-bottom: 1px solid rgba(31, 42, 68, 0.08);
+}
+
+.activity-info-section:first-child {
+  padding-top: 0;
+}
+
+.activity-info-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
 .chat-stream {
@@ -768,8 +785,8 @@ https://templatemo.com/tm-587-tiya-golf-club
 
 @media (max-width: 1200px) {
   .activity-detail-grid {
-    grid-template-columns: minmax(210px, 250px) minmax(0, 1fr) minmax(250px, 300px);
-    grid-template-areas: "sidebar main info";
+    grid-template-columns: minmax(210px, 250px) minmax(0, 1fr);
+    grid-template-areas: "sidebar main";
   }
 }
 
@@ -782,14 +799,9 @@ https://templatemo.com/tm-587-tiya-golf-club
   .activity-detail-grid {
     grid-template-columns: 1fr;
     grid-template-areas:
-      "info"
       "summary"
       "main"
       "sidebar";
-  }
-
-  .activity-info {
-    position: static;
   }
 
   .activity-sidebar {
