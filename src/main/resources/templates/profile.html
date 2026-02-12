@@ -18,7 +18,8 @@
                displayAvatar=${profileAvatarUrl != null ? profileAvatarUrl : publicUserAvatarUrl},
                activitiesCount=${createdActivities != null ? #lists.size(createdActivities) : 0},
                reviewCount=${ratingSummary != null ? ratingSummary.reviewsCount : 0},
-               avgRating=${ratingSummary != null ? ratingSummary.averageRating : 0.0}">
+               avgRating=${ratingSummary != null ? ratingSummary.averageRating : 0.0},
+               isOwnProfileView=${profileUser != null or (isOwnPublicProfile != null and isOwnPublicProfile)}">
     <div class="landing-theme profile-theme">
         <header th:replace="~{fragments/navbar :: navbar}"></header>
 
@@ -65,11 +66,29 @@
             <div class="user-details">
                 <div class="name-row">
                     <h1 th:text="${displayUser.fullName}">Nume utilizator</h1>
-                    <a class="edit-btn" th:if="${profileUser != null}" th:href="@{/profile}" aria-label="Profilul meu">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    </a>
-                    <div class="more-options">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                    <div class="more-options dropdown">
+                        <button class="more-options-btn"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                                aria-label="Actiuni profil">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end profile-more-menu">
+                            <li th:if="${isOwnProfileView}">
+                                <a class="dropdown-item" th:href="@{/profile/edit}">
+                                    <i class="bi bi-pencil-square me-2"></i>Editeaza profilul
+                                </a>
+                            </li>
+                            <li th:unless="${isOwnProfileView}">
+                                <button class="dropdown-item text-danger"
+                                        type="button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#reportProfileModal">
+                                    <i class="bi bi-flag me-2"></i>Raporteaza
+                                </button>
+                            </li>
+                        </ul>
                     </div>
                 </div>
                 <div class="location-row">
@@ -126,6 +145,23 @@
                         </div>
                     </div>
                 </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="reportProfileModal" tabindex="-1" aria-labelledby="reportProfileModalLabel" aria-hidden="true" th:if="${!isOwnProfileView}">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reportProfileModalLabel">Raporteaza utilizator</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Inchide"></button>
+                </div>
+                <div class="modal-body">
+                    Raportarea este pregatita in interfata. Trimiterea efectiva va fi activata in urmatorul pas.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn custom-btn" data-bs-dismiss="modal">Am inteles</button>
+                </div>
             </div>
         </div>
     </div>

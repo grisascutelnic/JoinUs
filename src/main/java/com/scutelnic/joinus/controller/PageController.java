@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpSession;
+import java.time.LocalDate;
 
 @Controller
 public class PageController {
@@ -62,6 +63,48 @@ public class PageController {
                           @RequestParam(required = false) String completeProfile,
                           @RequestParam(required = false) String birthDateRequired,
                           @RequestParam(required = false) String errorBirthDateRequired) {
+        if (completeProfile != null || birthDateRequired != null || errorBirthDateRequired != null) {
+            StringBuilder redirect = new StringBuilder("redirect:/profile/edit");
+            if (birthDateRequired != null || errorBirthDateRequired != null || completeProfile != null) {
+                redirect.append("?");
+                boolean hasPrev = false;
+                if (completeProfile != null) {
+                    redirect.append("completeProfile");
+                    hasPrev = true;
+                }
+                if (birthDateRequired != null) {
+                    if (hasPrev) {
+                        redirect.append("&");
+                    }
+                    redirect.append("birthDateRequired");
+                    hasPrev = true;
+                }
+                if (errorBirthDateRequired != null) {
+                    if (hasPrev) {
+                        redirect.append("&");
+                    }
+                    redirect.append("errorBirthDateRequired");
+                }
+            }
+            return redirect.toString();
+        }
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/?login";
+        }
+
+        User user = userService.findByEmail(authentication.getName())
+                .orElseThrow(() -> new IllegalArgumentException("Utilizatorul nu exista."));
+        populateOwnProfileModel(model, user, false);
+        return "profile";
+    }
+
+    @GetMapping("/profile/edit")
+    public String editProfile(Model model,
+                              Authentication authentication,
+                              @RequestParam(required = false) String completeProfile,
+                              @RequestParam(required = false) String birthDateRequired,
+                              @RequestParam(required = false) String errorBirthDateRequired) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return "redirect:/?login";
         }
@@ -71,22 +114,8 @@ public class PageController {
         boolean mustCompleteBirthDate = user.getBirthDate() == null
                 && (completeProfile != null || birthDateRequired != null || errorBirthDateRequired != null);
 
-        model.addAttribute("profileUser", user);
-        model.addAttribute("profileAvatarUrl", resolveAvatarUrl(user));
-        model.addAttribute("ratingSummary", userReviewService.getSummary(user.getId()));
-        model.addAttribute("birthDateRequired", mustCompleteBirthDate);
-        model.addAttribute("createdActivities", activityService.getByCreator(user.getId()));
-        if (!model.containsAttribute("profileForm")) {
-            model.addAttribute("profileForm", toProfileUpdateRequest(user));
-        } else {
-            Object profileForm = model.getAttribute("profileForm");
-            if (profileForm instanceof ProfileUpdateRequest request
-                    && request.getBirthDate() == null
-                    && user.getBirthDate() != null) {
-                request.setBirthDate(user.getBirthDate());
-            }
-        }
-        return "profile";
+        populateOwnProfileModel(model, user, mustCompleteBirthDate);
+        return "profile-edit";
     }
 
     @PostMapping("/profile")
@@ -102,23 +131,23 @@ public class PageController {
 
         if (requireBirthDate && profileForm.getBirthDate() == null) {
             redirectAttributes.addFlashAttribute("profileForm", profileForm);
-            return "redirect:/profile?birthDateRequired&errorBirthDateRequired";
+            return "redirect:/profile/edit?birthDateRequired&errorBirthDateRequired";
         }
 
         if (bindingResult.hasErrors()) {
             redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.profileForm", bindingResult);
             redirectAttributes.addFlashAttribute("profileForm", profileForm);
             if (requireBirthDate) {
-                return "redirect:/profile?birthDateRequired&errorBirthDateRequired";
+                return "redirect:/profile/edit?birthDateRequired&errorBirthDateRequired";
             }
-            return "redirect:/profile?error";
+            return "redirect:/profile/edit?error";
         }
 
         if (imageFile != null && !imageFile.isEmpty()) {
             if (!cloudinaryService.isConfigured()) {
                 redirectAttributes.addFlashAttribute("profileForm", profileForm);
                 redirectAttributes.addFlashAttribute("profileImageError", "Upload-ul avatarului nu este configurat.");
-                return "redirect:/profile?error";
+                return "redirect:/profile/edit?error";
             }
             try {
                 String uploadedUrl = cloudinaryService.uploadImage(imageFile);
@@ -128,16 +157,16 @@ public class PageController {
             } catch (Exception ex) {
                 redirectAttributes.addFlashAttribute("profileForm", profileForm);
                 redirectAttributes.addFlashAttribute("profileImageError", "Nu am putut incarca avatarul. Incearca din nou.");
-                return "redirect:/profile?error";
+                return "redirect:/profile/edit?error";
             }
         }
 
         try {
             userService.updateProfile(authentication.getName(), profileForm);
-            return "redirect:/profile?updated";
+            return "redirect:/profile/edit?updated";
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("profileForm", profileForm);
-            return "redirect:/profile?error";
+            return "redirect:/profile/edit?error";
         }
     }
 
@@ -317,6 +346,30 @@ public class PageController {
             return null;
         }
         return user.getAvatarUrl();
+    }
+
+    private void populateOwnProfileModel(Model model, User user, boolean mustCompleteBirthDate) {
+        model.addAttribute("profileUser", user);
+        model.addAttribute("profileAvatarUrl", resolveAvatarUrl(user));
+        model.addAttribute("ratingSummary", userReviewService.getSummary(user.getId()));
+        model.addAttribute("birthDateRequired", mustCompleteBirthDate);
+        model.addAttribute("currentYear", LocalDate.now().getYear());
+        model.addAttribute("createdActivities", activityService.getByCreator(user.getId()));
+        if (!model.containsAttribute("profileForm")) {
+            model.addAttribute("profileForm", toProfileUpdateRequest(user));
+        } else {
+            Object profileForm = model.getAttribute("profileForm");
+            if (profileForm instanceof ProfileUpdateRequest request
+                    && request.getBirthDate() == null
+                    && user.getBirthDate() != null) {
+                request.setBirthDate(user.getBirthDate());
+            }
+            if (profileForm instanceof ProfileUpdateRequest request
+                    && (request.getAvatarUrl() == null || request.getAvatarUrl().isBlank())
+                    && user.getAvatarUrl() != null) {
+                request.setAvatarUrl(user.getAvatarUrl());
+            }
+        }
     }
 
     private ProfileUpdateRequest toProfileUpdateRequest(User user) {

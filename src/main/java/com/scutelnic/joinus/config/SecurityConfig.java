@@ -211,7 +211,7 @@ public class SecurityConfig {
         }
 
         if (upsertResult.created()) {
-            response.sendRedirect("/profile?completeProfile&birthDateRequired");
+            response.sendRedirect("/profile/edit?completeProfile&birthDateRequired");
             return;
         }
 

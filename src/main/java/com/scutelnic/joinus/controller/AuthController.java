@@ -114,7 +114,7 @@ public class AuthController {
                     context
             );
 
-            return "redirect:/profile?completeProfile&birthDateRequired";
+            return "redirect:/profile/edit?completeProfile&birthDateRequired";
         } catch (IllegalArgumentException ex) {
             return "redirect:/?register&registerError";
         }

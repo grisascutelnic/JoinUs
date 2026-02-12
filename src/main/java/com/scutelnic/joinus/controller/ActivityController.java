@@ -47,7 +47,7 @@ public class ActivityController {
             return "redirect:/?login";
         }
         if (!hasBirthDate(authentication.getName())) {
-            return "redirect:/profile?birthDateRequired&fromActivity";
+            return "redirect:/profile/edit?birthDateRequired&fromActivity";
         }
 
         ActivityDto form = new ActivityDto();
@@ -73,7 +73,7 @@ public class ActivityController {
 
         String email = authentication.getName();
         if (!hasBirthDate(email)) {
-            return "redirect:/profile?birthDateRequired&fromActivity";
+            return "redirect:/profile/edit?birthDateRequired&fromActivity";
         }
 
         var creator = userRepository.findByEmail(email)
