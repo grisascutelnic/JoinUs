@@ -73,6 +73,7 @@ public class PageController {
 
         model.addAttribute("profileUser", user);
         model.addAttribute("profileAvatarUrl", resolveAvatarUrl(user));
+        model.addAttribute("ratingSummary", userReviewService.getSummary(user.getId()));
         model.addAttribute("birthDateRequired", mustCompleteBirthDate);
         model.addAttribute("createdActivities", activityService.getByCreator(user.getId()));
         if (!model.containsAttribute("profileForm")) {
@@ -191,7 +192,7 @@ public class PageController {
             });
         }
 
-        return "user-profile";
+        return "profile";
     }
 
     @PostMapping("/users/{id}/reviews")
