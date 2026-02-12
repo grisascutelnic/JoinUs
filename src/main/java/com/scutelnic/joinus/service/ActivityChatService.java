@@ -36,20 +36,24 @@ public class ActivityChatService {
     private final ActivityMessageRepository messageRepository;
     private final ActivityMessageDeliveredRepository deliveredRepository;
     private final ActivityMessageSeenRepository seenRepository;
+    private final ActivityParticipationService participationService;
 
     public ActivityChatService(ActivityRepository activityRepository,
                                UserRepository userRepository,
                                ActivityMessageRepository messageRepository,
                                ActivityMessageDeliveredRepository deliveredRepository,
-                               ActivityMessageSeenRepository seenRepository) {
+                               ActivityMessageSeenRepository seenRepository,
+                               ActivityParticipationService participationService) {
         this.activityRepository = activityRepository;
         this.userRepository = userRepository;
         this.messageRepository = messageRepository;
         this.deliveredRepository = deliveredRepository;
         this.seenRepository = seenRepository;
+        this.participationService = participationService;
     }
 
-    public List<ChatMessageResponse> getRecentMessages(Long activityId, int requestedLimit) {
+    public List<ChatMessageResponse> getRecentMessages(Long activityId, int requestedLimit, String userEmail) {
+        requireChatAccess(activityId, userEmail);
         requireActivity(activityId);
         int limit = Math.max(1, Math.min(MAX_HISTORY_LIMIT, requestedLimit));
         List<ActivityMessage> messages = messageRepository.findByActivityIdOrderByCreatedAtDescIdDesc(
@@ -64,6 +68,7 @@ public class ActivityChatService {
 
     public ChatMessageResponse sendMessage(Long activityId, String senderEmail, String content) {
         String normalizedContent = normalizeContent(content);
+        requireChatAccess(activityId, senderEmail);
         Activity activity = requireActivity(activityId);
         User sender = requireUserByEmail(senderEmail);
 
@@ -80,6 +85,7 @@ public class ActivityChatService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "messageId is required");
         }
 
+        requireChatAccess(activityId, userEmail);
         User user = requireUserByEmail(userEmail);
         ActivityMessage message = messageRepository.findWithSenderAndActivityById(messageId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Message not found"));
@@ -103,6 +109,7 @@ public class ActivityChatService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "messageId is required");
         }
 
+        requireChatAccess(activityId, userEmail);
         User user = requireUserByEmail(userEmail);
         ActivityMessage message = messageRepository.findWithSenderAndActivityById(messageId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Message not found"));
@@ -123,13 +130,14 @@ public class ActivityChatService {
         return new SeenUpdateEvent(messageId, deliveredCount, seenCount);
     }
 
-    public List<SeenUserResponse> getSeenUsers(Long messageId) {
+    public List<SeenUserResponse> getSeenUsers(Long messageId, String userEmail) {
         if (messageId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "messageId is required");
         }
 
         ActivityMessage message = messageRepository.findWithSenderAndActivityById(messageId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Message not found"));
+        requireChatAccess(message.getActivity().getId(), userEmail);
 
         Long senderId = message.getSender().getId();
         return seenRepository.findByMessageIdAndUserIdNotOrderBySeenAtAsc(message.getId(), senderId)
@@ -142,7 +150,8 @@ public class ActivityChatService {
                 .toList();
     }
 
-    public List<MessageSeenSummaryResponse> getSeenUsersForMessages(Long activityId, List<Long> messageIds) {
+    public List<MessageSeenSummaryResponse> getSeenUsersForMessages(Long activityId, List<Long> messageIds, String userEmail) {
+        requireChatAccess(activityId, userEmail);
         requireActivity(activityId);
         if (messageIds == null || messageIds.isEmpty()) {
             return List.of();
@@ -228,5 +237,11 @@ public class ActivityChatService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Message is too long");
         }
         return normalized;
+    }
+
+    private void requireChatAccess(Long activityId, String userEmail) {
+        if (!participationService.canAccessChat(activityId, userEmail)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Nu ai acces la chat pentru aceasta activitate");
+        }
     }
 }

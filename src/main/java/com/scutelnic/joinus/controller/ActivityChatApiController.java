@@ -30,14 +30,14 @@ public class ActivityChatApiController {
                                                  @RequestParam(defaultValue = "50") int limit,
                                                  Authentication authentication) {
         requireAuthenticated(authentication);
-        return activityChatService.getRecentMessages(activityId, limit);
+        return activityChatService.getRecentMessages(activityId, limit, authentication.getName());
     }
 
     @GetMapping("/messages/{messageId}/seen")
     public List<SeenUserResponse> getSeenUsers(@PathVariable Long messageId,
                                                Authentication authentication) {
         requireAuthenticated(authentication);
-        return activityChatService.getSeenUsers(messageId);
+        return activityChatService.getSeenUsers(messageId, authentication.getName());
     }
 
     @GetMapping("/activities/{activityId}/messages/seen")
@@ -45,7 +45,7 @@ public class ActivityChatApiController {
                                                                     @RequestParam List<Long> messageIds,
                                                                     Authentication authentication) {
         requireAuthenticated(authentication);
-        return activityChatService.getSeenUsersForMessages(activityId, messageIds);
+        return activityChatService.getSeenUsersForMessages(activityId, messageIds, authentication.getName());
     }
 
     private void requireAuthenticated(Authentication authentication) {

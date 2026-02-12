@@ -88,7 +88,6 @@
                                         <label class="form-label">Încarcă o imagine (Cloudinary)</label>
                                         <input type="file" id="cloudinaryFile" name="imageFile" accept="image/*" class="form-control">
                                         <input type="hidden" th:field="*{imageUrl}" id="cloudinaryUrl">
-                                        <input type="hidden" th:field="*{imageChoice}" id="imageChoiceValue">
                                         <div class="small text-muted mt-2" id="cloudinaryStatus">Imaginea se va încărca direct în Cloudinary.</div>
                                         <div class="mt-2" id="cloudinaryExistingWrap"
                                              th:if="${activityForm.imageUrl != null and !#strings.isEmpty(activityForm.imageUrl)}">
@@ -104,7 +103,7 @@
                                         <div class="row g-2">
                                             <div class="col-6" th:each="img : ${imageOptions}">
                                                 <label class="d-flex align-items-center gap-2 p-2 border rounded-3 w-100">
-                                                    <input class="form-check-input" type="radio" name="imageChoiceRadio" th:value="${img}" th:checked="${activityForm.imageChoice == img}">
+                                                    <input class="form-check-input" type="radio" th:field="*{imageChoice}" th:value="${img}">
                                                     <img th:src="${img}" alt="Imagine activitate" class="rounded" style="width: 56px; height: 56px; object-fit: cover;">
                                                     <span class="small">Alege</span>
                                                 </label>
@@ -224,8 +223,7 @@
                 const urlInput = document.getElementById('cloudinaryUrl');
                 const statusEl = document.getElementById('cloudinaryStatus');
                 const existingWrap = document.getElementById('cloudinaryExistingWrap');
-                const imageChoiceRadios = document.querySelectorAll('input[type="radio"][name="imageChoiceRadio"]');
-                const imageChoiceValue = document.getElementById('imageChoiceValue');
+                const imageChoiceRadios = document.querySelectorAll('input[type="radio"][name="imageChoice"]');
                 const form = document.querySelector('form.auth-form');
                 const submitBtn = document.getElementById('submitActivity');
                 let isUploading = false;
@@ -272,9 +270,6 @@
                             imageChoiceRadios.forEach((radio) => {
                                 radio.checked = false;
                             });
-                            if (imageChoiceValue) {
-                                imageChoiceValue.value = '';
-                            }
                             if (existingWrap) {
                                 existingWrap.style.display = 'none';
                             }
@@ -310,30 +305,15 @@
                         }
                     });
                 }
-            })();
-        </script>
-        <script>
-            (function () {
-                const urlInput = document.getElementById('cloudinaryUrl');
-                const imageChoiceRadios = document.querySelectorAll('input[type="radio"][name="imageChoiceRadio"]');
-                const imageChoiceValue = document.getElementById('imageChoiceValue');
-                const syncChoiceValue = () => {
-                    if (!imageChoiceValue) {
-                        return;
-                    }
-                    const checked = document.querySelector('input[type="radio"][name="imageChoiceRadio"]:checked');
-                    imageChoiceValue.value = checked ? checked.value : '';
-                };
-                syncChoiceValue();
+
                 imageChoiceRadios.forEach((radio) => {
                     radio.addEventListener('change', () => {
                         if (radio.checked && urlInput) {
                             urlInput.value = '';
-                            if (existingWrap) {
-                                existingWrap.style.display = 'none';
-                            }
                         }
-                        syncChoiceValue();
+                        if (existingWrap) {
+                            existingWrap.style.display = 'none';
+                        }
                     });
                 });
             })();

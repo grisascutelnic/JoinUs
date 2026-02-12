@@ -42,7 +42,14 @@ public class ActivityController {
     }
 
     @GetMapping("/activities/new")
-    public String createActivityForm(Model model) {
+    public String createActivityForm(Model model, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/?login";
+        }
+        if (!hasBirthDate(authentication.getName())) {
+            return "redirect:/profile?birthDateRequired&fromActivity";
+        }
+
         ActivityDto form = new ActivityDto();
         form.setDate(LocalDate.now());
         form.setTime(LocalTime.of(18, 0));
@@ -65,6 +72,10 @@ public class ActivityController {
         }
 
         String email = authentication.getName();
+        if (!hasBirthDate(email)) {
+            return "redirect:/profile?birthDateRequired&fromActivity";
+        }
+
         var creator = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
 
@@ -314,6 +325,12 @@ public class ActivityController {
             }
         }
         return builder.toString();
+    }
+
+    private boolean hasBirthDate(String email) {
+        return userRepository.findByEmail(email)
+                .map(user -> user.getBirthDate() != null)
+                .orElse(false);
     }
 
 }

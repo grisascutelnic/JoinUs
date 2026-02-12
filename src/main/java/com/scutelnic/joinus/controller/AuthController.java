@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 @Controller
 public class AuthController {
 
+    public static final String OAUTH2_REDIRECT_TARGET_SESSION_KEY = "oauth2_redirect_target";
+
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
 
@@ -74,6 +76,19 @@ public class AuthController {
         return redirect.toString();
     }
 
+    @GetMapping("/auth/google")
+    public String googleAuthStart(HttpServletRequest request) {
+        String target = sanitizeRedirectUrl(request.getHeader("Referer"));
+        if (target != null
+                && !target.startsWith("/login")
+                && !target.startsWith("/register")
+                && !target.startsWith("/oauth2")
+                && !target.startsWith("/auth/google")) {
+            request.getSession(true).setAttribute(OAUTH2_REDIRECT_TARGET_SESSION_KEY, target);
+        }
+        return "redirect:/oauth2/authorization/google";
+    }
+
     @PostMapping("/register")
     public String registerSubmit(
             @Valid @ModelAttribute("registerRequest") RegisterRequest registerRequest,
@@ -99,8 +114,7 @@ public class AuthController {
                     context
             );
 
-            String target = sanitizeRedirectUrl(request.getHeader("Referer"));
-            return "redirect:" + (target != null ? target : "/");
+            return "redirect:/profile?completeProfile&birthDateRequired";
         } catch (IllegalArgumentException ex) {
             return "redirect:/?register&registerError";
         }

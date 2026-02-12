@@ -65,4 +65,8 @@ public class ActivityService {
     public Optional<Activity> getById(Long id) {
         return activityRepository.findWithCreatorById(id);
     }
+
+    public List<Activity> getByCreator(Long creatorId) {
+        return activityRepository.findAllByCreatorIdOrderByCreatedAtDesc(creatorId);
+    }
 }

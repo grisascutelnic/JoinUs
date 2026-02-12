@@ -1,22 +1,53 @@
 package com.scutelnic.joinus.controller;
 
+import com.scutelnic.joinus.dto.ProfileUpdateRequest;
+import com.scutelnic.joinus.dto.UserReviewRequest;
+import com.scutelnic.joinus.dto.UserReviewSummary;
+import com.scutelnic.joinus.entity.User;
+import com.scutelnic.joinus.entity.ParticipationStatus;
 import com.scutelnic.joinus.service.ActivityService;
+import com.scutelnic.joinus.service.ActivityParticipationService;
+import com.scutelnic.joinus.service.CloudinaryService;
+import com.scutelnic.joinus.service.UserReviewService;
+import com.scutelnic.joinus.service.UserService;
 import com.scutelnic.joinus.repository.UserRepository;
+import jakarta.validation.Valid;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class PageController {
 
     private final ActivityService activityService;
+    private final ActivityParticipationService participationService;
     private final UserRepository userRepository;
+    private final UserService userService;
+    private final UserReviewService userReviewService;
+    private final CloudinaryService cloudinaryService;
 
-    public PageController(ActivityService activityService, UserRepository userRepository) {
+    public PageController(ActivityService activityService,
+                          ActivityParticipationService participationService,
+                          UserRepository userRepository,
+                          UserService userService,
+                          UserReviewService userReviewService,
+                          CloudinaryService cloudinaryService) {
         this.activityService = activityService;
+        this.participationService = participationService;
         this.userRepository = userRepository;
+        this.userService = userService;
+        this.userReviewService = userReviewService;
+        this.cloudinaryService = cloudinaryService;
     }
 
     @GetMapping({"/", "/index"})
@@ -26,8 +57,87 @@ public class PageController {
     }
 
     @GetMapping("/profile")
-    public String profile() {
+    public String profile(Model model,
+                          Authentication authentication,
+                          @RequestParam(required = false) String completeProfile,
+                          @RequestParam(required = false) String birthDateRequired,
+                          @RequestParam(required = false) String errorBirthDateRequired) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/?login";
+        }
+
+        User user = userService.findByEmail(authentication.getName())
+                .orElseThrow(() -> new IllegalArgumentException("Utilizatorul nu exista."));
+        boolean mustCompleteBirthDate = user.getBirthDate() == null
+                && (completeProfile != null || birthDateRequired != null || errorBirthDateRequired != null);
+
+        model.addAttribute("profileUser", user);
+        model.addAttribute("profileAvatarUrl", resolveAvatarUrl(user));
+        model.addAttribute("birthDateRequired", mustCompleteBirthDate);
+        model.addAttribute("createdActivities", activityService.getByCreator(user.getId()));
+        if (!model.containsAttribute("profileForm")) {
+            model.addAttribute("profileForm", toProfileUpdateRequest(user));
+        } else {
+            Object profileForm = model.getAttribute("profileForm");
+            if (profileForm instanceof ProfileUpdateRequest request
+                    && request.getBirthDate() == null
+                    && user.getBirthDate() != null) {
+                request.setBirthDate(user.getBirthDate());
+            }
+        }
         return "profile";
+    }
+
+    @PostMapping("/profile")
+    public String updateProfile(@Valid @ModelAttribute("profileForm") ProfileUpdateRequest profileForm,
+                                BindingResult bindingResult,
+                                Authentication authentication,
+                                @RequestParam(defaultValue = "false") boolean requireBirthDate,
+                                @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+                                RedirectAttributes redirectAttributes) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/?login";
+        }
+
+        if (requireBirthDate && profileForm.getBirthDate() == null) {
+            redirectAttributes.addFlashAttribute("profileForm", profileForm);
+            return "redirect:/profile?birthDateRequired&errorBirthDateRequired";
+        }
+
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.profileForm", bindingResult);
+            redirectAttributes.addFlashAttribute("profileForm", profileForm);
+            if (requireBirthDate) {
+                return "redirect:/profile?birthDateRequired&errorBirthDateRequired";
+            }
+            return "redirect:/profile?error";
+        }
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            if (!cloudinaryService.isConfigured()) {
+                redirectAttributes.addFlashAttribute("profileForm", profileForm);
+                redirectAttributes.addFlashAttribute("profileImageError", "Upload-ul avatarului nu este configurat.");
+                return "redirect:/profile?error";
+            }
+            try {
+                String uploadedUrl = cloudinaryService.uploadImage(imageFile);
+                if (uploadedUrl != null && !uploadedUrl.isBlank()) {
+                    profileForm.setAvatarUrl(uploadedUrl);
+                }
+            } catch (Exception ex) {
+                redirectAttributes.addFlashAttribute("profileForm", profileForm);
+                redirectAttributes.addFlashAttribute("profileImageError", "Nu am putut incarca avatarul. Incearca din nou.");
+                return "redirect:/profile?error";
+            }
+        }
+
+        try {
+            userService.updateProfile(authentication.getName(), profileForm);
+            return "redirect:/profile?updated";
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("profileForm", profileForm);
+            return "redirect:/profile?error";
+        }
     }
 
     @GetMapping("/calendar")
@@ -45,6 +155,74 @@ public class PageController {
         return "map";
     }
 
+    @GetMapping("/users/{id}")
+    public String userProfile(@PathVariable Long id, Model model, Authentication authentication) {
+        User user = userRepository.findById(id)
+                .orElse(null);
+        if (user == null) {
+            return "redirect:/activities?missingUser";
+        }
+
+        UserReviewSummary ratingSummary = userReviewService.getSummary(user.getId());
+        model.addAttribute("publicUser", user);
+        model.addAttribute("publicUserAvatarUrl", resolveAvatarUrl(user));
+        model.addAttribute("createdActivities", activityService.getByCreator(user.getId()));
+        model.addAttribute("ratingSummary", ratingSummary);
+        model.addAttribute("userReviews", userReviewService.getRecentForUser(user.getId(), 10));
+        model.addAttribute("canLeaveReview", false);
+        model.addAttribute("alreadyReviewed", false);
+        model.addAttribute("isOwnPublicProfile", false);
+        model.addAttribute("isAuthenticatedUser", isAuthenticated(authentication));
+
+        if (!model.containsAttribute("reviewForm")) {
+            UserReviewRequest reviewRequest = new UserReviewRequest();
+            reviewRequest.setRating(5);
+            model.addAttribute("reviewForm", reviewRequest);
+        }
+
+        if (isAuthenticated(authentication)) {
+            userService.findByEmail(authentication.getName()).ifPresent(currentUser -> {
+                boolean ownProfile = currentUser.getId().equals(user.getId());
+                boolean alreadyReviewed = !ownProfile && userReviewService.hasReviewed(currentUser.getId(), user.getId());
+
+                model.addAttribute("isOwnPublicProfile", ownProfile);
+                model.addAttribute("alreadyReviewed", alreadyReviewed);
+                model.addAttribute("canLeaveReview", !ownProfile && !alreadyReviewed);
+            });
+        }
+
+        return "user-profile";
+    }
+
+    @PostMapping("/users/{id}/reviews")
+    public String addUserReview(@PathVariable Long id,
+                                @Valid @ModelAttribute("reviewForm") UserReviewRequest reviewForm,
+                                BindingResult bindingResult,
+                                Authentication authentication,
+                                RedirectAttributes redirectAttributes) {
+        if (!isAuthenticated(authentication)) {
+            redirectAttributes.addFlashAttribute("reviewError", "Autentifica-te pentru a lasa rating si feedback.");
+            return "redirect:/users/" + id + "#section_user_reviews";
+        }
+
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.reviewForm", bindingResult);
+            redirectAttributes.addFlashAttribute("reviewForm", reviewForm);
+            redirectAttributes.addFlashAttribute("reviewError", "Verifica rating-ul si feedback-ul introdus.");
+            return "redirect:/users/" + id + "#section_user_reviews";
+        }
+
+        try {
+            userReviewService.submitReview(authentication.getName(), id, reviewForm);
+            redirectAttributes.addFlashAttribute("reviewSuccess", "Rating-ul si feedback-ul au fost salvate.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("reviewForm", reviewForm);
+            redirectAttributes.addFlashAttribute("reviewError", ex.getMessage());
+        }
+
+        return "redirect:/users/" + id + "#section_user_reviews";
+    }
+
     @GetMapping("/forum")
     public String forum() {
         return "forum";
@@ -57,18 +235,102 @@ public class PageController {
     }
 
     @GetMapping("/activities/{id}")
-    public String activityDetail(@PathVariable Long id, Model model, Authentication authentication) {
+    public String activityDetail(@PathVariable Long id, Model model, Authentication authentication, HttpSession session) {
         return activityService.getById(id)
                 .map(activity -> {
                     model.addAttribute("activity", activity);
                     model.addAttribute("otherActivities", activityService.getRecent(6));
+                    model.addAttribute("canAccessChat", false);
+                    model.addAttribute("isActivityCreator", false);
+                    model.addAttribute("canRequestParticipation", false);
+                    model.addAttribute("participationStatus", null);
+                    model.addAttribute("pendingParticipationRequests", java.util.List.of());
+                    model.addAttribute("approvedParticipationRequests", java.util.List.of());
+                    String participationMessage = null;
+                    String participationMessageType = null;
                     if (authentication != null && authentication.isAuthenticated()) {
-                        userRepository.findByEmail(authentication.getName())
+                        String email = authentication.getName();
+                        userRepository.findByEmail(email)
                                 .ifPresent(user -> model.addAttribute("currentUserId", user.getId()));
+                        boolean canAccessChat = participationService.canAccessChat(id, email);
+                        boolean isCreator = participationService.isCreator(id, email);
+                        boolean canRequestParticipation = participationService.canRequestParticipation(id, email);
+                        ParticipationStatus participationStatus = participationService.getParticipationStatus(id, email);
+                        model.addAttribute("canAccessChat", canAccessChat);
+                        model.addAttribute("isActivityCreator", isCreator);
+                        model.addAttribute("canRequestParticipation", canRequestParticipation);
+                        model.addAttribute("participationStatus", participationStatus);
+                        model.addAttribute("pendingParticipationRequests", participationService.getPendingRequestsForOrganizer(id, email));
+                        model.addAttribute("approvedParticipationRequests", participationService.getApprovedParticipantsForViewer(id, email));
+                        if (!isCreator) {
+                            if (participationStatus == ParticipationStatus.PENDING) {
+                                participationMessage = "Cerere trimisa. Status: in asteptare.";
+                                participationMessageType = "warning";
+                            } else if (participationStatus == ParticipationStatus.REJECTED) {
+                                participationMessage = "Cererea a fost respinsa.";
+                                participationMessageType = "danger";
+                                session.removeAttribute(approvedNoticeSessionKey(id));
+                            } else if (participationStatus == ParticipationStatus.EXCLUDED) {
+                                participationMessage = "Ai fost exclus din aceasta activitate.";
+                                participationMessageType = "danger";
+                                session.removeAttribute(approvedNoticeSessionKey(id));
+                            } else if (participationStatus == ParticipationStatus.BLOCKED) {
+                                participationMessage = "Nu poti participa la aceasta activitate.";
+                                participationMessageType = "danger";
+                                session.removeAttribute(approvedNoticeSessionKey(id));
+                            } else if (participationStatus == ParticipationStatus.APPROVED) {
+                                Object approvedNoticeSeen = session.getAttribute(approvedNoticeSessionKey(id));
+                                if (approvedNoticeSeen == null) {
+                                    participationMessage = "Cererea a fost acceptata.";
+                                    participationMessageType = "success";
+                                    session.setAttribute(approvedNoticeSessionKey(id), Boolean.TRUE);
+                                }
+                            } else if (participationStatus == null) {
+                                participationMessage = "Nu ai inca status de participare. Trimite o cerere.";
+                                participationMessageType = "secondary";
+                                session.removeAttribute(approvedNoticeSessionKey(id));
+                            }
+                        }
+                    } else {
+                        participationMessage = "Autentifica-te pentru a trimite o cerere de participare.";
+                        participationMessageType = "secondary";
+                    }
+
+                    if (!model.containsAttribute("participationMessage") && participationMessage != null) {
+                        model.addAttribute("participationMessage", participationMessage);
+                    }
+                    if (!model.containsAttribute("participationMessageType") && participationMessageType != null) {
+                        model.addAttribute("participationMessageType", participationMessageType);
                     }
                     return "activity-detail";
                 })
                 .orElse("redirect:/activities?missing");
+    }
+
+    private String approvedNoticeSessionKey(Long activityId) {
+        return "approved_notice_seen_activity_" + activityId;
+    }
+
+    private String resolveAvatarUrl(User user) {
+        if (user.getAvatarUrl() == null || user.getAvatarUrl().isBlank()) {
+            return null;
+        }
+        return user.getAvatarUrl();
+    }
+
+    private ProfileUpdateRequest toProfileUpdateRequest(User user) {
+        ProfileUpdateRequest request = new ProfileUpdateRequest();
+        request.setFullName(user.getFullName());
+        request.setBirthDate(user.getBirthDate());
+        request.setBio(user.getBio());
+        request.setAvatarUrl(user.getAvatarUrl());
+        return request;
+    }
+
+    private boolean isAuthenticated(Authentication authentication) {
+        return authentication != null
+                && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken);
     }
 
 }

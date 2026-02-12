@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="ro" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="Profil public utilizator JoinUs.">
+    <meta name="author" content="">
+
+    <title th:text="${publicUser.fullName + ' - Profil'}">Profil utilizator</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+</head>
+
+<body class="page-profile">
+<main>
+    <div class="landing-theme profile-theme">
+        <header th:replace="~{fragments/navbar :: navbar}"></header>
+
+        <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="notificationsPanel" aria-labelledby="notificationsPanelLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title text-white" id="notificationsPanelLabel">Notificari</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body d-flex flex-column">
+                <div class="notification-item">
+                    <strong class="text-white">JoinUs</strong>
+                    <p class="mb-1">Esti pe profilul public al utilizatorului.</p>
+                    <small>Acum</small>
+                </div>
+                <div class="mt-auto">
+                    <a href="#" class="btn custom-btn custom-border-btn w-100" data-bs-dismiss="offcanvas">Inchide</a>
+                </div>
+            </div>
+        </div>
+
+        <section class="hero-section d-flex justify-content-center align-items-center" id="section_user_profile_hero">
+            <div class="section-overlay"></div>
+
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+                <path fill="var(--secondary-color)" fill-opacity="1" d="M0,224 C240,160 480,288 720,224 C960,160 1200,288 1440,224 L1440,0 L0,0 Z"></path>
+            </svg>
+
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 col-12 mx-auto text-center hero-content">
+                        <h2 class="text-white">Profil utilizator</h2>
+                        <h1 class="text-white mb-0" th:text="${publicUser.fullName}">Nume utilizator</h1>
+                    </div>
+                </div>
+            </div>
+
+            <svg class="hero-wave hero-wave-desktop" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+                <path fill="var(--section-bg-color)" fill-opacity="1" d="M0,224 C240,160 480,288 720,224 C960,160 1200,288 1440,224 L1440,320 L0,320 Z"></path>
+            </svg>
+            <svg class="hero-wave hero-wave-mobile" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" preserveAspectRatio="none">
+                <path fill="var(--section-bg-color)" fill-opacity="1" d="M0,224 C240,160 480,288 720,224 C960,160 1200,288 1440,224 L1440,320 L0,320 Z"></path>
+                <path fill="var(--section-bg-color)" fill-opacity="0.7" transform="translate(0,12)" d="M0,224 C240,160 480,288 720,224 C960,160 1200,288 1440,224 L1440,320 L0,320 Z"></path>
+                <path fill="var(--section-bg-color)" fill-opacity="0.4" transform="translate(0,24)" d="M0,224 C240,160 480,288 720,224 C960,160 1200,288 1440,224 L1440,320 L0,320 Z"></path>
+            </svg>
+        </section>
+    </div>
+
+    <section class="profile-main section-padding">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 col-12">
+                    <article class="profile-overview-card">
+                        <div class="profile-header mb-4">
+                            <div class="profile-avatar-shell" th:classappend="${publicUserAvatarUrl == null} ? ' is-fallback' : ''">
+                                <img class="profile-page-avatar"
+                                     th:if="${publicUserAvatarUrl != null}"
+                                     th:src="${publicUserAvatarUrl}"
+                                     alt="Avatar utilizator"
+                                     onerror="this.closest('.profile-avatar-shell').classList.add('is-fallback'); this.remove();">
+                                <i class="bi bi-person-circle profile-avatar-icon" aria-hidden="true"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-1" th:text="${publicUser.fullName}">Nume utilizator</h3>
+                                <p class="mb-0 profile-subtitle">Membru JoinUs</p>
+                                <div class="public-rating-summary mt-2" th:if="${ratingSummary.reviewsCount > 0}">
+                                    <div class="public-rating-stars" th:with="roundedRating=${T(java.lang.Math).round(ratingSummary.averageRating)}">
+                                        <i th:each="i : ${#numbers.sequence(1,5)}"
+                                           class="bi"
+                                           th:classappend="${i <= roundedRating} ? ' bi-star-fill' : ' bi-star'"></i>
+                                    </div>
+                                    <p class="mb-0">
+                                        <strong th:text="${#numbers.formatDecimal(ratingSummary.averageRating, 1, 1)}">5.0</strong>
+                                        <span th:text="${' (' + ratingSummary.reviewsCount + ' feedback-uri)'}">(0 feedback-uri)</span>
+                                    </p>
+                                </div>
+                                <p class="mb-0 profile-subtitle mt-2" th:if="${ratingSummary.reviewsCount == 0}">
+                                    Fara rating momentan
+                                </p>
+                            </div>
+                        </div>
+
+                        <p class="profile-description"
+                           th:text="${publicUser.bio != null and !#strings.isEmpty(publicUser.bio) ? publicUser.bio : 'Utilizatorul nu a adaugat inca o descriere.'}">
+                            Utilizatorul nu a adaugat inca o descriere.
+                        </p>
+
+                        <div class="profile-info-list">
+                            <div class="profile-info-item" th:if="${publicUser.birthDate != null}">
+                                <span>Varsta</span>
+                                <strong th:text="${T(java.time.Period).between(publicUser.birthDate, T(java.time.LocalDate).now()).getYears() + ' ani'}">29 ani</strong>
+                            </div>
+                            <div class="profile-info-item">
+                                <span>Email</span>
+                                <strong th:text="${publicUser.email}">email@example.com</strong>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="events-section section-bg section-padding profile-activities" id="section_user_activities">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-12 text-center mb-5">
+                    <h2 class="mb-3">Activitatile create</h2>
+                    <p th:text="${'Activitatile create de ' + publicUser.fullName + '.'}">Activitatile create de utilizator.</p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-10 col-12 mx-auto">
+                    <div class="activity-list activity-list--section row g-4">
+                        <div class="col-12" th:if="${#lists.isEmpty(createdActivities)}">
+                            <div class="alert alert-light text-center">Utilizatorul nu a creat inca activitati.</div>
+                        </div>
+
+                        <div class="col-12" th:each="activity : ${createdActivities}">
+                            <a th:href="@{/activities/{id}(id=${activity.id})}" class="activity-card-link">
+                                <div class="custom-block custom-block-bg activity-card mb-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-4 col-md-3">
+                                            <div class="custom-block-image-wrap">
+                                                <img th:src="${activity.imageUrl}" class="custom-block-image img-fluid" th:alt="${activity.title}">
+                                            </div>
+                                        </div>
+                                        <div class="col-8 col-md-9">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <span class="events-title me-2" th:text="${activity.title}">Activitate</span>
+                                                <span class="activity-badge" th:text="${activity.category}">Categorie</span>
+                                            </div>
+                                            <div class="activity-card-body row g-2">
+                                                <div class="col-md-7">
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Data:</span>
+                                                        <p class="mb-0" th:text="${#temporals.format(activity.date, 'dd MMM yyyy')}">12 Feb 2026</p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Ora:</span>
+                                                        <p class="mb-0" th:text="${#temporals.format(activity.time, 'HH:mm')}">19:00</p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Locatie:</span>
+                                                        <p class="mb-0" th:text="${activity.location}">Locatie</p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Locuri:</span>
+                                                        <p class="mb-0" th:text="${activity.capacity + ' persoane'}">10 persoane</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <p class="activity-quick-description activity-quick-description--right" th:text="${activity.description}">
+                                                        Descriere activitate.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="events-section section-bg section-padding profile-reviews" id="section_user_reviews">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-12 text-center mb-5">
+                    <h2 class="mb-3">Rating si feedback</h2>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-10 col-12 mx-auto">
+                    <div class="profile-reviews-content">
+                        <div class="alert alert-success" th:if="${reviewSuccess}" th:text="${reviewSuccess}">
+                            Rating-ul si feedback-ul au fost salvate.
+                        </div>
+                        <div class="alert alert-danger" th:if="${reviewError}" th:text="${reviewError}">
+                            Nu am putut salva feedback-ul.
+                        </div>
+
+                        <div class="feedback-list mb-4" th:if="${!#lists.isEmpty(userReviews)}">
+                            <article class="feedback-item" th:each="review : ${userReviews}">
+                                <div class="feedback-item-header">
+                                    <strong th:text="${review.reviewer.fullName}">Utilizator</strong>
+                                    <small th:text="${#temporals.format(review.createdAt, 'dd MMM yyyy, HH:mm')}">12 Feb 2026, 20:10</small>
+                                </div>
+                                <div class="public-rating-stars mb-2">
+                                    <i th:each="i : ${#numbers.sequence(1,5)}"
+                                       class="bi"
+                                       th:classappend="${i <= review.rating} ? ' bi-star-fill' : ' bi-star'"></i>
+                                </div>
+                                <p class="mb-0" th:text="${review.feedback}">Feedback utilizator.</p>
+                            </article>
+                        </div>
+
+                        <div class="alert alert-light" th:if="${#lists.isEmpty(userReviews)}">
+                            Nu exista feedback inca pentru acest profil.
+                        </div>
+
+                        <form class="custom-form profile-form"
+                              th:if="${canLeaveReview}"
+                              th:action="@{/users/{id}/reviews(id=${publicUser.id})}"
+                              th:object="${reviewForm}"
+                              method="post"
+                              role="form">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label d-block mb-2">Rating</label>
+                                    <div class="rating-input" role="radiogroup" aria-label="Alege rating intre 1 si 5 stele">
+                                        <input id="reviewRating5" type="radio" name="rating" value="5" th:checked="${reviewForm.rating == 5}">
+                                        <label for="reviewRating5" title="5 stele">&#9733;</label>
+                                        <input id="reviewRating4" type="radio" name="rating" value="4" th:checked="${reviewForm.rating == 4}">
+                                        <label for="reviewRating4" title="4 stele">&#9733;</label>
+                                        <input id="reviewRating3" type="radio" name="rating" value="3" th:checked="${reviewForm.rating == 3}">
+                                        <label for="reviewRating3" title="3 stele">&#9733;</label>
+                                        <input id="reviewRating2" type="radio" name="rating" value="2" th:checked="${reviewForm.rating == 2}">
+                                        <label for="reviewRating2" title="2 stele">&#9733;</label>
+                                        <input id="reviewRating1" type="radio" name="rating" value="1" th:checked="${reviewForm.rating == 1}">
+                                        <label for="reviewRating1" title="1 stea">&#9733;</label>
+                                    </div>
+                                    <small class="text-danger d-block mt-1" th:if="${#fields.hasErrors('rating')}" th:errors="*{rating}"></small>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label" for="reviewFeedback">Feedback</label>
+                                    <textarea id="reviewFeedback"
+                                              class="form-control"
+                                              th:field="*{feedback}"
+                                              rows="4"
+                                              maxlength="1000"
+                                              placeholder="Scrie feedback-ul tau aici..."></textarea>
+                                    <small class="text-danger" th:if="${#fields.hasErrors('feedback')}" th:errors="*{feedback}"></small>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="form-control mt-4">Trimite feedback</button>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+<script src="/js/jquery.min.js"></script>
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script src="/js/jquery.sticky.js"></script>
+<script src="/js/click-scroll.js"></script>
+<script src="/js/animated-headline.js"></script>
+<script src="/js/modernizr.js"></script>
+<script src="/js/custom.js"></script>
+</body>
+</html>

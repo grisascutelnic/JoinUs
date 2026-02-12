@@ -1,10 +1,14 @@
 package com.scutelnic.joinus.service;
 
+import com.scutelnic.joinus.dto.ProfileUpdateRequest;
 import com.scutelnic.joinus.dto.RegisterRequest;
 import com.scutelnic.joinus.entity.User;
 import com.scutelnic.joinus.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -36,5 +40,34 @@ public class UserService {
         user.setBio(request.getBio());
 
         userRepository.save(user);
+    }
+
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(normalizeEmail(email));
+    }
+
+    @Transactional
+    public User updateProfile(String email, ProfileUpdateRequest request) {
+        User user = userRepository.findByEmail(normalizeEmail(email))
+                .orElseThrow(() -> new IllegalArgumentException("Utilizatorul nu exista."));
+
+        user.setFullName(request.getFullName().trim());
+        user.setBirthDate(request.getBirthDate());
+        user.setBio(normalizeNullable(request.getBio()));
+        user.setAvatarUrl(normalizeNullable(request.getAvatarUrl()));
+
+        return user;
+    }
+
+    private static String normalizeEmail(String email) {
+        return email.toLowerCase().trim();
+    }
+
+    private static String normalizeNullable(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

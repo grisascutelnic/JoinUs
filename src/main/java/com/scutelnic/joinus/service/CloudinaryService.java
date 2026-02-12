@@ -69,7 +69,23 @@ public class CloudinaryService {
 
         String boundary = "----JoinUsBoundary" + UUID.randomUUID();
         byte[] body = buildMultipart(boundary, file.getBytes(), filename, contentType, timestamp, signature);
+        return uploadMultipart(body, boundary);
+    }
 
+    public String uploadImageFromUrl(String imageUrl) throws IOException {
+        if (!isConfigured() || !notBlank(imageUrl)) {
+            return null;
+        }
+
+        long timestamp = Instant.now().getEpochSecond();
+        String signature = sha1("timestamp=" + timestamp + apiSecret);
+
+        String boundary = "----JoinUsBoundary" + UUID.randomUUID();
+        byte[] body = buildMultipartForRemoteUrl(boundary, imageUrl.trim(), timestamp, signature);
+        return uploadMultipart(body, boundary);
+    }
+
+    private String uploadMultipart(byte[] body, String boundary) throws IOException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.cloudinary.com/v1_1/" + cloudName + "/image/upload"))
                 .header("Content-Type", "multipart/form-data; boundary=" + boundary)
@@ -88,7 +104,6 @@ public class CloudinaryService {
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
             throw new IOException("Cloudinary upload failed with status " + response.statusCode());
         }
-
         JsonNode jsonNode = objectMapper.readTree(response.body());
         JsonNode secureUrlNode = jsonNode.get("secure_url");
         if (secureUrlNode == null || secureUrlNode.asText().isBlank()) {
@@ -117,6 +132,22 @@ public class CloudinaryService {
         output.write(("Content-Type: " + contentType + lineBreak + lineBreak).getBytes(StandardCharsets.UTF_8));
         output.write(fileBytes);
         output.write(lineBreak.getBytes(StandardCharsets.UTF_8));
+
+        output.write(("--" + boundary + "--" + lineBreak).getBytes(StandardCharsets.UTF_8));
+        return output.toByteArray();
+    }
+
+    private byte[] buildMultipartForRemoteUrl(String boundary,
+                                              String imageUrl,
+                                              long timestamp,
+                                              String signature) throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        String lineBreak = "\r\n";
+
+        writePart(output, boundary, "api_key", apiKey);
+        writePart(output, boundary, "timestamp", String.valueOf(timestamp));
+        writePart(output, boundary, "signature", signature);
+        writePart(output, boundary, "file", imageUrl);
 
         output.write(("--" + boundary + "--" + lineBreak).getBytes(StandardCharsets.UTF_8));
         return output.toByteArray();

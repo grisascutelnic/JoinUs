@@ -1,207 +1,259 @@
 <!doctype html>
 <html lang="ro" xmlns:th="http://www.thymeleaf.org">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <meta name="description" content="Profilul tau JoinUs. Personalizeaza preferintele pentru recomandari mai bune.">
-        <meta name="author" content="">
+    <meta name="description" content="Profilul tau JoinUs. Editeaza datele contului si preferintele personale.">
+    <meta name="author" content="">
 
-        <title>Profil - JoinUs</title>
+    <title>Profil - JoinUs</title>
 
-        <!-- CSS FILES -->
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
-        <link href="/css/bootstrap.min.css" rel="stylesheet">
-        <link href="/css/bootstrap-icons.css" rel="stylesheet">
-        <link href="/css/styles.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+</head>
 
-        <style>
-            .notification-item {
-                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-                padding-bottom: 15px;
-                margin-bottom: 15px;
-            }
+<body class="page-profile">
+<main>
+    <div class="landing-theme profile-theme">
+        <header th:replace="~{fragments/navbar :: navbar}"></header>
 
-            .notification-item:last-child {
-                border-bottom: 0;
-                margin-bottom: 0;
-            }
-
-            .notification-item p,
-            .notification-item small {
-                color: rgba(255, 255, 255, 0.85);
-            }
-
-            .hero-section {
-                background-image: none !important;
-                background-color: var(--secondary-color);
-                height: 30vh;
-                min-height: 260px;
-                padding-top: 40px;
-                padding-bottom: 40px;
-            }
-
-            .hero-section .section-overlay {
-                display: none;
-            }
-
-            .hero-section .hero-content {
-                margin-top: -10px;
-            }
-
-            .landing-theme {
-                --primary-color: #2C6FB7;
-                --secondary-color: #1F2A44;
-                --section-bg-color: #F5F7FA;
-                --custom-btn-bg-color: #C9A227;
-                --custom-btn-bg-hover-color: #A8831F;
-                --link-hover-color: #C9A227;
-            }
-
-            .landing-theme .custom-block-bg {
-                background-color: #FFFFFF;
-            }
-
-            .landing-theme .sticky-wrapper.is-sticky .navbar {
-                background-color: var(--secondary-color);
-            }
-
-            @media (max-width: 768px) {
-                .hero-section {
-                    height: 20vh;
-                    min-height: 220px;
-                    padding-top: 120px;
-                    padding-bottom: 20px;
-                    top: 0;
-                    margin-bottom: 0;
-                }
-
-                .landing-theme .navbar,
-                .landing-theme .sticky-wrapper {
-                    background-color: var(--secondary-color);
-                }
-            }
-        </style>
-    </head>
-
-    <body>
-        <main>
-            <div class="landing-theme">
-                <header th:replace="~{fragments/navbar :: navbar}"></header>
-
-                <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="notificationsPanel" aria-labelledby="notificationsPanelLabel">
-                    <div class="offcanvas-header">
-                        <h5 class="offcanvas-title text-white" id="notificationsPanelLabel">Notificari</h5>
-
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                    </div>
-
-                    <div class="offcanvas-body d-flex flex-column">
-                        <div class="notification-item">
-                            <strong class="text-white">Alergare in parc</strong>
-                            <p class="mb-1">Activitatea ta a fost aprobata si publicata.</p>
-                            <small>Acum 5 minute</small>
-                        </div>
-
-                        <div class="notification-item">
-                            <strong class="text-white">Yoga la apus</strong>
-                            <p class="mb-1">S-au inscris inca 3 persoane.</p>
-                            <small>Acum 24 de minute</small>
-                        </div>
-
-                        <div class="notification-item">
-                            <strong class="text-white">Tur ciclist premium</strong>
-                            <p class="mb-1">Locurile sunt aproape epuizate.</p>
-                            <small>Astazi</small>
-                        </div>
-
-                        <div class="notification-item">
-                            <strong class="text-white">Forum</strong>
-                            <p class="mb-1">Ai un raspuns nou la discutia despre trasee montane.</p>
-                            <small>Ieri</small>
-                        </div>
-
-                        <div class="mt-auto">
-                            <a href="/notifications" class="btn custom-btn custom-border-btn w-100">Vezi toate notificarile</a>
-                        </div>
-                    </div>
-                </div>
-
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="#3D405B" fill-opacity="1" d="M0,224L34.3,192C68.6,160,137,96,206,90.7C274.3,85,343,139,411,144C480,149,549,107,617,122.7C685.7,139,754,213,823,240C891.4,267,960,245,1029,224C1097.1,203,1166,181,1234,160C1302.9,139,1371,117,1406,106.7L1440,96L1440,320L1405.7,320C1371.4,320,1303,320,1234,320C1165.7,320,1097,320,1029,320C960,320,891,320,823,320C754.3,320,686,320,617,320C548.6,320,480,320,411,320C342.9,320,274,320,206,320C137.1,320,69,320,34,320L0,320Z"></path></svg>
+        <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="notificationsPanel" aria-labelledby="notificationsPanelLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title text-white" id="notificationsPanelLabel">Notificari</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
 
-            <section class="hero-section d-flex justify-content-center align-items-center">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-lg-8 col-12 mx-auto text-center hero-content">
-                            <h2 class="text-white">Profilul tau</h2>
-                            <h1 class="text-white mb-0">Preferinte si recomandari</h1>
+            <div class="offcanvas-body d-flex flex-column">
+                <div class="notification-item">
+                    <strong class="text-white">Alergare in parc</strong>
+                    <p class="mb-1">Activitatea ta a fost aprobata si publicata.</p>
+                    <small>Acum 5 minute</small>
+                </div>
+
+                <div class="notification-item">
+                    <strong class="text-white">Yoga la apus</strong>
+                    <p class="mb-1">S-au inscris inca 3 persoane.</p>
+                    <small>Acum 24 de minute</small>
+                </div>
+
+                <div class="notification-item">
+                    <strong class="text-white">Forum</strong>
+                    <p class="mb-1">Ai un raspuns nou in comunitate.</p>
+                    <small>Ieri</small>
+                </div>
+
+                <div class="mt-auto">
+                    <a href="#" class="btn custom-btn custom-border-btn w-100" data-bs-dismiss="offcanvas">Inchide</a>
+                </div>
+            </div>
+        </div>
+
+        <section class="hero-section d-flex justify-content-center align-items-center" id="section_profile_hero">
+            <div class="section-overlay"></div>
+
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+                <path fill="var(--secondary-color)" fill-opacity="1" d="M0,224 C240,160 480,288 720,224 C960,160 1200,288 1440,224 L1440,0 L0,0 Z"></path>
+            </svg>
+
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 col-12 mx-auto text-center hero-content">
+                        <h2 class="text-white">Profilul tau</h2>
+                        <h1 class="text-white mb-0">Date personale si preferinte</h1>
+                    </div>
+                </div>
+            </div>
+
+            <svg class="hero-wave hero-wave-desktop" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+                <path fill="var(--section-bg-color)" fill-opacity="1" d="M0,224 C240,160 480,288 720,224 C960,160 1200,288 1440,224 L1440,320 L0,320 Z"></path>
+            </svg>
+            <svg class="hero-wave hero-wave-mobile" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" preserveAspectRatio="none">
+                <path fill="var(--section-bg-color)" fill-opacity="1" d="M0,224 C240,160 480,288 720,224 C960,160 1200,288 1440,224 L1440,320 L0,320 Z"></path>
+                <path fill="var(--section-bg-color)" fill-opacity="0.7" transform="translate(0,12)" d="M0,224 C240,160 480,288 720,224 C960,160 1200,288 1440,224 L1440,320 L0,320 Z"></path>
+                <path fill="var(--section-bg-color)" fill-opacity="0.4" transform="translate(0,24)" d="M0,224 C240,160 480,288 720,224 C960,160 1200,288 1440,224 L1440,320 L0,320 Z"></path>
+            </svg>
+        </section>
+    </div>
+
+    <section class="profile-main section-padding" id="section_profile">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4 col-12">
+                    <article class="profile-overview-card h-100">
+                        <div class="profile-avatar-shell" th:classappend="${profileAvatarUrl == null} ? ' is-fallback' : ''">
+                            <img class="profile-page-avatar"
+                                 th:if="${profileAvatarUrl != null}"
+                                 th:src="${profileAvatarUrl}"
+                                 alt="Avatar utilizator"
+                                 onerror="this.closest('.profile-avatar-shell').classList.add('is-fallback'); this.remove();">
+                            <i class="bi bi-person-circle profile-avatar-icon" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="mb-1" th:text="${profileUser.fullName}">Nume utilizator</h3>
+                        <p class="profile-email" th:text="${profileUser.email}">email@example.com</p>
+                        <span class="profile-role-pill" th:text="${profileUser.role}">USER</span>
+
+                        <hr>
+
+                        <div class="profile-kv">
+                            <span>Data nasterii</span>
+                            <strong th:text="${profileUser.birthDate != null ? #temporals.format(profileUser.birthDate, 'dd MMM yyyy') : 'Nespecificata'}">Nespecificata</strong>
+                        </div>
+                        <div class="profile-kv">
+                            <span>Bio</span>
+                            <strong th:text="${profileUser.bio != null and !#strings.isEmpty(profileUser.bio) ? profileUser.bio : 'Nu ai adaugat inca o descriere.'}">Nu ai adaugat inca o descriere.</strong>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="col-lg-8 col-12">
+                    <article class="profile-edit-card">
+                        <h3 class="mb-2">Editeaza profilul</h3>
+                        <p class="profile-edit-subtitle">Datele sunt preluate automat din contul tau curent si pot fi actualizate oricand.</p>
+
+                        <div class="alert alert-success" th:if="${param.updated}">
+                            Profilul a fost actualizat cu succes.
+                        </div>
+                        <div class="alert alert-danger" th:if="${param.error}">
+                            Nu am putut salva profilul. Verifica datele introduse.
+                        </div>
+                        <div class="alert alert-danger" th:if="${profileImageError}" th:text="${profileImageError}">
+                            Nu am putut incarca avatarul.
+                        </div>
+                        <div class="alert alert-warning" th:if="${birthDateRequired}">
+                            Completeaza data nasterii pentru a continua si pentru a putea participa si crea activitati.
+                        </div>
+                        <div class="alert alert-warning" th:if="${param.errorBirthDateRequired}">
+                            Data nasterii este obligatorie inainte de a continua.
+                        </div>
+
+                        <form class="custom-form profile-form" th:action="@{/profile}" th:object="${profileForm}" method="post" role="form" enctype="multipart/form-data">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <input type="hidden" name="requireBirthDate" th:value="${birthDateRequired} ? 'true' : 'false'">
+                            <input type="hidden" th:field="*{avatarUrl}">
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="fullName">Nume complet</label>
+                                    <input id="fullName" type="text" class="form-control" th:field="*{fullName}" placeholder="Nume complet" required>
+                                    <small class="text-danger" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></small>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label" for="emailReadonly">Email</label>
+                                    <input id="emailReadonly" type="email" class="form-control profile-readonly" th:value="${profileUser.email}" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label" for="birthDate">Data nasterii</label>
+                                    <input id="birthDate"
+                                           name="birthDate"
+                                           type="date"
+                                           class="form-control"
+                                           th:value="${profileForm.birthDate != null ? #temporals.format(profileForm.birthDate, 'yyyy-MM-dd') : (profileUser.birthDate != null ? #temporals.format(profileUser.birthDate, 'yyyy-MM-dd') : '')}">
+                                    <small class="text-danger" th:if="${#fields.hasErrors('birthDate')}" th:errors="*{birthDate}"></small>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label" for="imageFile">Incarca imagine noua</label>
+                                    <input id="imageFile" name="imageFile" type="file" class="form-control" accept="image/*">
+                                    <small class="text-muted">Imaginea va fi urcata in Cloudinary la salvare.</small>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label" for="bio">Descriere</label>
+                                    <textarea id="bio" class="form-control" th:field="*{bio}" rows="4" placeholder="Spune cateva cuvinte despre tine..."></textarea>
+                                    <small class="text-danger" th:if="${#fields.hasErrors('bio')}" th:errors="*{bio}"></small>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="form-control mt-4">Salveaza modificarile</button>
+                        </form>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="events-section section-bg section-padding profile-activities" id="section_profile_activities">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-12 text-center mb-5">
+                    <h2 class="mb-3">Activitatile tale</h2>
+                    <p>Lista activitatilor create de tine.</p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-10 col-12 mx-auto">
+                    <div class="activity-list activity-list--section row g-4">
+                        <div class="col-12" th:if="${#lists.isEmpty(createdActivities)}">
+                            <div class="alert alert-light text-center">Nu ai creat inca activitati.</div>
+                        </div>
+
+                        <div class="col-12" th:each="activity : ${createdActivities}">
+                            <a th:href="@{/activities/{id}(id=${activity.id})}" class="activity-card-link">
+                                <div class="custom-block custom-block-bg activity-card mb-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-4 col-md-3">
+                                            <div class="custom-block-image-wrap">
+                                                <img th:src="${activity.imageUrl}" class="custom-block-image img-fluid" th:alt="${activity.title}">
+                                            </div>
+                                        </div>
+                                        <div class="col-8 col-md-9">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <span class="events-title me-2" th:text="${activity.title}">Activitate</span>
+                                                <span class="activity-badge" th:text="${activity.category}">Categorie</span>
+                                            </div>
+                                            <div class="activity-card-body row g-2">
+                                                <div class="col-md-7">
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Data:</span>
+                                                        <p class="mb-0" th:text="${#temporals.format(activity.date, 'dd MMM yyyy')}">12 Feb 2026</p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Ora:</span>
+                                                        <p class="mb-0" th:text="${#temporals.format(activity.time, 'HH:mm')}">19:00</p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Locatie:</span>
+                                                        <p class="mb-0" th:text="${activity.location}">Locatie</p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap">
+                                                        <span class="custom-block-span">Locuri:</span>
+                                                        <p class="mb-0" th:text="${activity.capacity + ' persoane'}">10 persoane</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <p class="activity-quick-description activity-quick-description--right" th:text="${activity.description}">
+                                                        Descriere activitate.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
+        </div>
+    </section>
+</main>
 
-            <section class="about-section section-padding" id="section_profile">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-lg-12 col-12 text-center mb-5">
-                            <h2 class="mb-3">Profil</h2>
-                            <p>Personalizeaza preferintele pentru recomandari mai bune.</p>
-                        </div>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 
-                        <div class="col-lg-4 col-md-6 col-12 mb-4">
-                            <div class="member-block">
-                                <div class="member-block-image-wrap">
-                                    <img src="/images/members/portrait-young-handsome-businessman-wearing-suit-standing-with-crossed-arms-with-isolated-studio-white-background.jpg" class="member-block-image img-fluid" alt="Organizator local">
-                                </div>
-
-                                <div class="member-block-info d-flex align-items-center">
-                                    <h4>Alex</h4>
-                                    <p class="ms-auto">Organizator</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-4 col-md-6 col-12 mb-4">
-                            <div class="member-block">
-                                <div class="member-block-image-wrap">
-                                    <img src="/images/members/successful-asian-lady-boss-red-blazer-holding-clipboard-with-documens-pen-working-looking-happy-white-background.jpg" class="member-block-image img-fluid" alt="Mentor comunitar">
-                                </div>
-
-                                <div class="member-block-info d-flex align-items-center">
-                                    <h4>Irina</h4>
-                                    <p class="ms-auto">Mentor</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-4 col-12 mb-4">
-                            <div class="custom-block custom-block-bg h-100">
-                                <h4 class="mb-3">Preferinte rapide</h4>
-                                <ul class="list-unstyled mb-3">
-                                    <li>Sporturi: alergare, ciclism, yoga</li>
-                                    <li>Social: workshop-uri si intalniri</li>
-                                    <li>Program: dupa 18:00</li>
-                                </ul>
-                                <a href="#" class="btn custom-btn">Editeaza profilul</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <footer th:replace="~{fragments/footer :: footer}"></footer>
-
-        <!-- JAVASCRIPT FILES -->
-        <script src="/js/jquery.min.js"></script>
-        <script src="/js/bootstrap.bundle.min.js"></script>
-        <script src="/js/jquery.sticky.js"></script>
-        <script src="/js/click-scroll.js"></script>
-        <script src="/js/animated-headline.js"></script>
-        <script src="/js/modernizr.js"></script>
-        <script src="/js/custom.js"></script>
-    </body>
+<script src="/js/jquery.min.js"></script>
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script src="/js/jquery.sticky.js"></script>
+<script src="/js/click-scroll.js"></script>
+<script src="/js/animated-headline.js"></script>
+<script src="/js/modernizr.js"></script>
+<script src="/js/custom.js"></script>
+</body>
 </html>

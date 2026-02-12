@@ -155,14 +155,32 @@
                                 </div>
                             </aside>
 
+                            <div class="activity-main-column">
                             <section class="activity-chat" aria-live="polite">
                                 <div class="activity-tabs" role="tablist">
                                     <button class="activity-tab-btn is-active" type="button" role="tab" aria-selected="true" aria-controls="activity-info-panel" data-tab="info">Info</button>
-                                    <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-chat-panel" data-tab="chat">Chat</button>
-                                    <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-announcements-panel" data-tab="announcements">Anunturi</button>
+                                    <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-chat-panel" data-tab="chat" th:if="${canAccessChat}">Chat</button>
+                                    <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-announcements-panel" data-tab="announcements" th:if="${canAccessChat}">Anunturi</button>
                                 </div>
 
                                 <div class="activity-tab-panel is-active" id="activity-info-panel" role="tabpanel" data-panel="info">
+                                    <div class="alert mb-3"
+                                         th:if="${participationMessage != null and !isActivityCreator}"
+                                         th:classappend="${participationMessageType != null ? ' alert-' + participationMessageType : ' alert-info'}">
+                                        <span th:text="${participationMessage}">Status participare</span>
+                                    </div>
+
+                                    <div class="mb-3"
+                                         th:if="${#authorization.expression('isAuthenticated()') and !isActivityCreator and canRequestParticipation}">
+                                        <form method="post"
+                                              th:action="@{/activities/{id}/participation-request(id=${activity.id})}">
+                                            <button class="btn custom-btn btn-sm" type="submit"
+                                                    th:text="${participationStatus == T(com.scutelnic.joinus.entity.ParticipationStatus).REJECTED or participationStatus == T(com.scutelnic.joinus.entity.ParticipationStatus).EXCLUDED ? 'Trimite din nou cererea' : 'Cerere de participare'}">
+                                                Cerere de participare
+                                            </button>
+                                        </form>
+                                    </div>
+
                                     <div class="activity-info-section">
                                         <div class="activity-cover" th:style="'background-image: url(' + ${activity.imageUrl} + ');'">
                                             <span class="activity-capacity" th:text="${activity.capacity + ' locuri'}">12/20 locuri</span>
@@ -193,19 +211,24 @@
 
                                     <div class="activity-info-section" th:if="${activity.creator != null}">
                                         <div class="profile-header">
-                                            <img th:src="${activity.creator.avatarUrl != null ? activity.creator.avatarUrl : '/images/members/portrait-young-handsome-businessman-wearing-suit-standing-with-crossed-arms-with-isolated-studio-white-background.jpg'}"
-                                                 alt="Profil organizator" class="profile-avatar">
+                                            <a class="creator-profile-link"
+                                               th:href="@{/users/{id}(id=${activity.creator.id})}"
+                                               th:title="${'Vezi profilul lui ' + activity.creator.fullName}">
+                                                <img th:src="${activity.creator.avatarUrl != null and !#strings.isEmpty(activity.creator.avatarUrl) ? activity.creator.avatarUrl : '/images/members/portrait-young-handsome-businessman-wearing-suit-standing-with-crossed-arms-with-isolated-studio-white-background.jpg'}"
+                                                     onerror="this.onerror=null;this.src='/images/members/portrait-young-handsome-businessman-wearing-suit-standing-with-crossed-arms-with-isolated-studio-white-background.jpg';"
+                                                     alt="Profil organizator" class="profile-avatar">
+                                            </a>
                                             <div>
-                                                <h5 class="mb-1" th:text="${activity.creator.fullName}">Radu Ionescu</h5>
+                                                <h5 class="mb-1">
+                                                    <a class="creator-profile-link creator-profile-link--name"
+                                                       th:href="@{/users/{id}(id=${activity.creator.id})}"
+                                                       th:text="${activity.creator.fullName}">Radu Ionescu</a>
+                                                </h5>
                                                 <p class="mb-0 profile-subtitle">Organizator</p>
                                             </div>
                                         </div>
                                         <p class="profile-description" th:text="${activity.creator.bio}">Iubesc activitatile in aer liber si imi place sa aduc oamenii impreuna.</p>
                                         <div class="profile-info-list">
-                                            <div class="profile-info-item" th:if="${activity.creator.birthDate != null}">
-                                                <span>Data nasterii</span>
-                                                <strong th:text="${#temporals.format(activity.creator.birthDate, 'dd MMM yyyy')}">12 Mar 1996</strong>
-                                            </div>
                                             <div class="profile-info-item" th:if="${activity.creator.birthDate != null}">
                                                 <span>Varsta</span>
                                                 <strong th:text="${T(java.time.Period).between(activity.creator.birthDate, T(java.time.LocalDate).now()).getYears() + ' ani'}">29 ani</strong>
@@ -216,9 +239,10 @@
                                             </div>
                                         </div>
                                     </div>
+
                                 </div>
 
-                                <div class="activity-tab-panel" id="activity-chat-panel" role="tabpanel" data-panel="chat">
+                                <div class="activity-tab-panel" id="activity-chat-panel" role="tabpanel" data-panel="chat" th:if="${canAccessChat}">
                                     <div class="chat-stream" id="chatStream"></div>
 
                                     <div class="chat-input">
@@ -228,7 +252,7 @@
                                     <small class="text-muted mt-2" th:if="${#authorization.expression('isAnonymous()')}">Autentifica-te ca sa participi la chat.</small>
                                 </div>
 
-                                <div class="activity-tab-panel" id="activity-announcements-panel" role="tabpanel" data-panel="announcements">
+                                <div class="activity-tab-panel" id="activity-announcements-panel" role="tabpanel" data-panel="announcements" th:if="${canAccessChat}">
                                     <div class="announcement-list">
                                         <div class="announcement-card">
                                             <strong>Organizator</strong>
@@ -248,6 +272,58 @@
                                     </div>
                                 </div>
                             </section>
+
+                            <section class="activity-participants-card" id="activityParticipantsCard" th:if="${isActivityCreator or canAccessChat}">
+                                <h5 class="mb-3">Participanti</h5>
+                                <div class="participants-container">
+                                    <p class="text-muted mb-0" th:if="${#lists.isEmpty(approvedParticipationRequests) and (!isActivityCreator or #lists.isEmpty(pendingParticipationRequests))}">
+                                        Nu exista participanti sau cereri in asteptare.
+                                    </p>
+
+                                    <div class="participation-request-card" th:if="${isActivityCreator}" th:each="request : ${pendingParticipationRequests}">
+                                        <div>
+                                            <strong th:text="${request.user.fullName}">Nume utilizator</strong>
+                                            <small class="d-block text-muted" th:text="${request.user.email}">email@example.com</small>
+                                            <small class="d-block text-muted"
+                                                   th:text="${#temporals.format(request.requestedAt, 'dd MMM yyyy, HH:mm')}">10 Feb 2026, 14:20</small>
+                                        </div>
+                                        <div class="participation-request-actions">
+                                            <form method="post"
+                                                  th:action="@{/activities/{id}/participation-requests/{requestId}/approve(id=${activity.id}, requestId=${request.id})}">
+                                                <button class="btn participation-action-btn is-accept" type="submit" title="Accepta">
+                                                    <i class="bi bi-check-lg"></i>
+                                                </button>
+                                            </form>
+                                            <form method="post"
+                                                  th:action="@{/activities/{id}/participation-requests/{requestId}/reject(id=${activity.id}, requestId=${request.id})}">
+                                                <button class="btn participation-action-btn is-reject" type="submit" title="Respinge">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+
+                                    <div class="participation-request-card is-approved" th:each="request : ${approvedParticipationRequests}">
+                                        <div>
+                                            <strong th:text="${request.user.fullName}">Nume utilizator</strong>
+                                            <small class="d-block text-muted" th:text="${request.user.email}">email@example.com</small>
+                                            <small class="d-block text-muted">Participant acceptat</small>
+                                        </div>
+                                        <div class="dropdown" th:if="${isActivityCreator}">
+                                            <button class="btn participation-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Actiuni">
+                                                <i class="bi bi-list"></i>
+                                            </button>
+                                            <div class="dropdown-menu dropdown-menu-end participant-dropdown-menu">
+                                                <form method="post"
+                                                      th:action="@{/activities/{id}/participation-requests/{requestId}/exclude(id=${activity.id}, requestId=${request.id})}">
+                                                    <button class="dropdown-item text-danger" type="submit">Exclude participant</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                            </div>
 
                         </div>
                     </div>
@@ -285,6 +361,7 @@
                     if (target === 'chat') {
                         setTimeout(scrollChatToBottom, 0);
                     }
+                    syncParticipantsCardVisibility();
                     syncChatPanelHeight();
                 });
             });
@@ -292,10 +369,12 @@
             const activityId = Number(/*[[${activity.id}]]*/ 0);
             const currentUserId = /*[[${currentUserId}]]*/ null;
             const isAuthenticated = /*[[${#authorization.expression('isAuthenticated()')}]]*/ false;
+            const canAccessChat = /*[[${canAccessChat}]]*/ false;
             const chatStreamEl = document.getElementById('chatStream');
             const chatInputEl = document.getElementById('chatInput');
             const chatSendBtnEl = document.getElementById('chatSendBtn');
             const activityChatEl = document.querySelector('.activity-chat');
+            const participantsCardEl = document.getElementById('activityParticipantsCard');
 
             const messageElements = new Map();
             const messageState = new Map();
@@ -424,6 +503,13 @@
                 const viewportTarget = window.innerHeight - navbarHeight - 110;
                 const targetHeight = Math.max(620, Math.min(900, viewportTarget));
                 activityChatEl.style.height = `${targetHeight}px`;
+            }
+
+            function syncParticipantsCardVisibility() {
+                if (!participantsCardEl) return;
+                const activePanel = document.querySelector('.activity-tab-panel.is-active');
+                const isInfoActive = !!activePanel && activePanel.dataset.panel === 'info';
+                participantsCardEl.style.display = isInfoActive ? '' : 'none';
             }
 
             function publishSeenForVisibleMessages() {
@@ -564,18 +650,20 @@
                 });
             }
 
-            if (isAuthenticated && activityId > 0) {
+            if (isAuthenticated && canAccessChat && activityId > 0) {
                 loadInitialMessages()
                         .then(() => {
                             setupSeenObserver();
                             connectChatSocket();
                             wireSendMessage();
+                            syncParticipantsCardVisibility();
                             syncChatPanelHeight();
                         })
                         .catch(() => {
                             // Ignore initial load failures.
                         });
             } else {
+                syncParticipantsCardVisibility();
                 syncChatPanelHeight();
             }
 
@@ -585,7 +673,10 @@
                 chatStreamEl.addEventListener('scroll', publishSeenForVisibleMessages);
             }
 
-            setTimeout(syncChatPanelHeight, 0);
+            setTimeout(() => {
+                syncParticipantsCardVisibility();
+                syncChatPanelHeight();
+            }, 0);
         </script>
     </body>
 </html>
