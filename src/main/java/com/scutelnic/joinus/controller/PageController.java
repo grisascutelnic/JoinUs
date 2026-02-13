@@ -26,6 +26,11 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 public class PageController {
@@ -269,7 +274,7 @@ public class PageController {
         return activityService.getById(id)
                 .map(activity -> {
                     model.addAttribute("activity", activity);
-                    model.addAttribute("otherActivities", activityService.getRecent(6));
+                    model.addAttribute("otherActivities", resolveSidebarActivities(id, authentication));
                     model.addAttribute("canAccessChat", false);
                     model.addAttribute("isActivityCreator", false);
                     model.addAttribute("canRequestParticipation", false);
@@ -335,6 +340,40 @@ public class PageController {
                     return "activity-detail";
                 })
                 .orElse("redirect:/activities?missing");
+    }
+
+    private List<com.scutelnic.joinus.entity.Activity> resolveSidebarActivities(Long currentActivityId,
+                                                                                Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return List.of();
+        }
+
+        User user = userService.findByEmail(authentication.getName()).orElse(null);
+        if (user == null) {
+            return List.of();
+        }
+
+        List<com.scutelnic.joinus.entity.Activity> authoredActivities = activityService.getByCreator(user.getId());
+        List<com.scutelnic.joinus.entity.Activity> approvedActivities =
+                participationService.getApprovedActivitiesForUser(authentication.getName());
+
+        List<com.scutelnic.joinus.entity.Activity> combined = new ArrayList<>(authoredActivities.size() + approvedActivities.size());
+        combined.addAll(authoredActivities);
+        combined.addAll(approvedActivities);
+
+        Map<Long, com.scutelnic.joinus.entity.Activity> uniqueById = new LinkedHashMap<>();
+        for (com.scutelnic.joinus.entity.Activity activity : combined) {
+            if (activity == null || activity.getId() == null || activity.getId().equals(currentActivityId)) {
+                continue;
+            }
+            uniqueById.putIfAbsent(activity.getId(), activity);
+        }
+
+        return uniqueById.values().stream()
+                .sorted(Comparator.comparing(com.scutelnic.joinus.entity.Activity::getCreatedAt,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .limit(6)
+                .toList();
     }
 
     private String approvedNoticeSessionKey(Long activityId) {

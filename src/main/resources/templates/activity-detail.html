@@ -97,6 +97,56 @@
                                         </a>
                                     </div>
                                 </div>
+
+                                <section class="activity-participants-card" id="activityParticipantsCard" th:if="${isActivityCreator or canAccessChat}">
+                                    <h5 class="mb-3">Participanti</h5>
+                                    <div class="participants-container">
+                                        <p class="text-muted mb-0" th:if="${#lists.isEmpty(approvedParticipationRequests) and (!isActivityCreator or #lists.isEmpty(pendingParticipationRequests))}">
+                                            Nu exista participanti sau cereri in asteptare.
+                                        </p>
+
+                                        <div class="participation-request-card" th:if="${isActivityCreator}" th:each="request : ${pendingParticipationRequests}">
+                                            <div>
+                                                <strong th:text="${request.user.fullName}">Nume utilizator</strong>
+                                                <small class="d-block text-muted" th:text="${request.user.email}">email@example.com</small>
+                                                <small class="d-block text-muted"
+                                                       th:text="${#temporals.format(request.requestedAt, 'dd MMM yyyy, HH:mm')}">10 Feb 2026, 14:20</small>
+                                            </div>
+                                            <div class="participation-request-actions">
+                                                <form method="post"
+                                                      th:action="@{/activities/{id}/participation-requests/{requestId}/approve(id=${activity.id}, requestId=${request.id})}">
+                                                    <button class="btn participation-action-btn is-accept" type="submit" title="Accepta">
+                                                        <i class="bi bi-check-lg"></i>
+                                                    </button>
+                                                </form>
+                                                <form method="post"
+                                                      th:action="@{/activities/{id}/participation-requests/{requestId}/reject(id=${activity.id}, requestId=${request.id})}">
+                                                    <button class="btn participation-action-btn is-reject" type="submit" title="Respinge">
+                                                        <i class="bi bi-x-lg"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+
+                                        <div class="participation-request-card is-approved" th:each="request : ${approvedParticipationRequests}">
+                                            <div>
+                                                <strong th:text="${request.user.fullName}">Nume utilizator</strong>
+                                                <small class="d-block text-muted" th:text="${request.user.email}">email@example.com</small>
+                                            </div>
+                                            <div class="dropdown" th:if="${isActivityCreator}">
+                                                <button class="btn participation-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Actiuni">
+                                                    <i class="bi bi-list"></i>
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-end participant-dropdown-menu">
+                                                    <form method="post"
+                                                          th:action="@{/activities/{id}/participation-requests/{requestId}/exclude(id=${activity.id}, requestId=${request.id})}">
+                                                        <button class="dropdown-item text-danger" type="submit">Exclude participant</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
                             </aside>
 
                             <div class="activity-main-column">
@@ -241,56 +291,6 @@
                                 </div>
                             </section>
 
-                            <section class="activity-participants-card" id="activityParticipantsCard" th:if="${isActivityCreator or canAccessChat}">
-                                <h5 class="mb-3">Participanti</h5>
-                                <div class="participants-container">
-                                    <p class="text-muted mb-0" th:if="${#lists.isEmpty(approvedParticipationRequests) and (!isActivityCreator or #lists.isEmpty(pendingParticipationRequests))}">
-                                        Nu exista participanti sau cereri in asteptare.
-                                    </p>
-
-                                    <div class="participation-request-card" th:if="${isActivityCreator}" th:each="request : ${pendingParticipationRequests}">
-                                        <div>
-                                            <strong th:text="${request.user.fullName}">Nume utilizator</strong>
-                                            <small class="d-block text-muted" th:text="${request.user.email}">email@example.com</small>
-                                            <small class="d-block text-muted"
-                                                   th:text="${#temporals.format(request.requestedAt, 'dd MMM yyyy, HH:mm')}">10 Feb 2026, 14:20</small>
-                                        </div>
-                                        <div class="participation-request-actions">
-                                            <form method="post"
-                                                  th:action="@{/activities/{id}/participation-requests/{requestId}/approve(id=${activity.id}, requestId=${request.id})}">
-                                                <button class="btn participation-action-btn is-accept" type="submit" title="Accepta">
-                                                    <i class="bi bi-check-lg"></i>
-                                                </button>
-                                            </form>
-                                            <form method="post"
-                                                  th:action="@{/activities/{id}/participation-requests/{requestId}/reject(id=${activity.id}, requestId=${request.id})}">
-                                                <button class="btn participation-action-btn is-reject" type="submit" title="Respinge">
-                                                    <i class="bi bi-x-lg"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-
-                                    <div class="participation-request-card is-approved" th:each="request : ${approvedParticipationRequests}">
-                                        <div>
-                                            <strong th:text="${request.user.fullName}">Nume utilizator</strong>
-                                            <small class="d-block text-muted" th:text="${request.user.email}">email@example.com</small>
-                                            <small class="d-block text-muted">Participant acceptat</small>
-                                        </div>
-                                        <div class="dropdown" th:if="${isActivityCreator}">
-                                            <button class="btn participation-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Actiuni">
-                                                <i class="bi bi-list"></i>
-                                            </button>
-                                            <div class="dropdown-menu dropdown-menu-end participant-dropdown-menu">
-                                                <form method="post"
-                                                      th:action="@{/activities/{id}/participation-requests/{requestId}/exclude(id=${activity.id}, requestId=${request.id})}">
-                                                    <button class="dropdown-item text-danger" type="submit">Exclude participant</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
                             </div>
 
                         </div>
@@ -330,7 +330,6 @@
                     if (target === 'chat') {
                         setTimeout(scrollChatToBottom, 0);
                     }
-                    syncParticipantsCardVisibility();
                     syncChatPanelHeight();
                 });
             });
@@ -343,7 +342,6 @@
             const chatInputEl = document.getElementById('chatInput');
             const chatSendBtnEl = document.getElementById('chatSendBtn');
             const activityChatEl = document.querySelector('.activity-chat');
-            const participantsCardEl = document.getElementById('activityParticipantsCard');
 
             const messageElements = new Map();
             const messageState = new Map();
@@ -472,13 +470,6 @@
                 const viewportTarget = window.innerHeight - navbarHeight - 110;
                 const targetHeight = Math.max(620, Math.min(900, viewportTarget));
                 activityChatEl.style.height = `${targetHeight}px`;
-            }
-
-            function syncParticipantsCardVisibility() {
-                if (!participantsCardEl) return;
-                const activePanel = document.querySelector('.activity-tab-panel.is-active');
-                const isInfoActive = !!activePanel && activePanel.dataset.panel === 'info';
-                participantsCardEl.style.display = isInfoActive ? '' : 'none';
             }
 
             function publishSeenForVisibleMessages() {
@@ -625,14 +616,12 @@
                             setupSeenObserver();
                             connectChatSocket();
                             wireSendMessage();
-                            syncParticipantsCardVisibility();
                             syncChatPanelHeight();
                         })
                         .catch(() => {
                             // Ignore initial load failures.
                         });
             } else {
-                syncParticipantsCardVisibility();
                 syncChatPanelHeight();
             }
 
@@ -643,7 +632,6 @@
             }
 
             setTimeout(() => {
-                syncParticipantsCardVisibility();
                 syncChatPanelHeight();
             }, 0);
         </script>

@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ActivityParticipationService {
@@ -206,6 +207,20 @@ public class ActivityParticipationService {
         }
 
         return getDenialCount(participation) < 2;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Activity> getApprovedActivitiesForUser(String userEmail) {
+        if (userEmail == null || userEmail.isBlank()) {
+            return List.of();
+        }
+        User user = requireUserByEmail(userEmail);
+        return participationRepository
+                .findByUserIdAndStatusOrderByRequestedAtDesc(user.getId(), ParticipationStatus.APPROVED)
+                .stream()
+                .map(ActivityParticipation::getActivity)
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     private ActivityParticipation updateExistingRequest(ActivityParticipation existing) {

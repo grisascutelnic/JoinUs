@@ -74,7 +74,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/activities", "/ws/**")
+                    .ignoringRequestMatchers("/activities", "/ws/**", "/logout")
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
@@ -122,11 +122,12 @@ public class SecurityConfig {
                         .alwaysRemember(true)
                 )
                 .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessHandler((request, response, authentication) -> {
-                            String target = sanitizeRedirectUrl(request.getHeader("Referer"));
-                            response.sendRedirect(target != null ? target : "/");
-                        })
+                    .logoutUrl("/logout")
+                    .logoutSuccessUrl("/?logout")
+                    .invalidateHttpSession(true)
+                    .clearAuthentication(true)
+                    .deleteCookies("JSESSIONID", "remember-me")
+                    .permitAll()
                 );
 
         return http.build();

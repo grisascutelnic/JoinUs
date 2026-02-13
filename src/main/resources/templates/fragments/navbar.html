@@ -9,7 +9,7 @@
             </a>
 
             <div class="d-lg-none ms-auto me-3" th:if="${#authorization.expression('isAnonymous()')}">
-                <a class="btn custom-btn custom-border-btn js-auth-link" href="#" data-auth-trigger="login">Logare</a>
+                <a class="btn custom-btn custom-border-btn js-auth-link" href="#" data-auth-trigger="login">Login</a>
             </div>
 
             <div class="d-lg-none ms-auto me-3 d-flex align-items-center gap-2" th:if="${#authorization.expression('isAuthenticated()')}">
@@ -23,7 +23,7 @@
                 </a>
                 <form th:action="@{/logout}" method="post" class="m-0">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <button type="submit" class="btn custom-btn custom-border-btn">Delogare</button>
+                    <button type="submit" class="btn custom-btn custom-border-btn">Logout</button>
                 </form>
             </div>
 
@@ -38,11 +38,7 @@
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="/activities" th:href="@{/activities}">Activitati</a>
-                    </li>
-
-                    <li class="nav-item" th:if="${#authorization.expression('isAuthenticated()')}">
-                        <a class="nav-link" href="/profile" th:href="@{/profile}">Profil</a>
+                        <a class="nav-link" href="/activities" th:href="@{/activities}">Activities</a>
                     </li>
 
                     <li class="nav-item">
@@ -54,12 +50,12 @@
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="offcanvas" href="#notificationsPanel" role="button" aria-controls="notificationsPanel">Notificari</a>
+                        <a class="nav-link" data-bs-toggle="offcanvas" href="#notificationsPanel" role="button" aria-controls="notificationsPanel">Notifications</a>
                     </li>
                 </ul>
 
                 <div class="d-none d-lg-block ms-lg-3" th:if="${#authorization.expression('isAnonymous()')}">
-                    <a class="btn custom-btn custom-border-btn js-auth-link" href="#" data-auth-trigger="login">Logare</a>
+                    <a class="btn custom-btn custom-border-btn js-auth-link" href="#" data-auth-trigger="login">Login</a>
                 </div>
 
                 <div class="d-none d-lg-flex align-items-center gap-2 ms-lg-3" th:if="${#authorization.expression('isAuthenticated()')}">
@@ -73,7 +69,7 @@
                     </a>
                     <form th:action="@{/logout}" method="post" class="m-0">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <button type="submit" class="btn custom-btn custom-border-btn">Delogare</button>
+                        <button type="submit" class="btn custom-btn custom-border-btn">Logout</button>
                     </form>
                 </div>
             </div>

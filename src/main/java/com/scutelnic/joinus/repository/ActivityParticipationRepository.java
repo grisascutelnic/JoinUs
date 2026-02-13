@@ -17,6 +17,9 @@ public interface ActivityParticipationRepository extends JpaRepository<ActivityP
 
     Optional<ActivityParticipation> findByIdAndActivityId(Long id, Long activityId);
 
+    @EntityGraph(attributePaths = {"activity", "activity.creator"})
+    List<ActivityParticipation> findByUserIdAndStatusOrderByRequestedAtDesc(Long userId, ParticipationStatus status);
+
     boolean existsByActivityIdAndUserIdAndStatus(Long activityId, Long userId, ParticipationStatus status);
 
     long countByActivityIdAndStatus(Long activityId, ParticipationStatus status);

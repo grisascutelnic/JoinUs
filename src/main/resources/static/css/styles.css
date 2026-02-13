@@ -826,7 +826,7 @@ https://templatemo.com/tm-587-tiya-golf-club
   max-width: 1200px;
   margin: var(--activity-wave-gap) auto var(--activity-wave-bottom-gap);
   background: #fff;
-  min-height: calc(100vh - 96px);
+  min-height: auto;
   box-shadow: 0 24px 48px rgba(16, 27, 49, 0.14);
   padding: 22px 0 24px;
   position: relative;
@@ -1035,7 +1035,7 @@ https://templatemo.com/tm-587-tiya-golf-club
   grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
   grid-template-areas: "sidebar main";
   gap: 24px;
-  align-items: stretch;
+  align-items: start;
 }
 
 .activity-mobile-summary {
@@ -1045,6 +1045,8 @@ https://templatemo.com/tm-587-tiya-golf-club
 .activity-sidebar {
   grid-area: sidebar;
   display: flex;
+  flex-direction: column;
+  gap: 22px;
 }
 
 .activity-main-column {
@@ -1090,8 +1092,6 @@ https://templatemo.com/tm-587-tiya-golf-club
 }
 
 .activity-sidebar-card {
-  flex: 1;
-  height: 100%;
   border: 1px solid rgba(31, 42, 68, 0.14);
   box-shadow: 0 10px 24px rgba(31, 42, 68, 0.08);
 }
@@ -1256,7 +1256,8 @@ https://templatemo.com/tm-587-tiya-golf-club
 }
 
 .activity-participants-card {
-  margin-top: 22px;
+  grid-area: auto;
+  margin-top: 0;
   padding: 20px 22px;
   border-radius: 18px;
   background: #fff;
@@ -4171,6 +4172,10 @@ strong {
   display: flex;
   justify-content: space-between;
   gap: 12px;
+}
+
+.page-profile-edit .profile-hero-cover .hero-content h2 {
+  white-space: nowrap;
 }
 
 @media (max-width: 768px) {
