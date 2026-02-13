@@ -796,6 +796,15 @@ https://templatemo.com/tm-587-tiya-golf-club
 /* Activity detail page */
 .page-activity-detail {
   background-color: var(--section-bg-color);
+  --activity-wave-height: 136px;
+  --activity-wave-source-height: calc(100vw * 320 / 1440);
+  --activity-wave-parallel-gap: 18px;
+  --activity-wave-source-offset: calc(var(--activity-wave-source-height) - var(--activity-wave-height) - var(--activity-wave-parallel-gap));
+  --activity-wave-bottom-height: 300px;
+  --activity-wave-gap: 90px;
+  --activity-wave-bottom-gap: 12px;
+  --activity-wave-shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320' preserveAspectRatio='none'%3E%3Cpath fill='%23ffffff' d='M0,224 C240,160 480,288 720,224 C960,160 1200,288 1440,224 L1440,320 L0,320 Z'/%3E%3C/svg%3E");
+  --activity-wave-bottom-shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320' preserveAspectRatio='none'%3E%3Cpath fill='%23ffffff' d='M0,96 C240,160 480,32 720,96 C960,160 1200,32 1440,96 L1440,0 L0,0 Z'/%3E%3C/svg%3E");
 }
 
 .page-activity-detail .landing-theme {
@@ -809,8 +818,51 @@ https://templatemo.com/tm-587-tiya-golf-club
 }
 
 .activity-detail-section {
-  padding-top: 24px;
-  padding-bottom: 120px;
+  padding-top: 0;
+  padding-bottom: 12px;
+}
+
+.page-activity-detail .activity-detail-container {
+  max-width: 1200px;
+  margin: var(--activity-wave-gap) auto var(--activity-wave-bottom-gap);
+  background: #fff;
+  min-height: calc(100vh - 96px);
+  box-shadow: 0 24px 48px rgba(16, 27, 49, 0.14);
+  padding: 22px 0 24px;
+  position: relative;
+  z-index: 5;
+  overflow: visible;
+}
+
+.page-activity-detail .activity-detail-container::before {
+  content: "";
+  position: absolute;
+  left: 1px;
+  top: calc(-1 * var(--activity-wave-height));
+  width: calc(100% - 2px);
+  height: var(--activity-wave-height);
+  background-repeat: no-repeat;
+  background-size: 100vw var(--activity-wave-source-height);
+  background-position: center calc(-1 * var(--activity-wave-source-offset));
+  background-image: var(--activity-wave-shape);
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.page-activity-detail .activity-detail-container::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: calc(-1 * var(--activity-wave-bottom-height));
+  width: 100%;
+  height: var(--activity-wave-bottom-height);
+  background-repeat: no-repeat;
+  background-size: 100vw 100%;
+  background-position: center top;
+  background-image: var(--activity-wave-bottom-shape);
+  pointer-events: none;
 }
 
 .activity-detail-hero-title {
@@ -1001,12 +1053,21 @@ https://templatemo.com/tm-587-tiya-golf-club
   flex-direction: column;
   gap: 22px;
   min-width: 0;
+  position: relative;
+}
+
+.activity-main-tools {
+  position: absolute;
+  top: -52px;
+  right: 4px;
+  z-index: 6;
 }
 
 .activity-chat {
   background: var(--white-color);
   border-radius: var(--border-radius-medium);
-  box-shadow: none;
+  border: 1px solid rgba(31, 42, 68, 0.14);
+  box-shadow: 0 10px 24px rgba(31, 42, 68, 0.08);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1031,7 +1092,8 @@ https://templatemo.com/tm-587-tiya-golf-club
 .activity-sidebar-card {
   flex: 1;
   height: 100%;
-  box-shadow: none;
+  border: 1px solid rgba(31, 42, 68, 0.14);
+  box-shadow: 0 10px 24px rgba(31, 42, 68, 0.08);
 }
 
 .activity-profile-card {
@@ -1307,15 +1369,19 @@ https://templatemo.com/tm-587-tiya-golf-club
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 8px;
 }
 
 .chat-bubble {
   max-width: 78%;
-  padding: 12px 14px;
-  border-radius: 16px;
+  padding: 6px 10px;
+  border-radius: 14px;
   background: #fff;
   box-shadow: 0 6px 16px rgba(31, 42, 68, 0.08);
+}
+
+.chat-bubble .mb-0 {
+  line-height: 1.3;
 }
 
 .chat-bubble.me {
@@ -1334,13 +1400,13 @@ https://templatemo.com/tm-587-tiya-golf-club
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 4px;
+  gap: 8px;
+  margin-bottom: 1px;
 }
 
 .chat-time {
   color: var(--p-color);
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1;
   white-space: nowrap;
 }
@@ -1350,14 +1416,18 @@ https://templatemo.com/tm-587-tiya-golf-club
   justify-content: flex-end;
   align-items: center;
   gap: 6px;
-  margin-top: 8px;
+  margin-top: 0;
 }
 
 .chat-status {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: -1px;
-  min-width: 16px;
+  min-width: 14px;
+  width: 100%;
+  display: inline-flex;
+  justify-content: flex-end;
+  align-items: center;
   text-align: right;
 }
 
@@ -1461,7 +1531,7 @@ https://templatemo.com/tm-587-tiya-golf-club
 @media (max-width: 991px) {
   .activity-detail-section {
     padding-top: 12px;
-    padding-bottom: 90px;
+    padding-bottom: 12px;
   }
 
   .activity-detail-grid {
@@ -1474,6 +1544,18 @@ https://templatemo.com/tm-587-tiya-golf-club
 
   .activity-sidebar {
     display: block;
+  }
+
+  .activity-main-column {
+    position: static;
+  }
+
+  .activity-main-tools {
+    position: static;
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 4px;
+    margin-bottom: 8px;
   }
 
   .activity-chat {
@@ -3445,7 +3527,26 @@ strong {
   }
 
   .page-activity-detail .activity-detail-section {
-    padding-top: 22px;
+    padding-top: 0;
+  }
+
+  .page-activity-detail {
+    --activity-wave-height: 98px;
+    --activity-wave-bottom-height: 260px;
+    --activity-wave-gap: 36px;
+    --activity-wave-bottom-gap: 10px;
+  }
+
+  .page-activity-detail .activity-detail-container {
+    margin: var(--activity-wave-gap) auto var(--activity-wave-bottom-gap);
+    padding-top: 16px;
+  }
+
+  .page-activity-detail .activity-detail-container::before {
+    background-size: 100% 100%;
+    background-position: center top;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
   }
 }
 
@@ -3495,19 +3596,34 @@ strong {
   font-family: 'DM Sans', sans-serif;
   color: #333;
   --profile-wave-height: 136px;
+  --profile-wave-source-height: calc(100vw * 320 / 1440);
+  --profile-wave-parallel-gap: 18px;
+  --profile-wave-source-offset: calc(var(--profile-wave-source-height) - var(--profile-wave-height) + var(--profile-wave-gap) - var(--profile-wave-parallel-gap));
   --profile-wave-bottom-height: 300px;
-  --profile-wave-gap: 34px;
-  --profile-wave-bottom-gap: var(--profile-wave-gap);
+  --profile-wave-gap: -6px;
+  --profile-wave-bottom-gap: 12px;
   --profile-avatar-lift: 80px;
-  --profile-wave-shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 220' preserveAspectRatio='none'%3E%3Cpath fill='%23ffffff' d='M0,88 C180,20 340,28 522,86 C698,140 862,144 1044,90 C1198,42 1322,36 1440,78 L1440,220 L0,220 Z'/%3E%3C/svg%3E");
+  --profile-wave-shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320' preserveAspectRatio='none'%3E%3Cpath fill='%23ffffff' d='M0,224 C240,160 480,288 720,224 C960,160 1200,288 1440,224 L1440,320 L0,320 Z'/%3E%3C/svg%3E");
   --profile-wave-bottom-shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320' preserveAspectRatio='none'%3E%3Cpath fill='%23ffffff' d='M0,96 C240,160 480,32 720,96 C960,160 1200,32 1440,96 L1440,0 L0,0 Z'/%3E%3C/svg%3E");
 }
 
 .page-profile-modern .profile-hero-cover {
   position: relative;
-  min-height: 380px;
+  height: 40vh;
+  min-height: 340px;
   background: #1F2A44;
   overflow: hidden;
+}
+
+.page-profile-modern .profile-hero-cover > svg {
+  position: absolute;
+  right: 0;
+  left: 0;
+}
+
+.page-profile-modern .profile-hero-cover .container + svg {
+  top: auto;
+  bottom: -1px;
 }
 
 .page-profile-modern .profile-hero-cover::before {
@@ -3520,7 +3636,8 @@ strong {
 }
 
 .page-profile-modern .profile-hero-cover .container {
-  min-height: 380px;
+  height: 100%;
+  min-height: 340px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3555,19 +3672,24 @@ strong {
 
 .page-profile-modern .profile-hero-wave {
   position: absolute;
+  right: 0;
   left: 0;
-  width: 100%;
   z-index: 2;
   pointer-events: none;
 }
 
 .page-profile-modern .profile-hero-wave-top {
-  display: none;
+  top: 0;
 }
 
 .page-profile-modern .profile-hero-wave-bottom {
   bottom: -1px;
   height: 136px;
+}
+
+.page-profile-modern .profile-hero-cover .hero-wave {
+  z-index: 2;
+  pointer-events: none;
 }
 
 .page-profile-modern .profile-container {
@@ -3591,8 +3713,8 @@ strong {
   width: calc(100% - 2px);
   height: var(--profile-wave-height);
   background-repeat: no-repeat;
-  background-size: 100vw 100%;
-  background-position: center top;
+  background-size: 100vw var(--profile-wave-source-height);
+  background-position: center calc(-1 * var(--profile-wave-source-offset));
   background-image: var(--profile-wave-shape);
   border-top-left-radius: 28px;
   border-top-right-radius: 28px;
@@ -4017,7 +4139,8 @@ strong {
   .page-profile-modern {
     --profile-wave-height: 98px;
     --profile-wave-bottom-height: 260px;
-    --profile-wave-gap: 18px;
+    --profile-wave-gap: -2px;
+    --profile-wave-bottom-gap: 10px;
     --profile-avatar-lift: 40px;
   }
 
@@ -4034,10 +4157,6 @@ strong {
     margin-top: 0;
   }
 
-  .page-profile-modern .profile-hero-wave-bottom {
-    height: 98px;
-  }
-
   .page-profile-modern .profile-container {
     margin: var(--profile-wave-gap) auto var(--profile-wave-bottom-gap);
     border-radius: 0;
@@ -4045,6 +4164,8 @@ strong {
   }
 
   .page-profile-modern .profile-container::before {
+    background-size: 100% 100%;
+    background-position: center top;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
   }

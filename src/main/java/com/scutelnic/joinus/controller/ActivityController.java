@@ -84,8 +84,7 @@ public class ActivityController {
             return "create-activity";
         }
 
-        if (imageFile != null && !imageFile.isEmpty()
-                && (form.getImageUrl() == null || form.getImageUrl().isBlank())) {
+        if (imageFile != null && !imageFile.isEmpty()) {
             if (!cloudinaryService.isConfigured()) {
                 model.addAttribute("imageError", "Încărcarea nu este configurată. Completează Cloudinary în .env.");
                 prepareFormModel(model, form, "/activities", "Formular activitate", "Completeaza detaliile si alege o imagine.", "Creeaza activitate", false);
@@ -208,8 +207,7 @@ public class ActivityController {
             return "create-activity";
         }
 
-        if (imageFile != null && !imageFile.isEmpty()
-                && (form.getImageUrl() == null || form.getImageUrl().isBlank())) {
+        if (imageFile != null && !imageFile.isEmpty()) {
             if (!cloudinaryService.isConfigured()) {
                 model.addAttribute("imageError", "Încărcarea nu este configurată. Completează Cloudinary în .env.");
                 prepareFormModel(

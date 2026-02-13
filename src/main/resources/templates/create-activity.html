@@ -85,7 +85,7 @@
                                         <p>Adaugă o imagine și taguri pentru vizibilitate.</p>
                                     </div>
                                     <div>
-                                        <label class="form-label">Încarcă o imagine (Cloudinary)</label>
+                                        <label class="form-label">Încarcă o imagine</label>
                                         <input type="file" id="cloudinaryFile" name="imageFile" accept="image/*" class="form-control">
                                         <input type="hidden" th:field="*{imageUrl}" id="cloudinaryUrl">
                                         <div class="small text-muted mt-2" id="cloudinaryStatus">Imaginea se va încărca direct în Cloudinary.</div>
@@ -238,53 +238,63 @@
                     statusEl.style.color = isError ? '#c0392b' : '#6c757d';
                 };
 
-                if (canClientUpload) {
-                    fileInput.addEventListener('change', async () => {
-                        const file = fileInput.files && fileInput.files[0];
-                        if (!file) {
-                            return;
-                        }
-                        isUploading = true;
-                        if (submitBtn) {
-                            submitBtn.disabled = true;
-                        }
-                        updateStatus('Se încarcă imaginea...', false);
-                        const formData = new FormData();
-                        formData.append('file', file);
-                        formData.append('upload_preset', uploadPreset);
+                fileInput.addEventListener('change', async () => {
+                    const file = fileInput.files && fileInput.files[0];
+                    if (!file) {
+                        return;
+                    }
 
-                        try {
-                            const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-                                method: 'POST',
-                                body: formData
-                            });
-                            if (!response.ok) {
-                                throw new Error('Upload failed');
-                            }
-                            const data = await response.json();
-                            if (!data.secure_url) {
-                                throw new Error('Missing URL');
-                            }
-                            urlInput.value = data.secure_url;
-                            fileInput.value = '';
-                            imageChoiceRadios.forEach((radio) => {
-                                radio.checked = false;
-                            });
-                            if (existingWrap) {
-                                existingWrap.style.display = 'none';
-                            }
-                            updateStatus('Imagine încărcată cu succes.', false);
-                        } catch (error) {
-                            urlInput.value = '';
-                            updateStatus('Upload eșuat. Încearcă din nou.', true);
-                        } finally {
-                            isUploading = false;
-                            if (submitBtn) {
-                                submitBtn.disabled = false;
-                            }
-                        }
+                    if (urlInput) {
+                        urlInput.value = '';
+                    }
+                    imageChoiceRadios.forEach((radio) => {
+                        radio.checked = false;
                     });
-                } else {
+                    if (existingWrap) {
+                        existingWrap.style.display = 'none';
+                    }
+
+                    if (!canClientUpload) {
+                        updateStatus('Imagine selectată. Se va încărca la trimitere.', false);
+                        return;
+                    }
+
+                    isUploading = true;
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                    }
+                    updateStatus('Se încarcă imaginea...', false);
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('upload_preset', uploadPreset);
+
+                    try {
+                        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        if (!response.ok) {
+                            throw new Error('Upload failed');
+                        }
+                        const data = await response.json();
+                        if (!data.secure_url) {
+                            throw new Error('Missing URL');
+                        }
+                        urlInput.value = data.secure_url;
+                        fileInput.value = '';
+                        updateStatus('Imagine încărcată cu succes.', false);
+                    } catch (error) {
+                        urlInput.value = '';
+                        updateStatus('Upload eșuat. Încearcă din nou.', true);
+                    } finally {
+                        isUploading = false;
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                        }
+                    }
+                });
+
+                if (!canClientUpload) {
                     updateStatus('Imaginea se va încărca la trimitere.', false);
                 }
 
