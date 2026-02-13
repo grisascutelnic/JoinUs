@@ -80,41 +80,41 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content auth-modal-content">
                 <div class="modal-body">
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Inchide"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     <div class="auth-card auth-card--modal">
-                        <h3 class="mb-3">Intra in cont</h3>
-                        <p class="auth-subtitle">Foloseste emailul si parola pentru a continua.</p>
+                        <h3 class="mb-3">Sign in</h3>
+                        <p class="auth-subtitle">Use your email and password to continue.</p>
 
                         <div class="alert alert-success" th:if="${param.registered}">
-                            Cont creat cu succes. Te poti autentifica.
+                            Account created successfully. You can sign in now.
                         </div>
                         <div class="alert alert-danger" th:if="${param.error}">
-                            Email sau parola incorecta.
+                            Incorrect email or password.
                         </div>
                         <div class="alert alert-info" th:if="${param.logout}">
-                            Ai fost delogat.
+                            You have been logged out.
                         </div>
 
                         <a class="auth-google-btn auth-google-btn--modal" th:href="@{/auth/google}">
                             <i class="bi bi-google" aria-hidden="true"></i>
-                            Continua cu Google
+                            Continue with Google
                         </a>
 
-                        <div class="auth-divider auth-divider--modal">sau</div>
+                        <div class="auth-divider auth-divider--modal">or</div>
 
                         <form class="custom-form auth-form" th:action="@{/login}" method="post" role="form">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                             <input type="email" name="email" class="form-control" placeholder="Email" required>
-                            <input type="password" name="password" class="form-control" placeholder="Parola" required>
+                            <input type="password" name="password" class="form-control" placeholder="Password" required>
 
                             <div class="d-flex justify-content-end align-items-center auth-links">
-                                <a href="/forgot-password" th:href="@{/forgot-password}">Ai uitat parola?</a>
+                                <a href="/forgot-password" th:href="@{/forgot-password}">Forgot password?</a>
                             </div>
 
-                            <button type="submit" class="form-control mt-3">Logare</button>
+                            <button type="submit" class="form-control mt-3">Sign in</button>
                         </form>
 
-                        <p class="auth-footer">Nu ai cont? <a href="#" data-auth-trigger="register">Creeaza unul acum</a></p>
+                        <p class="auth-footer">Don't have an account? <a href="#" data-auth-trigger="register">Create one now</a></p>
                     </div>
                 </div>
             </div>
@@ -125,39 +125,38 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content auth-modal-content">
                 <div class="modal-body">
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Inchide"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     <div class="auth-card auth-card--modal">
-                        <h3 class="mb-3">Creeaza cont</h3>
-                        <p class="auth-subtitle">Completeaza datele pentru a intra in comunitate.</p>
+                        <h3 class="mb-3">Create account</h3>
+                        <p class="auth-subtitle">Fill in your details to join the community.</p>
 
                         <div class="alert alert-danger" th:if="${param.registerError}">
-                            Completeaza corect toate campurile.
+                            Please fill in all fields correctly.
                         </div>
 
                         <a class="auth-google-btn auth-google-btn--modal" th:href="@{/auth/google}">
                             <i class="bi bi-google" aria-hidden="true"></i>
-                            Continua cu Google
+                            Continue with Google
                         </a>
 
-                        <div class="auth-divider auth-divider--modal">sau</div>
+                        <div class="auth-divider auth-divider--modal">or</div>
 
                         <form class="custom-form auth-form" th:action="@{/register}" method="post" role="form">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                            <input type="text" name="fullName" class="form-control" placeholder="Nume complet" required>
+                            <input type="text" name="fullName" class="form-control" placeholder="Full name" required>
                             <input type="email" name="email" class="form-control" placeholder="Email" required>
-                            <textarea name="bio" class="form-control" placeholder="Descriere scurta" rows="3"></textarea>
-                            <input type="password" name="password" class="form-control" placeholder="Parola" minlength="6" required>
-                            <input type="password" name="confirmPassword" class="form-control" placeholder="Confirma parola" minlength="6" required>
+                            <input type="password" name="password" class="form-control" placeholder="Password" minlength="6" required>
+                            <input type="password" name="confirmPassword" class="form-control" placeholder="Confirm password" minlength="6" required>
 
                             <label class="form-check-label auth-check">
                                 <input class="form-check-input me-2" type="checkbox" required>
-                                Sunt de acord cu <a href="/terms" th:href="@{/terms}">Termenii si conditiile</a>.
+                                I agree to the <a href="/terms" th:href="@{/terms}">Terms and conditions</a>.
                             </label>
 
-                            <button type="submit" class="form-control mt-3">Creeaza cont</button>
+                            <button type="submit" class="form-control mt-3">Create account</button>
                         </form>
 
-                        <p class="auth-footer">Ai deja cont? <a href="#" data-auth-trigger="login">Logheaza-te</a></p>
+                        <p class="auth-footer">Already have an account? <a href="#" data-auth-trigger="login">Sign in</a></p>
                     </div>
                 </div>
             </div>
