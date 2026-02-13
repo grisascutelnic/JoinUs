@@ -12,7 +12,15 @@
                 <a class="btn custom-btn custom-border-btn js-auth-link" href="#" data-auth-trigger="login">Logare</a>
             </div>
 
-            <div class="d-lg-none ms-auto me-3" th:if="${#authorization.expression('isAuthenticated()')}">
+            <div class="d-lg-none ms-auto me-3 d-flex align-items-center gap-2" th:if="${#authorization.expression('isAuthenticated()')}">
+                <a class="navbar-user-chip navbar-user-chip-link d-flex align-items-center gap-2" href="/profile" th:href="@{/profile}">
+                    <img th:if="${currentUserAvatarUrl != null}"
+                         th:src="${currentUserAvatarUrl}"
+                         alt="Avatar"
+                         class="rounded-circle navbar-user-avatar">
+                    <i th:if="${currentUserAvatarUrl == null}" class="bi bi-person-circle fs-4 navbar-user-icon" aria-hidden="true"></i>
+                    <span class="navbar-user-name" th:text="${currentUserDisplayName != null ? currentUserDisplayName : #authentication.name}">Utilizator</span>
+                </a>
                 <form th:action="@{/logout}" method="post" class="m-0">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                     <button type="submit" class="btn custom-btn custom-border-btn">Delogare</button>
@@ -33,7 +41,7 @@
                         <a class="nav-link" href="/activities" th:href="@{/activities}">Activitati</a>
                     </li>
 
-                    <li class="nav-item">
+                    <li class="nav-item" th:if="${#authorization.expression('isAuthenticated()')}">
                         <a class="nav-link" href="/profile" th:href="@{/profile}">Profil</a>
                     </li>
 
@@ -46,14 +54,6 @@
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="/map" th:href="@{/map}">Harta</a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="/forum" th:href="@{/forum}">Forum</a>
-                    </li>
-
-                    <li class="nav-item">
                         <a class="nav-link" data-bs-toggle="offcanvas" href="#notificationsPanel" role="button" aria-controls="notificationsPanel">Notificari</a>
                     </li>
                 </ul>
@@ -62,7 +62,15 @@
                     <a class="btn custom-btn custom-border-btn js-auth-link" href="#" data-auth-trigger="login">Logare</a>
                 </div>
 
-                <div class="d-none d-lg-block ms-lg-3" th:if="${#authorization.expression('isAuthenticated()')}">
+                <div class="d-none d-lg-flex align-items-center gap-2 ms-lg-3" th:if="${#authorization.expression('isAuthenticated()')}">
+                    <a class="navbar-user-chip navbar-user-chip-link d-flex align-items-center gap-2" href="/profile" th:href="@{/profile}">
+                        <img th:if="${currentUserAvatarUrl != null}"
+                             th:src="${currentUserAvatarUrl}"
+                             alt="Avatar"
+                             class="rounded-circle navbar-user-avatar">
+                        <i th:if="${currentUserAvatarUrl == null}" class="bi bi-person-circle fs-4 navbar-user-icon" aria-hidden="true"></i>
+                        <span class="navbar-user-name" th:text="${currentUserDisplayName != null ? currentUserDisplayName : #authentication.name}">Utilizator</span>
+                    </a>
                     <form th:action="@{/logout}" method="post" class="m-0">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                         <button type="submit" class="btn custom-btn custom-border-btn">Delogare</button>

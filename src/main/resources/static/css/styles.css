@@ -2593,6 +2593,44 @@ strong {
   color: var(--link-hover-color);
 }
 
+.navbar-user-chip {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--border-radius-large);
+  padding: 4px 10px 4px 6px;
+}
+
+.navbar-user-chip-link,
+.navbar-user-chip-link:hover,
+.navbar-user-chip-link:focus {
+  text-decoration: none;
+}
+
+.navbar-user-chip-link:hover,
+.navbar-user-chip-link:focus {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.navbar-user-avatar {
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+}
+
+.navbar-user-icon {
+  color: var(--white-color);
+}
+
+.navbar-user-name {
+  color: var(--white-color);
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  max-width: 170px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .navbar .dropdown-menu {
   background: var(--white-color);
   box-shadow: 0 1rem 3rem rgba(0,0,0,.175);
