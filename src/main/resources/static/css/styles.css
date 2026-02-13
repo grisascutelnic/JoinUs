@@ -1302,6 +1302,19 @@ https://templatemo.com/tm-587-tiya-golf-club
   opacity: 0.95;
 }
 
+.participant-profile-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  flex: 1;
+  min-width: 0;
+}
+
+.participant-profile-link:hover strong,
+.participant-profile-link:focus-visible strong {
+  text-decoration: underline;
+}
+
 .participation-request-actions {
   display: flex;
   gap: 8px;
@@ -3694,6 +3707,7 @@ strong {
 .page-profile-modern .profile-hero-cover .hero-content h2 {
   margin-bottom: 8px;
   text-align: center;
+  white-space: nowrap;
 }
 
 .page-profile-modern .profile-hero-cover .hero-content h1 {
@@ -3735,7 +3749,7 @@ strong {
   max-width: 1200px;
   margin: var(--profile-wave-gap) auto var(--profile-wave-bottom-gap);
   background: #fff;
-  min-height: calc(100vh - 96px);
+  min-height: auto;
   box-shadow: 0 24px 48px rgba(16, 27, 49, 0.14);
   border-radius: 0;
   padding: 22px 0 24px;
@@ -3951,6 +3965,22 @@ strong {
   font-weight: 700;
   margin-bottom: 24px;
   color: #2c3e50;
+}
+
+.page-profile-modern .profile-reviews-content {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.page-profile-modern .profile-reviews-content .alert {
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.page-profile-modern .content-section > .empty-state {
+  max-width: 720px;
+  margin: 0 auto 24px;
 }
 
 .page-profile-modern .favorites-grid {

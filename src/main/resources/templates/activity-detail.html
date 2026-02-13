@@ -106,12 +106,12 @@
                                         </p>
 
                                         <div class="participation-request-card" th:if="${isActivityCreator}" th:each="request : ${pendingParticipationRequests}">
-                                            <div>
+                                            <a class="participant-profile-link" th:href="@{/users/{id}(id=${request.user.id})}">
                                                 <strong th:text="${request.user.fullName}">Nume utilizator</strong>
                                                 <small class="d-block text-muted" th:text="${request.user.email}">email@example.com</small>
                                                 <small class="d-block text-muted"
                                                        th:text="${#temporals.format(request.requestedAt, 'dd MMM yyyy, HH:mm')}">10 Feb 2026, 14:20</small>
-                                            </div>
+                                            </a>
                                             <div class="participation-request-actions">
                                                 <form method="post"
                                                       th:action="@{/activities/{id}/participation-requests/{requestId}/approve(id=${activity.id}, requestId=${request.id})}">
@@ -129,10 +129,10 @@
                                         </div>
 
                                         <div class="participation-request-card is-approved" th:each="request : ${approvedParticipationRequests}">
-                                            <div>
+                                            <a class="participant-profile-link" th:href="@{/users/{id}(id=${request.user.id})}">
                                                 <strong th:text="${request.user.fullName}">Nume utilizator</strong>
                                                 <small class="d-block text-muted" th:text="${request.user.email}">email@example.com</small>
-                                            </div>
+                                            </a>
                                             <div class="dropdown" th:if="${isActivityCreator}">
                                                 <button class="btn participation-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Actiuni">
                                                     <i class="bi bi-list"></i>

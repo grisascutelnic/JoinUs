@@ -391,6 +391,10 @@ public class PageController {
         model.addAttribute("profileUser", user);
         model.addAttribute("profileAvatarUrl", resolveAvatarUrl(user));
         model.addAttribute("ratingSummary", userReviewService.getSummary(user.getId()));
+        model.addAttribute("userReviews", userReviewService.getRecentForUser(user.getId(), 10));
+        model.addAttribute("canLeaveReview", false);
+        model.addAttribute("alreadyReviewed", false);
+        model.addAttribute("isAuthenticatedUser", true);
         model.addAttribute("birthDateRequired", mustCompleteBirthDate);
         model.addAttribute("currentYear", LocalDate.now().getYear());
         model.addAttribute("createdActivities", activityService.getByCreator(user.getId()));

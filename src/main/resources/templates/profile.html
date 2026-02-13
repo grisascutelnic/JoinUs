@@ -111,14 +111,8 @@
             </div>
         </div>
 
-        <div class="nav-tabs">
-            <div class="tab">Profil</div>
-            <div class="tab active" th:text="${'Activitati (' + activitiesCount + ')'}">Activitati</div>
-            <div class="tab" th:text="${'Feedback (' + reviewCount + ')'}">Feedback</div>
-        </div>
-
         <div class="content-section">
-            <h2 class="section-title" th:text="${'Activitatile create (' + activitiesCount + ')'}">Activitatile create</h2>
+            <h2 class="section-title text-center" th:text="${'Activitatile create (' + activitiesCount + ')'}">Activitatile create</h2>
 
             <div class="empty-state" th:if="${#lists.isEmpty(createdActivities)}">
                 Utilizatorul nu a creat inca activitati.
@@ -150,6 +144,86 @@
                         </div>
                     </div>
                 </a>
+            </div>
+
+            <h2 class="section-title mb-3 text-center mt-5" th:text="${'Feedback (' + reviewCount + ')'}">Feedback</h2>
+
+            <div class="profile-reviews-content" id="section_user_reviews">
+
+                <div class="alert alert-success" th:if="${reviewSuccess}" th:text="${reviewSuccess}">
+                    Rating-ul si feedback-ul au fost salvate.
+                </div>
+                <div class="alert alert-danger" th:if="${reviewError}" th:text="${reviewError}">
+                    Nu am putut salva feedback-ul.
+                </div>
+
+                <div class="alert alert-info" th:if="${!isOwnProfileView and !isAuthenticatedUser}">
+                    Autentifica-te pentru a lasa rating si feedback.
+                </div>
+
+                <div class="alert alert-secondary" th:if="${alreadyReviewed}">
+                    Ai lasat deja rating si feedback acestui utilizator.
+                </div>
+
+                <div class="feedback-list mb-4" th:if="${!#lists.isEmpty(userReviews)}">
+                    <article class="feedback-item" th:each="review : ${userReviews}">
+                        <div class="feedback-item-header">
+                            <strong th:text="${review.reviewer.fullName}">Utilizator</strong>
+                            <small th:text="${#temporals.format(review.createdAt, 'dd MMM yyyy, HH:mm')}">12 Feb 2026, 20:10</small>
+                        </div>
+                        <div class="public-rating-stars mb-2">
+                            <i th:each="i : ${#numbers.sequence(1,5)}"
+                               class="bi"
+                               th:classappend="${i <= review.rating} ? ' bi-star-fill' : ' bi-star'"></i>
+                        </div>
+                        <p class="mb-0" th:text="${review.feedback}">Feedback utilizator.</p>
+                    </article>
+                </div>
+
+                <div class="alert alert-light" th:if="${#lists.isEmpty(userReviews)}">
+                    Nu exista feedback inca pentru acest profil.
+                </div>
+
+                <form class="custom-form profile-form"
+                      th:if="${canLeaveReview}"
+                      th:action="@{/users/{id}/reviews(id=${displayUser.id})}"
+                      th:object="${reviewForm}"
+                      method="post"
+                      role="form">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label d-block mb-2">Rating</label>
+                            <div class="rating-input" role="radiogroup" aria-label="Alege rating intre 1 si 5 stele">
+                                <input id="reviewRating5" type="radio" name="rating" value="5" th:checked="${reviewForm.rating == 5}">
+                                <label for="reviewRating5" title="5 stele">&#9733;</label>
+                                <input id="reviewRating4" type="radio" name="rating" value="4" th:checked="${reviewForm.rating == 4}">
+                                <label for="reviewRating4" title="4 stele">&#9733;</label>
+                                <input id="reviewRating3" type="radio" name="rating" value="3" th:checked="${reviewForm.rating == 3}">
+                                <label for="reviewRating3" title="3 stele">&#9733;</label>
+                                <input id="reviewRating2" type="radio" name="rating" value="2" th:checked="${reviewForm.rating == 2}">
+                                <label for="reviewRating2" title="2 stele">&#9733;</label>
+                                <input id="reviewRating1" type="radio" name="rating" value="1" th:checked="${reviewForm.rating == 1}">
+                                <label for="reviewRating1" title="1 stea">&#9733;</label>
+                            </div>
+                            <small class="text-danger d-block mt-1" th:if="${#fields.hasErrors('rating')}" th:errors="*{rating}"></small>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label" for="reviewFeedback">Feedback</label>
+                            <textarea id="reviewFeedback"
+                                      class="form-control"
+                                      th:field="*{feedback}"
+                                      rows="4"
+                                      maxlength="1000"
+                                      placeholder="Scrie feedback-ul tau aici..."></textarea>
+                            <small class="text-danger" th:if="${#fields.hasErrors('feedback')}" th:errors="*{feedback}"></small>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="form-control mt-4">Trimite feedback</button>
+                </form>
             </div>
         </div>
     </div>
