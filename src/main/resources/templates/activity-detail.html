@@ -347,6 +347,12 @@
             const messageState = new Map();
             let stompClient = null;
             let seenObserver = null;
+            const REACTION_OPTIONS = [
+                { type: 'LIKE', emoji: '👍' },
+                { type: 'LOVE', emoji: '❤️' },
+                { type: 'LAUGH', emoji: '😂' },
+                { type: 'WOW', emoji: '😮' }
+            ];
 
             function formatTime(isoDate) {
                 const date = new Date(isoDate);
@@ -382,13 +388,122 @@
                 statusEl.className = `chat-status ${status.className}`.trim();
             }
 
+            function buildReactionState(message) {
+                const reactionsByType = {};
+                REACTION_OPTIONS.forEach(({ type }) => {
+                    reactionsByType[type] = 0;
+                });
+
+                if (Array.isArray(message.reactions)) {
+                    message.reactions.forEach((reaction) => {
+                        if (!reaction || !reaction.reactionType) return;
+                        reactionsByType[reaction.reactionType] = Number(reaction.count || 0);
+                    });
+                }
+
+                return {
+                    reactionsByType,
+                    currentUserReactionType: message.currentUserReactionType || null
+                };
+            }
+
+            function renderReactionSummary(messageId) {
+                const bubble = messageElements.get(messageId);
+                const state = messageState.get(messageId);
+                if (!bubble || !state) return;
+
+                const summaryEl = bubble.querySelector('.chat-reaction-summary');
+                if (!summaryEl) return;
+                summaryEl.innerHTML = '';
+
+                REACTION_OPTIONS.forEach(({ type, emoji }) => {
+                    const count = Number(state.reactionsByType?.[type] || 0);
+                    if (count <= 0) return;
+
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'chat-reaction-pill';
+                    if (state.currentUserReactionType === type) {
+                        button.classList.add('is-active');
+                    }
+                    button.dataset.messageId = String(messageId);
+                    button.dataset.reactionType = type;
+                    button.innerHTML = `<span>${emoji}</span><small>${count}</small>`;
+                    summaryEl.appendChild(button);
+                });
+
+                const totalReactions = REACTION_OPTIONS.reduce((sum, option) => {
+                    return sum + Number(state.reactionsByType?.[option.type] || 0);
+                }, 0);
+                bubble.classList.toggle('has-reactions', totalReactions > 0);
+            }
+
+            function renderReactionPicker(messageId) {
+                const bubble = messageElements.get(messageId);
+                const state = messageState.get(messageId);
+                if (!bubble || !state) return;
+
+                const pickerEl = bubble.querySelector('.chat-reaction-picker');
+                if (!pickerEl) return;
+                pickerEl.innerHTML = '';
+
+                REACTION_OPTIONS.forEach(({ type, emoji }) => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'chat-reaction-btn';
+                    if (state.currentUserReactionType === type) {
+                        button.classList.add('is-active');
+                    }
+                    button.dataset.messageId = String(messageId);
+                    button.dataset.reactionType = type;
+                    button.textContent = emoji;
+                    pickerEl.appendChild(button);
+                });
+            }
+
+            function updateBubbleReactions(messageId) {
+                renderReactionSummary(messageId);
+                renderReactionPicker(messageId);
+            }
+
+            function getLastRenderedBubble() {
+                if (!chatStreamEl) return null;
+                let node = chatStreamEl.lastElementChild;
+                while (node && !node.classList.contains('chat-bubble')) {
+                    node = node.previousElementSibling;
+                }
+                return node;
+            }
+
+            function shouldRenderSenderLabel(message) {
+                const previousBubble = getLastRenderedBubble();
+                if (!previousBubble) {
+                    return true;
+                }
+                return Number(previousBubble.dataset.senderId) !== Number(message.senderId);
+            }
+
             function renderMessage(message) {
                 if (messageElements.has(message.id)) {
                     return;
                 }
+
+                const showSenderLabel = shouldRenderSenderLabel(message);
+                const isOwnMessage = currentUserId !== null && Number(message.senderId) === Number(currentUserId);
+
+                if (showSenderLabel) {
+                    const senderLabel = document.createElement('div');
+                    senderLabel.className = 'chat-sender-label';
+                    if (isOwnMessage) {
+                        senderLabel.classList.add('me');
+                    }
+                    senderLabel.textContent = message.senderName;
+                    chatStreamEl.appendChild(senderLabel);
+                }
+
                 const bubble = document.createElement('div');
                 bubble.className = 'chat-bubble';
-                if (currentUserId !== null && Number(message.senderId) === Number(currentUserId)) {
+                if (isOwnMessage) {
                     bubble.classList.add('me');
                 }
                 bubble.dataset.messageId = String(message.id);
@@ -412,24 +527,38 @@
 
                 const header = document.createElement('div');
                 header.className = 'chat-header';
-
-                const sender = document.createElement('strong');
-                sender.textContent = message.senderName;
-                header.appendChild(sender);
                 header.appendChild(time);
+
+                const reactionRow = document.createElement('div');
+                reactionRow.className = 'chat-reaction-row';
+
+                const reactionSummary = document.createElement('div');
+                reactionSummary.className = 'chat-reaction-summary';
+
+                const reactionPicker = document.createElement('div');
+                reactionPicker.className = 'chat-reaction-picker';
+
+                reactionRow.appendChild(reactionSummary);
+                reactionRow.appendChild(reactionPicker);
 
                 bubble.appendChild(header);
                 bubble.appendChild(content);
                 bubble.appendChild(footer);
+                bubble.appendChild(reactionRow);
 
                 chatStreamEl.appendChild(bubble);
                 messageElements.set(message.id, bubble);
+
+                const reactionState = buildReactionState(message);
                 messageState.set(message.id, {
                     senderId: message.senderId,
                     deliveredCount: message.deliveredCount || 0,
-                    seenCount: message.seenCount
+                    seenCount: message.seenCount,
+                    reactionsByType: reactionState.reactionsByType,
+                    currentUserReactionType: reactionState.currentUserReactionType
                 });
                 updateBubbleStatus(message.id);
+                updateBubbleReactions(message.id);
 
                 const state = messageState.get(message.id);
                 if (seenObserver && state && !isOwnMessageState(state)) {
@@ -446,6 +575,55 @@
                 state.seenCount = seenCount;
                 messageState.set(messageId, state);
                 updateBubbleStatus(messageId);
+            }
+
+            function updateMessageReactions(messageId, reactions, actorUserId, actorReactionType) {
+                const bubble = messageElements.get(messageId);
+                if (!bubble) return;
+                const state = messageState.get(messageId);
+                if (!state) return;
+
+                const nextReactions = { ...(state.reactionsByType || {}) };
+                REACTION_OPTIONS.forEach(({ type }) => {
+                    nextReactions[type] = 0;
+                });
+
+                if (Array.isArray(reactions)) {
+                    reactions.forEach((reaction) => {
+                        if (!reaction || !reaction.reactionType) return;
+                        nextReactions[reaction.reactionType] = Number(reaction.count || 0);
+                    });
+                }
+
+                state.reactionsByType = nextReactions;
+
+                if (currentUserId !== null && Number(actorUserId) === Number(currentUserId)) {
+                    state.currentUserReactionType = actorReactionType || null;
+                }
+
+                messageState.set(messageId, state);
+                updateBubbleReactions(messageId);
+            }
+
+            function publishReaction(messageId, reactionType) {
+                if (!stompClient || !stompClient.connected) return;
+                if (!messageId || !reactionType) return;
+                stompClient.publish({
+                    destination: `/app/activities/${activityId}/reactions`,
+                    body: JSON.stringify({ messageId: Number(messageId), reactionType })
+                });
+            }
+
+            function wireReactionClicks() {
+                if (!chatStreamEl) return;
+                chatStreamEl.addEventListener('click', (event) => {
+                    const target = event.target.closest('[data-reaction-type][data-message-id]');
+                    if (!target) return;
+                    const messageId = Number(target.dataset.messageId);
+                    const reactionType = target.dataset.reactionType;
+                    if (!messageId || !reactionType) return;
+                    publishReaction(messageId, reactionType);
+                });
             }
 
             function scrollChatToBottom() {
@@ -580,6 +758,16 @@
                         updateMessageStatus(event.messageId, event.deliveredCount || 0, event.seenCount || 0);
                     });
 
+                    stompClient.subscribe(`/topic/activities/${activityId}/reactions`, (frame) => {
+                        const event = JSON.parse(frame.body);
+                        updateMessageReactions(
+                                event.messageId,
+                                event.reactions || [],
+                                event.actorUserId,
+                                event.actorReactionType
+                        );
+                    });
+
                     publishDeliveredForRenderedMessages();
                     publishSeenForVisibleMessages();
                 };
@@ -616,6 +804,7 @@
                             setupSeenObserver();
                             connectChatSocket();
                             wireSendMessage();
+                            wireReactionClicks();
                             syncChatPanelHeight();
                         })
                         .catch(() => {

@@ -1,14 +1,19 @@
 package com.scutelnic.joinus.service;
 
 import com.scutelnic.joinus.dto.chat.ChatMessageResponse;
+import com.scutelnic.joinus.dto.chat.MessageReactionSummaryResponse;
+import com.scutelnic.joinus.dto.chat.MessageReactionUpdateEvent;
 import com.scutelnic.joinus.dto.chat.MessageSeenSummaryResponse;
 import com.scutelnic.joinus.dto.chat.SeenUpdateEvent;
 import com.scutelnic.joinus.dto.chat.SeenUserResponse;
 import com.scutelnic.joinus.entity.Activity;
 import com.scutelnic.joinus.entity.ActivityMessage;
+import com.scutelnic.joinus.entity.ActivityMessageReaction;
+import com.scutelnic.joinus.entity.ActivityMessageReactionType;
 import com.scutelnic.joinus.entity.ActivityMessageSeen;
 import com.scutelnic.joinus.entity.User;
 import com.scutelnic.joinus.repository.ActivityMessageDeliveredRepository;
+import com.scutelnic.joinus.repository.ActivityMessageReactionRepository;
 import com.scutelnic.joinus.repository.ActivityMessageRepository;
 import com.scutelnic.joinus.repository.ActivityMessageSeenRepository;
 import com.scutelnic.joinus.repository.ActivityRepository;
@@ -22,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,11 +36,18 @@ import java.util.Map;
 public class ActivityChatService {
 
     private static final int MAX_HISTORY_LIMIT = 100;
+    private static final List<ActivityMessageReactionType> SUPPORTED_REACTIONS = List.of(
+            ActivityMessageReactionType.LIKE,
+            ActivityMessageReactionType.LOVE,
+            ActivityMessageReactionType.LAUGH,
+            ActivityMessageReactionType.WOW
+    );
 
     private final ActivityRepository activityRepository;
     private final UserRepository userRepository;
     private final ActivityMessageRepository messageRepository;
     private final ActivityMessageDeliveredRepository deliveredRepository;
+    private final ActivityMessageReactionRepository reactionRepository;
     private final ActivityMessageSeenRepository seenRepository;
     private final ActivityParticipationService participationService;
 
@@ -42,12 +55,14 @@ public class ActivityChatService {
                                UserRepository userRepository,
                                ActivityMessageRepository messageRepository,
                                ActivityMessageDeliveredRepository deliveredRepository,
+                               ActivityMessageReactionRepository reactionRepository,
                                ActivityMessageSeenRepository seenRepository,
                                ActivityParticipationService participationService) {
         this.activityRepository = activityRepository;
         this.userRepository = userRepository;
         this.messageRepository = messageRepository;
         this.deliveredRepository = deliveredRepository;
+        this.reactionRepository = reactionRepository;
         this.seenRepository = seenRepository;
         this.participationService = participationService;
     }
@@ -55,14 +70,27 @@ public class ActivityChatService {
     public List<ChatMessageResponse> getRecentMessages(Long activityId, int requestedLimit, String userEmail) {
         requireChatAccess(activityId, userEmail);
         requireActivity(activityId);
+        User currentUser = requireUserByEmail(userEmail);
         int limit = Math.max(1, Math.min(MAX_HISTORY_LIMIT, requestedLimit));
         List<ActivityMessage> messages = messageRepository.findByActivityIdOrderByCreatedAtDescIdDesc(
                 activityId,
                 PageRequest.of(0, limit)
         );
         Collections.reverse(messages);
+
+        List<Long> messageIds = messages.stream().map(ActivityMessage::getId).toList();
+        Map<Long, Map<ActivityMessageReactionType, Long>> reactionCountsByMessage = buildReactionCountsByMessage(messageIds);
+        Map<Long, ActivityMessageReactionType> currentUserReactionsByMessage = buildCurrentUserReactionsByMessage(
+            messageIds,
+            currentUser.getId()
+        );
+
         return messages.stream()
-                .map(this::toMessageResponse)
+            .map(message -> toMessageResponse(
+                message,
+                reactionCountsByMessage,
+                currentUserReactionsByMessage
+            ))
                 .toList();
     }
 
@@ -77,7 +105,61 @@ public class ActivityChatService {
         message.setSender(sender);
         message.setContent(normalizedContent);
         ActivityMessage saved = messageRepository.save(message);
-        return toMessageResponse(saved);
+        return toMessageResponse(saved, Map.of(), Map.of());
+    }
+
+    public MessageReactionUpdateEvent toggleReaction(Long activityId, Long messageId, String reactionTypeValue, String userEmail) {
+        if (messageId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "messageId is required");
+        }
+
+        ActivityMessageReactionType reactionType = ActivityMessageReactionType.fromValue(reactionTypeValue);
+        if (reactionType == null || !SUPPORTED_REACTIONS.contains(reactionType)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported reaction type");
+        }
+
+        requireChatAccess(activityId, userEmail);
+        User user = requireUserByEmail(userEmail);
+        ActivityMessage message = messageRepository.findWithSenderAndActivityById(messageId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Message not found"));
+
+        if (!message.getActivity().getId().equals(activityId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Message does not belong to activity");
+        }
+
+        ActivityMessageReactionType actorReactionType = reactionType;
+
+        ActivityMessageReaction existingReaction = reactionRepository
+                .findByMessageIdAndUserId(messageId, user.getId())
+                .orElse(null);
+
+        if (existingReaction != null && existingReaction.getReactionType() == reactionType) {
+            reactionRepository.delete(existingReaction);
+            actorReactionType = null;
+        } else if (existingReaction != null) {
+            existingReaction.setReactionType(reactionType);
+            existingReaction.setReactedAt(LocalDateTime.now());
+            reactionRepository.save(existingReaction);
+        } else {
+            ActivityMessageReaction newReaction = new ActivityMessageReaction();
+            newReaction.setMessage(message);
+            newReaction.setUser(user);
+            newReaction.setReactionType(reactionType);
+            newReaction.setReactedAt(LocalDateTime.now());
+            reactionRepository.save(newReaction);
+        }
+
+        Map<Long, Map<ActivityMessageReactionType, Long>> countsByMessage = buildReactionCountsByMessage(List.of(messageId));
+        Map<Long, ActivityMessageReactionType> currentUserReactions = actorReactionType != null
+            ? Map.of(messageId, actorReactionType)
+            : Map.of();
+
+        return new MessageReactionUpdateEvent(
+                messageId,
+                buildReactionSummaryForMessage(messageId, countsByMessage, currentUserReactions),
+                user.getId(),
+                actorReactionType != null ? actorReactionType.name() : null
+        );
     }
 
     public SeenUpdateEvent markDelivered(Long activityId, Long messageId, String userEmail) {
@@ -200,7 +282,9 @@ public class ActivityChatService {
                 .toList();
     }
 
-    private ChatMessageResponse toMessageResponse(ActivityMessage message) {
+    private ChatMessageResponse toMessageResponse(ActivityMessage message,
+                                                  Map<Long, Map<ActivityMessageReactionType, Long>> reactionCountsByMessage,
+                                                  Map<Long, ActivityMessageReactionType> currentUserReactionsByMessage) {
         long deliveredCount = deliveredRepository.countByMessageIdAndUserIdNot(message.getId(), message.getSender().getId());
         long seenCount = seenRepository.countByMessageIdAndUserIdNot(message.getId(), message.getSender().getId());
         return new ChatMessageResponse(
@@ -211,8 +295,67 @@ public class ActivityChatService {
                 message.getContent(),
                 message.getCreatedAt(),
                 deliveredCount,
-                seenCount
+                seenCount,
+                buildReactionSummaryForMessage(message.getId(), reactionCountsByMessage, currentUserReactionsByMessage),
+                currentUserReactionsByMessage.get(message.getId()) != null
+                        ? currentUserReactionsByMessage.get(message.getId()).name()
+                        : null
         );
+    }
+
+    private Map<Long, Map<ActivityMessageReactionType, Long>> buildReactionCountsByMessage(List<Long> messageIds) {
+        if (messageIds == null || messageIds.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, Map<ActivityMessageReactionType, Long>> result = new LinkedHashMap<>();
+        for (Long messageId : messageIds) {
+            result.put(messageId, new EnumMap<>(ActivityMessageReactionType.class));
+        }
+
+        List<ActivityMessageReactionRepository.MessageReactionCountView> rows = reactionRepository.countGroupedByMessageIds(messageIds);
+        for (ActivityMessageReactionRepository.MessageReactionCountView row : rows) {
+            Map<ActivityMessageReactionType, Long> messageCounts = result.get(row.getMessageId());
+            if (messageCounts == null) {
+                continue;
+            }
+            messageCounts.put(row.getReactionType(), row.getTotal());
+        }
+
+        return result;
+    }
+
+    private Map<Long, ActivityMessageReactionType> buildCurrentUserReactionsByMessage(List<Long> messageIds, Long userId) {
+        if (messageIds == null || messageIds.isEmpty() || userId == null) {
+            return Map.of();
+        }
+
+        return reactionRepository.findByMessageIdInAndUserId(messageIds, userId)
+                .stream()
+                .collect(LinkedHashMap::new,
+                        (map, reaction) -> map.put(reaction.getMessage().getId(), reaction.getReactionType()),
+                        LinkedHashMap::putAll);
+    }
+
+    private List<MessageReactionSummaryResponse> buildReactionSummaryForMessage(
+            Long messageId,
+            Map<Long, Map<ActivityMessageReactionType, Long>> reactionCountsByMessage,
+            Map<Long, ActivityMessageReactionType> currentUserReactionsByMessage
+    ) {
+        Map<ActivityMessageReactionType, Long> counts = reactionCountsByMessage.getOrDefault(
+                messageId,
+                Map.of()
+        );
+        ActivityMessageReactionType currentUserReaction = currentUserReactionsByMessage.get(messageId);
+
+        return SUPPORTED_REACTIONS.stream()
+                .map(type -> new MessageReactionSummaryResponse(
+                        type.name(),
+                        type.getEmoji(),
+                        counts.getOrDefault(type, 0L),
+                        currentUserReaction == type
+                ))
+                .toList();
     }
 
     private Activity requireActivity(Long activityId) {

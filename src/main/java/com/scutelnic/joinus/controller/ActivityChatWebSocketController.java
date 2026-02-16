@@ -3,6 +3,8 @@ package com.scutelnic.joinus.controller;
 import com.scutelnic.joinus.dto.chat.ChatMessageRequest;
 import com.scutelnic.joinus.dto.chat.ChatMessageResponse;
 import com.scutelnic.joinus.dto.chat.DeliveredEventRequest;
+import com.scutelnic.joinus.dto.chat.MessageReactionEventRequest;
+import com.scutelnic.joinus.dto.chat.MessageReactionUpdateEvent;
 import com.scutelnic.joinus.dto.chat.SeenEventRequest;
 import com.scutelnic.joinus.dto.chat.SeenUpdateEvent;
 import com.scutelnic.joinus.service.ActivityChatService;
@@ -53,6 +55,20 @@ public class ActivityChatWebSocketController {
         messagingTemplate.convertAndSend(statusTopicForActivity(activityId), update);
     }
 
+    @MessageMapping("/activities/{activityId}/reactions")
+    public void toggleReaction(@DestinationVariable Long activityId,
+                               MessageReactionEventRequest request,
+                               Principal principal) {
+        String email = requirePrincipal(principal);
+        MessageReactionUpdateEvent update = activityChatService.toggleReaction(
+                activityId,
+                request.messageId(),
+                request.reactionType(),
+                email
+        );
+        messagingTemplate.convertAndSend(reactionsTopicForActivity(activityId), update);
+    }
+
     private String requirePrincipal(Principal principal) {
         if (principal == null || principal.getName() == null || principal.getName().isBlank()) {
             throw new ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Authentication required");
@@ -66,5 +82,9 @@ public class ActivityChatWebSocketController {
 
     private String statusTopicForActivity(Long activityId) {
         return "/topic/activities/" + activityId + "/status";
+    }
+
+    private String reactionsTopicForActivity(Long activityId) {
+        return "/topic/activities/" + activityId + "/reactions";
     }
 }
