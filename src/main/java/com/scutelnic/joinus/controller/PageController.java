@@ -176,7 +176,44 @@ public class PageController {
     }
 
     @GetMapping("/calendar")
-    public String calendar() {
+    public String calendar(Model model, Authentication authentication) {
+        if (!isAuthenticated(authentication)) {
+            model.addAttribute("calendarActivities", List.of());
+            model.addAttribute("isAuthenticatedUser", false);
+            return "calendar";
+        }
+
+        User user = userService.findByEmail(authentication.getName()).orElse(null);
+        if (user == null) {
+            model.addAttribute("calendarActivities", List.of());
+            model.addAttribute("isAuthenticatedUser", true);
+            return "calendar";
+        }
+
+        List<com.scutelnic.joinus.entity.Activity> authoredActivities = activityService.getByCreator(user.getId());
+        List<com.scutelnic.joinus.entity.Activity> approvedActivities = participationService
+            .getApprovedActivitiesForUser(authentication.getName());
+
+        List<com.scutelnic.joinus.entity.Activity> combined = new ArrayList<>(authoredActivities.size() + approvedActivities.size());
+        combined.addAll(authoredActivities);
+        combined.addAll(approvedActivities);
+
+        List<com.scutelnic.joinus.entity.Activity> calendarActivities = combined.stream()
+            .filter(activity -> activity != null && activity.getId() != null && activity.getDate() != null)
+            .collect(java.util.stream.Collectors.toMap(
+                com.scutelnic.joinus.entity.Activity::getId,
+                activity -> activity,
+                (existing, replacement) -> existing,
+                LinkedHashMap::new
+            ))
+            .values().stream()
+            .sorted(Comparator
+                .comparing(com.scutelnic.joinus.entity.Activity::getDate)
+                .thenComparing(com.scutelnic.joinus.entity.Activity::getTime, Comparator.nullsLast(Comparator.naturalOrder())))
+            .toList();
+
+        model.addAttribute("calendarActivities", calendarActivities);
+        model.addAttribute("isAuthenticatedUser", true);
         return "calendar";
     }
 

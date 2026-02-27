@@ -4135,6 +4135,83 @@ strong {
   margin: 0 auto 24px;
 }
 
+.page-calendar {
+  --section-bg-color: #F4F1DE;
+}
+
+.page-calendar .profile-theme {
+  --primary-color: #2C6FB7;
+  --secondary-color: #1F2A44;
+  --section-bg-color: #F4F1DE;
+  --custom-btn-bg-color: #C9A227;
+  --custom-btn-bg-hover-color: #A8831F;
+  --link-hover-color: #C9A227;
+  background-color: #1F2A44;
+}
+
+.page-calendar .profile-theme .sticky-wrapper.is-sticky .navbar,
+.page-calendar .profile-theme .navbar {
+  background-color: #1F2A44 !important;
+}
+
+.page-calendar .profile-container {
+  max-width: 1240px;
+  margin: var(--profile-wave-gap) auto var(--profile-wave-bottom-gap);
+  background: #fff;
+  min-height: auto;
+  box-shadow: 0 24px 48px rgba(16, 27, 49, 0.14);
+  border-radius: 0;
+  padding: 22px 0 24px;
+  position: relative;
+  z-index: 5;
+  overflow: visible;
+}
+
+.page-calendar .profile-container::before {
+  content: "";
+  position: absolute;
+  left: 1px;
+  top: calc(-1 * var(--profile-wave-height));
+  width: calc(100% - 2px);
+  height: var(--profile-wave-height);
+  background-repeat: no-repeat;
+  background-size: 100vw var(--profile-wave-source-height);
+  background-position: center calc(-1 * var(--profile-wave-source-offset));
+  background-image: var(--profile-wave-shape);
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.page-calendar .profile-container::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: calc(-1 * var(--profile-wave-bottom-height));
+  width: 100%;
+  height: var(--profile-wave-bottom-height);
+  background-repeat: no-repeat;
+  background-size: 100vw 100%;
+  background-position: center top;
+  background-image: var(--profile-wave-bottom-shape);
+  pointer-events: none;
+}
+
+.page-calendar .calendar-content-section {
+  padding-top: 16px;
+}
+
+.page-calendar .calendar-content-section > p {
+  color: var(--p-color);
+}
+
+.page-calendar .calendar-content-section .section-title,
+.page-calendar .calendar-content-section > p {
+  position: relative;
+  top: -8px;
+}
+
 .page-profile-modern .favorites-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -4448,5 +4525,9 @@ strong {
 
   .page-profile-edit .birthdate-manual-hints small {
     text-align: left;
+  }
+
+  .page-calendar .profile-container {
+    max-width: calc(100% - 24px);
   }
 }
