@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ro" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta name="description" content="Detalii activitate JoinUs. Selecteaza o activitate pentru chat.">
+        <meta name="author" content="">
+
+        <title>Detalii activitate - JoinUs</title>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+        <link href="/css/bootstrap.min.css" rel="stylesheet">
+        <link href="/css/bootstrap-icons.css" rel="stylesheet">
+        <link href="/css/styles.css" rel="stylesheet">
+    </head>
+
+    <body class="page-activity-detail">
+        <main>
+            <div class="landing-theme">
+                <header th:replace="~{fragments/navbar :: navbar}"></header>
+
+                <section class="hero-section d-flex justify-content-center align-items-center" style="background-image: none !important;">
+                    <div class="section-overlay"></div>
+
+                    <svg class="activity-detail-top-wave" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+                        <path fill="var(--secondary-color)" fill-opacity="1" d="M0,224 C240,160 480,288 720,224 C960,160 1200,288 1440,224 L1440,0 L0,0 Z"></path>
+                    </svg>
+
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12 hero-content">
+                                <div class="activity-detail-hero-layout">
+                                    <div class="activity-detail-hero-left">
+                                        <h1 class="activity-detail-hero-title">Chat activitati</h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <svg class="hero-wave hero-wave-desktop" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+                        <path fill="var(--section-bg-color)" fill-opacity="1" d="M0,224 C240,160 480,288 720,224 C960,160 1200,288 1440,224 L1440,320 L0,320 Z"></path>
+                    </svg>
+                    <svg class="hero-wave hero-wave-mobile" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" preserveAspectRatio="none">
+                        <path fill="var(--section-bg-color)" fill-opacity="1" d="M0,224 C240,160 480,288 720,224 C960,160 1200,288 1440,224 L1440,320 L0,320 Z"></path>
+                    </svg>
+                </section>
+
+                <section class="activity-detail-section section-bg">
+                    <div class="activity-detail-container">
+                        <div class="container">
+                            <div class="activity-detail-grid">
+                                <aside class="activity-sidebar">
+                                    <div class="activity-sidebar-card">
+                                        <h5>Activitatile tale</h5>
+                                        <div class="activity-mini-list" th:if="${otherActivities != null and !#lists.isEmpty(otherActivities)}">
+                                            <a class="activity-mini-card"
+                                               th:each="item : ${otherActivities}"
+                                                              th:href="@{/activities/{id}(id=${item.id})}">
+                                                <img th:src="${item.imageUrl}" alt="Activitate" class="activity-mini-thumb">
+                                                <div class="activity-mini-info">
+                                                    <h6 class="mb-1" th:text="${item.title}">Tur ciclist cu ghid</h6>
+                                                    <small th:text="${#temporals.format(item.date, 'dd MMM') + ', ' + #temporals.format(item.time, 'HH:mm')}">Astazi, 18:30</small>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        <p class="text-muted mb-0" th:if="${otherActivities == null or #lists.isEmpty(otherActivities)}">
+                                            Nu ai activitati disponibile momentan.
+                                        </p>
+                                    </div>
+                                </aside>
+
+                                <div class="activity-main-column">
+                                    <section class="activity-chat" aria-live="polite">
+                                        <div class="activity-tabs" role="tablist">
+                                            <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" data-tab="info">Info</button>
+                                            <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" data-tab="chat">Chat</button>
+                                            <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" data-tab="announcements">Anunturi</button>
+                                        </div>
+
+                                        <div class="activity-tab-panel" role="tabpanel" data-panel="info">
+                                            <div class="d-flex align-items-center justify-content-center text-center" style="min-height: 420px;">
+                                                <p class="mb-0 text-muted">Selecteaza o activitate pentru a vedea informatiile.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="activity-tab-panel" role="tabpanel" data-panel="chat">
+                                            <div class="d-flex align-items-center justify-content-center text-center" style="min-height: 420px;">
+                                                <p class="mb-0 text-muted">Selecteaza o activitate pentru a intra in chat.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="activity-tab-panel" role="tabpanel" data-panel="announcements">
+                                            <div class="d-flex align-items-center justify-content-center text-center" style="min-height: 420px;">
+                                                <p class="mb-0 text-muted">Selecteaza o activitate pentru a vedea anunturile.</p>
+                                            </div>
+                                        </div>
+                                    </section>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+        <script src="/js/jquery.min.js"></script>
+        <script src="/js/bootstrap.bundle.min.js"></script>
+        <script src="/js/jquery.sticky.js"></script>
+        <script src="/js/custom.js"></script>
+        <script>
+            const tabButtons = document.querySelectorAll('.activity-tab-btn');
+            const tabPanels = document.querySelectorAll('.activity-tab-panel');
+
+            function activateTab(target) {
+                const targetButton = Array.from(tabButtons).find((button) => button.dataset.tab === target);
+                if (!targetButton) return;
+
+                window.sessionStorage.setItem('joinusPreferredActivityTab', target);
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('tab', target);
+                window.history.replaceState({}, '', currentUrl.pathname + currentUrl.search + currentUrl.hash);
+
+                tabButtons.forEach((btn) => {
+                    const isActive = btn === targetButton;
+                    btn.classList.toggle('is-active', isActive);
+                    btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                });
+
+                tabPanels.forEach((panel) => {
+                    panel.classList.toggle('is-active', panel.dataset.panel === target);
+                });
+
+                preserveTabContextForSidebarActivities();
+            }
+
+            tabButtons.forEach((button) => {
+                button.addEventListener('click', () => activateTab(button.dataset.tab));
+            });
+
+            const requestedTab = new URLSearchParams(window.location.search).get('tab');
+            const validTabs = ['info', 'chat', 'announcements'];
+            const initialTab = validTabs.includes(requestedTab) ? requestedTab : 'info';
+
+            function preserveTabContextForSidebarActivities() {
+                const activeTabButton = document.querySelector('.activity-tab-btn.is-active');
+                const tabToPreserve = activeTabButton ? activeTabButton.dataset.tab : null;
+                if (!tabToPreserve) return;
+
+                const sidebarActivityLinks = document.querySelectorAll('.activity-mini-card[href^="/activities/"]');
+                sidebarActivityLinks.forEach((link) => {
+                    try {
+                        const url = new URL(link.getAttribute('href'), window.location.origin);
+                        url.searchParams.set('tab', tabToPreserve);
+                        link.setAttribute('href', url.pathname + url.search);
+                    } catch (e) {
+                        // Ignore malformed links.
+                    }
+                });
+            }
+
+            preserveTabContextForSidebarActivities();
+            activateTab(initialTab);
+        </script>
+    </body>
+</html>

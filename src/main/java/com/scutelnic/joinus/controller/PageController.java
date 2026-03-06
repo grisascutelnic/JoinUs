@@ -218,8 +218,14 @@ public class PageController {
     }
 
     @GetMapping("/chat")
-    public String chat() {
-        return "chat";
+    public String chat(Authentication authentication) {
+        return "redirect:/activities/0?tab=chat";
+    }
+
+    @GetMapping("/activities/0")
+    public String activityDetailEmpty(Model model, Authentication authentication) {
+        model.addAttribute("otherActivities", resolveSidebarActivities(0L, authentication));
+        return "activity-detail-empty";
     }
 
     @GetMapping("/map")

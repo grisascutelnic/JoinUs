@@ -116,7 +116,7 @@
                                     </div>
 
                                     <div class="col-lg-4 col-md-6 col-12" th:each="activity : ${activities}">
-                                        <a th:href="@{/activities/{id}(id=${activity.id})}" class="activity-card-link">
+                                        <a th:href="@{/activities/{id}(id=${activity.id}, tab='info')}" class="activity-card-link">
                                             <div class="custom-block custom-block-bg activity-card mb-3">
                                                 <div class="row align-items-center">
                                                     <div class="col-4 col-md-3">

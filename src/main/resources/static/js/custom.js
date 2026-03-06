@@ -166,6 +166,232 @@
       openAuthModal(initialAuth, false);
     }
 
+    var ACTIVITY_TABS = ['info', 'chat', 'announcements'];
+
+    function isValidActivityTab(tab) {
+      return ACTIVITY_TABS.indexOf(tab) !== -1;
+    }
+
+    function getUrlActivityTab() {
+      return new URLSearchParams(window.location.search).get('tab');
+    }
+
+    function setPreferredActivityTab(tab) {
+      if (!isValidActivityTab(tab)) return;
+      window.sessionStorage.setItem('joinusPreferredActivityTab', tab);
+    }
+
+    function getPreferredActivityTab() {
+      var urlTab = getUrlActivityTab();
+      if (isValidActivityTab(urlTab)) {
+        return urlTab;
+      }
+
+      var stored = window.sessionStorage.getItem('joinusPreferredActivityTab');
+      return isValidActivityTab(stored) ? stored : null;
+    }
+
+    function syncPreferredActivityTabContext() {
+      // Activities listing should always open details on Info tab.
+      if (window.location.pathname === '/activities') {
+        setPreferredActivityTab('info');
+        return;
+      }
+
+      var tab = getUrlActivityTab();
+      if (isValidActivityTab(tab)) {
+        setPreferredActivityTab(tab);
+      }
+    }
+
+    function applyPreferredActivityTabContext() {
+      var preferredTab = getPreferredActivityTab();
+      if (!preferredTab) {
+        return;
+      }
+
+      var activitiesNavLink = document.querySelector('.navbar-nav .nav-link[href="/activities"]');
+      if (activitiesNavLink) {
+        activitiesNavLink.setAttribute('href', '/activities');
+        activitiesNavLink.addEventListener('click', function () {
+          setPreferredActivityTab('info');
+        });
+      }
+    }
+
+    var navChatLink = document.querySelector('.navbar-nav .nav-link[href="/chat"]');
+    if (navChatLink) {
+      navChatLink.addEventListener('click', function () {
+        setPreferredActivityTab('chat');
+      });
+    }
+
+    syncPreferredActivityTabContext();
+    applyPreferredActivityTabContext();
+
+    function ensureNotificationsPanel() {
+      var existing = document.getElementById('notificationsPanel');
+      if (existing) {
+        return existing;
+      }
+
+      var panel = document.createElement('div');
+      panel.className = 'offcanvas offcanvas-end';
+      panel.setAttribute('data-bs-scroll', 'true');
+      panel.setAttribute('tabindex', '-1');
+      panel.id = 'notificationsPanel';
+      panel.setAttribute('aria-labelledby', 'notificationsPanelLabel');
+      panel.innerHTML =
+        '<div class="offcanvas-header">' +
+          '<h5 class="offcanvas-title text-white" id="notificationsPanelLabel">Notificari</h5>' +
+          '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>' +
+        '</div>' +
+        '<div class="offcanvas-body d-flex flex-column"></div>';
+      document.body.appendChild(panel);
+      return panel;
+    }
+
+    function escapeHtml(value) {
+      var safe = value == null ? '' : String(value);
+      return safe
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function getCsrfToken() {
+      var csrfInput = document.querySelector('input[name="_csrf"]');
+      return csrfInput ? csrfInput.value : null;
+    }
+
+    function formatRelativeTime(isoDate) {
+      if (!isoDate) return 'Acum';
+      var date = new Date(isoDate);
+      if (Number.isNaN(date.getTime())) return 'Acum';
+
+      var diffMs = Date.now() - date.getTime();
+      var minutes = Math.max(1, Math.floor(diffMs / 60000));
+      if (minutes < 60) return 'Acum ' + minutes + ' min';
+
+      var hours = Math.floor(minutes / 60);
+      if (hours < 24) return 'Acum ' + hours + ' h';
+
+      var days = Math.floor(hours / 24);
+      return 'Acum ' + days + ' zile';
+    }
+
+    function updateNotificationBadge(unreadCount) {
+      var badge = document.getElementById('navbarNotificationBadge');
+      if (!badge) return;
+
+      if (!unreadCount || unreadCount < 1) {
+        badge.classList.add('d-none');
+        badge.textContent = '0';
+        return;
+      }
+
+      badge.classList.remove('d-none');
+      badge.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
+    }
+
+    function renderNotifications(data) {
+      var panel = ensureNotificationsPanel();
+      var body = panel.querySelector('.offcanvas-body');
+      if (!body) return;
+
+      var notifications = Array.isArray(data && data.notifications) ? data.notifications : [];
+      updateNotificationBadge((data && data.unreadCount) || 0);
+
+      if (notifications.length === 0) {
+        body.innerHTML =
+          '<div class="notification-empty mb-3">Nu ai notificari momentan.</div>' +
+          '<div class="mt-auto"><a href="#" class="btn custom-btn custom-border-btn w-100" data-bs-dismiss="offcanvas">Inchide</a></div>';
+        return;
+      }
+
+      var itemsHtml = notifications.map(function (item) {
+        var readClass = item.read ? ' notification-item--read' : '';
+        var title = escapeHtml(item.title || 'Notificare');
+        var message = escapeHtml(item.message || '');
+        var relative = formatRelativeTime(item.createdAt);
+
+        return (
+          '<div class="notification-item' + readClass + '">' +
+            '<strong class="text-white">' + title + '</strong>' +
+            '<p class="mb-1">' + message + '</p>' +
+            '<small>' + escapeHtml(relative) + '</small>' +
+          '</div>'
+        );
+      }).join('');
+
+      body.innerHTML =
+        '<div class="notifications-list">' + itemsHtml + '</div>' +
+        '<div class="mt-auto pt-2">' +
+          '<a href="#" class="btn custom-btn custom-border-btn w-100" data-bs-dismiss="offcanvas">Inchide</a>' +
+        '</div>';
+    }
+
+    function patchNotification(url) {
+      var headers = {
+        'X-Requested-With': 'XMLHttpRequest'
+      };
+      var csrfToken = getCsrfToken();
+      if (csrfToken) {
+        headers['X-CSRF-TOKEN'] = csrfToken;
+      }
+
+      return fetch(url, {
+        method: 'PATCH',
+        headers: headers
+      });
+    }
+
+    function loadNotifications() {
+      var trigger = document.querySelector('[data-notifications-trigger="true"]');
+      if (!trigger) return;
+
+      ensureNotificationsPanel();
+      fetch('/api/notifications?limit=8', {
+        headers: {
+          'Accept': 'application/json'
+        }
+      })
+        .then(function (response) {
+          if (!response.ok) throw new Error('Notifications fetch failed');
+          return response.json();
+        })
+        .then(renderNotifications)
+        .catch(function () {
+          updateNotificationBadge(0);
+        });
+    }
+
+    var notificationPanel = ensureNotificationsPanel();
+    if (notificationPanel && !notificationPanel.dataset.notificationsBound) {
+      notificationPanel.dataset.notificationsBound = 'true';
+
+      ['copy', 'cut', 'selectstart'].forEach(function (eventName) {
+        notificationPanel.addEventListener(eventName, function (event) {
+          if (event.target && event.target.closest('.notifications-list')) {
+            event.preventDefault();
+          }
+        });
+      });
+
+      notificationPanel.addEventListener('show.bs.offcanvas', function () {
+        updateNotificationBadge(0);
+        patchNotification('/api/notifications/read-all')
+          .finally(loadNotifications);
+      });
+    }
+
+    if (document.querySelector('[data-notifications-trigger="true"]')) {
+      loadNotifications();
+      setInterval(loadNotifications, 30000);
+    }
+
     function initBirthDateSelects() {
       var daySelect = document.getElementById('birthDaySelect');
       var monthSelect = document.getElementById('birthMonthSelect');

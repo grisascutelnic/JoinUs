@@ -15,10 +15,14 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final NotificationService notificationService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder,
+                       NotificationService notificationService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.notificationService = notificationService;
     }
 
     public void register(RegisterRequest request) {
@@ -39,7 +43,8 @@ public class UserService {
         user.setBirthDate(request.getBirthDate());
         user.setBio(request.getBio());
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        notificationService.createWelcomeNotification(savedUser);
     }
 
     public Optional<User> findByEmail(String email) {

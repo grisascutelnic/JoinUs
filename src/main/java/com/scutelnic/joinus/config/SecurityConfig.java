@@ -96,6 +96,7 @@ public class SecurityConfig {
                                 "/error"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/activities").authenticated()
                         .requestMatchers(HttpMethod.POST, "/users/*/reviews").authenticated()
                         .requestMatchers("/activities/new").authenticated()

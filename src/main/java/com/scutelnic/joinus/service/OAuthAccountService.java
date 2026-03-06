@@ -16,10 +16,14 @@ public class OAuthAccountService {
 
     private final UserRepository userRepository;
     private final CloudinaryService cloudinaryService;
+    private final NotificationService notificationService;
 
-    public OAuthAccountService(UserRepository userRepository, CloudinaryService cloudinaryService) {
+    public OAuthAccountService(UserRepository userRepository,
+                               CloudinaryService cloudinaryService,
+                               NotificationService notificationService) {
         this.userRepository = userRepository;
         this.cloudinaryService = cloudinaryService;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -50,7 +54,8 @@ public class OAuthAccountService {
                     user.setEmail(normalizedEmail);
                     user.setAvatarUrl(toStableAvatarUrl(resolvedPictureUrl));
                     user.setPassword(PASSWORD_ENCODER.encode(UUID.randomUUID().toString()));
-                    userRepository.save(user);
+                    User savedUser = userRepository.save(user);
+                    notificationService.createWelcomeNotification(savedUser);
                     created[0] = true;
                 });
 

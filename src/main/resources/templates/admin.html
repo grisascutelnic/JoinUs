@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ro" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="Administrare JoinUs">
+    <meta name="author" content="">
+
+    <title>JoinUs - Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+</head>
+
+<body class="page-auth">
+<main>
+    <header th:replace="~{fragments/navbar :: navbar}"></header>
+
+    <section class="auth-section section-padding">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="auth-card">
+                        <h3 class="mb-3">Admin</h3>
+                        <p class="auth-subtitle">Momentan poti trimite notificari unui utilizator sau tuturor utilizatorilor.</p>
+
+                        <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+                        <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+                        <form class="custom-form auth-form" th:action="@{/admin}" th:object="${adminRequest}" method="post" role="form">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                            <label class="form-label">Destinatar</label>
+                            <select class="form-control" th:field="*{targetType}" required>
+                                <option value="USER">Un utilizator</option>
+                                <option value="ALL">Toti utilizatorii</option>
+                            </select>
+
+                            <label class="form-label mt-3">Utilizator</label>
+                            <select class="form-control" th:field="*{recipientUserId}">
+                                <option value="">Selecteaza utilizatorul</option>
+                                <option th:each="u : ${users}" th:value="${u.id}" th:text="${u.fullName + ' (' + u.email + ')'}"></option>
+                            </select>
+
+                            <label class="form-label mt-3">Titlu</label>
+                            <input type="text" class="form-control" th:field="*{title}" maxlength="160" required>
+
+                            <label class="form-label mt-3">Mesaj</label>
+                            <textarea class="form-control" th:field="*{message}" rows="4" maxlength="500" required></textarea>
+
+                            <label class="form-label mt-3">Link (optional)</label>
+                            <input type="text" class="form-control" th:field="*{link}" maxlength="255" placeholder="/activities sau /profile">
+
+                            <button type="submit" class="form-control mt-4">Trimite notificare</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+<script src="/js/jquery.min.js"></script>
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script src="/js/jquery.sticky.js"></script>
+<script src="/js/custom.js"></script>
+</body>
+</html>

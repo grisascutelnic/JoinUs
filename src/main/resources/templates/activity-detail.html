@@ -157,12 +157,12 @@
                             </div>
                             <section class="activity-chat" aria-live="polite">
                                 <div class="activity-tabs" role="tablist">
-                                    <button class="activity-tab-btn is-active" type="button" role="tab" aria-selected="true" aria-controls="activity-info-panel" data-tab="info">Info</button>
+                                    <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-info-panel" data-tab="info">Info</button>
                                     <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-chat-panel" data-tab="chat" th:if="${canAccessChat}">Chat</button>
                                     <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-announcements-panel" data-tab="announcements" th:if="${canAccessChat}">Anunturi</button>
                                 </div>
 
-                                <div class="activity-tab-panel is-active" id="activity-info-panel" role="tabpanel" data-panel="info">
+                                <div class="activity-tab-panel" id="activity-info-panel" role="tabpanel" data-panel="info">
                                     <div class="alert mb-3"
                                          th:if="${participationMessage != null and !isActivityCreator}"
                                          th:classappend="${participationMessageType != null ? ' alert-' + participationMessageType : ' alert-info'}">
@@ -313,26 +313,62 @@
             const tabButtons = document.querySelectorAll('.activity-tab-btn');
             const tabPanels = document.querySelectorAll('.activity-tab-panel');
 
+            function activateTab(target) {
+                const targetButton = Array.from(tabButtons).find((button) => button.dataset.tab === target);
+                if (!targetButton) {
+                    return;
+                }
+
+                window.sessionStorage.setItem('joinusPreferredActivityTab', target);
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('tab', target);
+                window.history.replaceState({}, '', currentUrl.pathname + currentUrl.search + currentUrl.hash);
+
+                tabButtons.forEach((btn) => {
+                    const isActive = btn === targetButton;
+                    btn.classList.toggle('is-active', isActive);
+                    btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                });
+
+                tabPanels.forEach((panel) => {
+                    panel.classList.toggle('is-active', panel.dataset.panel === target);
+                });
+
+                if (target === 'chat') {
+                    setTimeout(scrollChatToBottom, 0);
+                }
+                preserveTabContextForSidebarActivities();
+                syncChatPanelHeight();
+            }
+
             tabButtons.forEach((button) => {
                 button.addEventListener('click', () => {
-                    const target = button.dataset.tab;
-
-                    tabButtons.forEach((btn) => {
-                        const isActive = btn === button;
-                        btn.classList.toggle('is-active', isActive);
-                        btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
-                    });
-
-                    tabPanels.forEach((panel) => {
-                        panel.classList.toggle('is-active', panel.dataset.panel === target);
-                    });
-
-                    if (target === 'chat') {
-                        setTimeout(scrollChatToBottom, 0);
-                    }
-                    syncChatPanelHeight();
+                    activateTab(button.dataset.tab);
                 });
             });
+
+            const requestedTab = new URLSearchParams(window.location.search).get('tab');
+            const validTabs = ['info', 'chat', 'announcements'];
+            const initialTab = validTabs.includes(requestedTab) ? requestedTab : 'info';
+
+            function preserveTabContextForSidebarActivities() {
+                const activeTabButton = document.querySelector('.activity-tab-btn.is-active');
+                const tabToPreserve = activeTabButton ? activeTabButton.dataset.tab : initialTab;
+                if (!tabToPreserve) {
+                    return;
+                }
+
+                const sidebarActivityLinks = document.querySelectorAll('.activity-mini-card[href^="/activities/"]');
+                sidebarActivityLinks.forEach((link) => {
+                    try {
+                        const url = new URL(link.getAttribute('href'), window.location.origin);
+                        url.searchParams.set('tab', tabToPreserve);
+                        link.setAttribute('href', url.pathname + url.search);
+                    } catch (e) {
+                        // Ignore malformed links.
+                    }
+                });
+            }
 
             const activityId = Number(/*[[${activity.id}]]*/ 0);
             const currentUserId = /*[[${currentUserId}]]*/ null;
@@ -490,6 +526,11 @@
 
                 const showSenderLabel = shouldRenderSenderLabel(message);
                 const isOwnMessage = currentUserId !== null && Number(message.senderId) === Number(currentUserId);
+
+                const emptyState = document.getElementById('chatEmptyState');
+                if (emptyState) {
+                    emptyState.remove();
+                }
 
                 if (showSenderLabel) {
                     const senderLabel = document.createElement('div');
@@ -697,6 +738,9 @@
                 }
                 const messages = await response.json();
                 messages.forEach(renderMessage);
+                if (messages.length === 0 && chatStreamEl) {
+                    chatStreamEl.innerHTML = '<p id="chatEmptyState" class="text-muted text-center my-3">Nu exista mesaje inca. Fii primul care scrie in chat.</p>';
+                }
                 scrollChatToBottom();
                 return messages;
             }
@@ -797,6 +841,9 @@
                     }
                 });
             }
+
+            preserveTabContextForSidebarActivities();
+            activateTab(initialTab);
 
             if (isAuthenticated && canAccessChat && activityId > 0) {
                 loadInitialMessages()
