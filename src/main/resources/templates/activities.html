@@ -160,6 +160,36 @@
                                         </a>
                                     </div>
                                 </div>
+
+                                <nav class="mt-4 activities-pagination-wrap" aria-label="Paginare activitati">
+                                    <ul class="pagination justify-content-center activities-pagination">
+                                        <li class="page-item" th:classappend="${!activityPage.hasPrevious()} ? 'disabled'">
+                                            <a class="page-link page-link-arrow"
+                                               th:href="${activityPage.hasPrevious()} ? @{/activities(page=${currentPage - 1},size=${pageSize})} : '#'
+                                               "
+                                               aria-label="Pagina anterioara">
+                                                <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                                            </a>
+                                        </li>
+
+                                        <li class="page-item"
+                                            th:each="pageNumber : ${#numbers.sequence(0, visibleTotalPages - 1)}"
+                                            th:classappend="${pageNumber == currentPage} ? 'active'">
+                                            <a class="page-link"
+                                               th:href="@{/activities(page=${pageNumber},size=${pageSize})}"
+                                               th:text="${pageNumber + 1}">1</a>
+                                        </li>
+
+                                        <li class="page-item" th:classappend="${!activityPage.hasNext()} ? 'disabled'">
+                                            <a class="page-link page-link-arrow"
+                                               th:href="${activityPage.hasNext()} ? @{/activities(page=${currentPage + 1},size=${pageSize})} : '#'
+                                               "
+                                               aria-label="Pagina urmatoare">
+                                                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </nav>
                             </div>
                         </div>
                     </div>

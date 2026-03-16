@@ -3,8 +3,10 @@ package com.scutelnic.joinus.controller;
 import com.scutelnic.joinus.dto.ActivityDto;
 import com.scutelnic.joinus.service.ActivityService;
 import com.scutelnic.joinus.service.CloudinaryService;
+import com.scutelnic.joinus.service.PollinationsImageService;
 import com.scutelnic.joinus.repository.UserRepository;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,30 +16,28 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.List;
+import java.util.Map;
 
 @Controller
 public class ActivityController {
 
-    private static final List<String> DEFAULT_IMAGES = List.of(
-            "/images/anna-rosar-ZxFyVBHMK-c-unsplash.jpg",
-            "/images/frederik-rosar-NDSZcCfnsbY-unsplash.jpg",
-            "/images/anna-rosar-ew-olGvgCCs-unsplash.jpg",
-            "/images/girl-taking-selfie-with-friends-golf-field.jpg",
-            "/images/professional-golf-player.jpg"
-    );
-
     private final ActivityService activityService;
     private final CloudinaryService cloudinaryService;
+    private final PollinationsImageService pollinationsImageService;
     private final UserRepository userRepository;
 
-    public ActivityController(ActivityService activityService, CloudinaryService cloudinaryService, UserRepository userRepository) {
+    public ActivityController(ActivityService activityService,
+                              CloudinaryService cloudinaryService,
+                              PollinationsImageService pollinationsImageService,
+                              UserRepository userRepository) {
         this.activityService = activityService;
         this.cloudinaryService = cloudinaryService;
+        this.pollinationsImageService = pollinationsImageService;
         this.userRepository = userRepository;
     }
 
@@ -101,7 +101,7 @@ public class ActivityController {
             }
         }
 
-        String imageUrl = resolveImageUrl(form.getImageUrl(), form.getImageChoice());
+        String imageUrl = resolveImageUrlForCreate(form);
         activityService.create(
                 form.getTitle(),
                 form.getDescription(),
@@ -117,6 +117,21 @@ public class ActivityController {
         );
 
         return "redirect:/activities?created";
+    }
+
+    @PostMapping("/api/activities/generate-image")
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> generateActivityImage(
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "description", required = false) String description,
+            Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
+        String imageUrl = toStableGeneratedImageUrl(pollinationsImageService.buildImageUrl(title, description));
+        return ResponseEntity.ok(Map.of("imageUrl", imageUrl));
     }
 
     @GetMapping("/activities/{id}/edit")
@@ -152,11 +167,7 @@ public class ActivityController {
 
         String existingImage = activity.getImageUrl();
         if (existingImage != null && !existingImage.isBlank()) {
-            if (DEFAULT_IMAGES.contains(existingImage)) {
-                form.setImageChoice(existingImage);
-            } else {
-                form.setImageUrl(existingImage);
-            }
+            form.setImageUrl(existingImage);
         }
 
         prepareFormModel(
@@ -241,7 +252,7 @@ public class ActivityController {
         activity.setCapacity(form.getCapacity());
         activity.setCategory(normalizeCategory(form.getCategory()));
         activity.setTags(normalizeTags(form.getTags()));
-        activity.setImageUrl(resolveImageUrlForEdit(form.getImageUrl(), form.getImageChoice(), activity.getImageUrl()));
+        activity.setImageUrl(resolveImageUrlForEdit(form, activity.getImageUrl()));
         activityService.create(activity);
 
         return "redirect:/activities/" + id + "?updated";
@@ -260,7 +271,6 @@ public class ActivityController {
         model.addAttribute("formSubtitle", formSubtitle);
         model.addAttribute("submitLabel", submitLabel);
         model.addAttribute("editMode", editMode);
-        model.addAttribute("imageOptions", DEFAULT_IMAGES);
         model.addAttribute("cloudinaryCloudName", cloudinaryService.getCloudName());
         model.addAttribute("cloudinaryUploadPreset", cloudinaryService.getUploadPreset());
     }
@@ -271,27 +281,54 @@ public class ActivityController {
                 && creatorEmail.equalsIgnoreCase(authenticatedEmail);
     }
 
-    private String resolveImageUrl(String imageUrl, String imageChoice) {
-        if (imageUrl != null && !imageUrl.isBlank()) {
-            return imageUrl;
+    private String resolveImageUrlForCreate(ActivityDto form) {
+        if (form.getImageUrl() != null && !form.getImageUrl().isBlank()) {
+            return form.getImageUrl();
         }
-        if (imageChoice != null && !imageChoice.isBlank()) {
-            return imageChoice;
+        if (form.getImageChoice() != null && !form.getImageChoice().isBlank()) {
+            return toStableGeneratedImageUrl(form.getImageChoice());
         }
-        return DEFAULT_IMAGES.get(0);
+        return toStableGeneratedImageUrl(pollinationsImageService.buildImageUrl(
+                form.getTitle(),
+            form.getDescription()
+        ));
     }
 
-    private String resolveImageUrlForEdit(String imageUrl, String imageChoice, String existingImageUrl) {
-        if (imageUrl != null && !imageUrl.isBlank()) {
-            return imageUrl;
+    private String resolveImageUrlForEdit(ActivityDto form, String existingImageUrl) {
+        if (form.getImageUrl() != null && !form.getImageUrl().isBlank()) {
+            return form.getImageUrl();
         }
-        if (imageChoice != null && !imageChoice.isBlank()) {
-            return imageChoice;
+        if (form.getImageChoice() != null && !form.getImageChoice().isBlank()) {
+            return toStableGeneratedImageUrl(form.getImageChoice());
         }
         if (existingImageUrl != null && !existingImageUrl.isBlank()) {
             return existingImageUrl;
         }
-        return DEFAULT_IMAGES.get(0);
+        return toStableGeneratedImageUrl(pollinationsImageService.buildImageUrl(
+                form.getTitle(),
+            form.getDescription()
+        ));
+    }
+
+    private String toStableGeneratedImageUrl(String imageUrl) {
+        String normalizedUrl = pollinationsImageService.normalizeLegacyUrl(imageUrl);
+        if (!pollinationsImageService.isPollinationsUrl(normalizedUrl)) {
+            return normalizedUrl;
+        }
+
+        if (!cloudinaryService.isConfigured()) {
+            return normalizedUrl;
+        }
+
+        try {
+            String uploaded = cloudinaryService.uploadImageFromUrl(normalizedUrl);
+            if (uploaded != null && !uploaded.isBlank()) {
+                return uploaded;
+            }
+        } catch (Exception ignored) {
+            // If Cloudinary cannot ingest the generated image, keep remote URL fallback.
+        }
+        return normalizedUrl;
     }
 
     private String normalizeCategory(String category) {

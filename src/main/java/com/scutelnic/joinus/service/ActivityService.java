@@ -3,6 +3,8 @@ package com.scutelnic.joinus.service;
 import com.scutelnic.joinus.entity.Activity;
 import com.scutelnic.joinus.entity.User;
 import com.scutelnic.joinus.repository.ActivityRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -60,6 +62,13 @@ public class ActivityService {
     public List<Activity> getRecent(int limit) {
         return activityRepository.findAll(PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt")))
                 .getContent();
+    }
+
+    public Page<Activity> getPage(int page, int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.max(1, Math.min(size, 30));
+        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return activityRepository.findAll(pageable);
     }
 
     public Optional<Activity> getById(Long id) {

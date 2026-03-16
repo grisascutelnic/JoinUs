@@ -82,51 +82,39 @@
                                 <div class="activity-card activity-card-right">
                                     <div class="activity-card-header">
                                         <h4>Opțional</h4>
-                                        <p>Adaugă o imagine și taguri pentru vizibilitate.</p>
                                     </div>
-                                    <div>
-                                        <label class="form-label">Încarcă o imagine</label>
-                                        <input type="file" id="cloudinaryFile" name="imageFile" accept="image/*" class="form-control">
-                                        <input type="hidden" th:field="*{imageUrl}" id="cloudinaryUrl">
-                                        <div class="small text-muted mt-2" id="cloudinaryStatus">Imaginea se va încărca direct în Cloudinary.</div>
-                                        <div class="mt-2" id="cloudinaryExistingWrap"
-                                             th:if="${activityForm.imageUrl != null and !#strings.isEmpty(activityForm.imageUrl)}">
-                                            <div class="small text-muted mb-1">Imagine curenta</div>
-                                            <img th:src="${activityForm.imageUrl}" alt="Imagine curenta activitate"
-                                                 style="width: 140px; height: 90px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(31, 42, 68, 0.16);">
+                                    <div class="image-actions-stack">
+                                        <div class="image-section-card image-section-card--upload">
+                                            <button type="button" class="btn custom-btn custom-border-btn w-100" id="uploadImageBtn">Incarca imagine</button>
+                                            <input type="file" id="cloudinaryFile" name="imageFile" accept="image/*" class="d-none">
+                                            <input type="hidden" th:field="*{imageUrl}" id="cloudinaryUrl">
+                                            <input type="hidden" th:field="*{imageChoice}" id="generatedImageUrl">
+                                            <div class="image-file-name" id="uploadFileName">Nicio imagine selectata</div>
+                                            <div class="image-inline-error d-none" id="cloudinaryError"></div>
+                                            <div class="mt-2" id="cloudinaryExistingWrap"
+                                                 th:if="${activityForm.imageUrl != null and !#strings.isEmpty(activityForm.imageUrl)}">
+                                                <img th:src="${activityForm.imageUrl}" alt="Imagine curenta activitate"
+                                                     style="width: 140px; height: 90px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(31, 42, 68, 0.16);">
+                                            </div>
+                                            <div class="image-inline-error" th:if="${imageError}" th:text="${imageError}"></div>
                                         </div>
-                                        <div class="small text-danger mt-2" th:if="${imageError}" th:text="${imageError}"></div>
-                                    </div>
 
-                                    <div class="mt-3">
-                                        <label class="form-label">Sau alege o imagine rapidă</label>
-                                        <div class="row g-2">
-                                            <div class="col-6" th:each="img : ${imageOptions}">
-                                                <label class="d-flex align-items-center gap-2 p-2 border rounded-3 w-100">
-                                                    <input class="form-check-input" type="radio" th:field="*{imageChoice}" th:value="${img}">
-                                                    <img th:src="${img}" alt="Imagine activitate" class="rounded" style="width: 56px; height: 56px; object-fit: cover;">
-                                                    <span class="small">Alege</span>
-                                                </label>
+                                        <div class="image-actions-divider" aria-hidden="true">
+                                            <span>SAU</span>
+                                        </div>
+
+                                        <div class="image-section-card image-section-card--ai">
+                                            <button type="button" class="btn custom-btn custom-border-btn w-100" id="generateAiImageBtn">Genereaza imagine AI</button>
+                                            <div class="ai-loading d-none" id="aiLoadingIndicator">
+                                                <span class="ai-loading-spinner" aria-hidden="true"></span>
+                                                <span>Se genereaza imaginea...</span>
+                                            </div>
+                                            <div class="image-inline-error d-none" id="generatedImageError"></div>
+                                            <div class="mt-2 d-none" id="generatedPreviewWrap">
+                                                <img id="generatedPreviewImage" alt="Imagine generata AI"
+                                                     style="width: 100%; max-width: 280px; height: 160px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(31, 42, 68, 0.16);">
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <div class="mt-3">
-                                        <label class="form-label">Taguri (optionale, max 3)</label>
-                                        <div class="tag-input" id="tagInput" data-max="3">
-                                            <input type="text" id="tagText" class="form-control tag-input-field" list="tagOptions" placeholder="Scrie si apasa Enter">
-                                            <input type="hidden" th:field="*{tags}" id="tagValues">
-                                        </div>
-                                        <datalist id="tagOptions">
-                                            <option value="Alergare"></option>
-                                            <option value="Relaxare"></option>
-                                            <option value="Fotbal"></option>
-                                            <option value="Echipa"></option>
-                                            <option value="Drumetie"></option>
-                                            <option value="Cultura"></option>
-                                            <option value="Social"></option>
-                                            <option value="Comunitate"></option>
-                                        </datalist>
                                     </div>
                                 </div>
 
@@ -149,83 +137,23 @@
         <script src="/js/custom.js"></script>
         <script th:inline="javascript">
             (function () {
-                const tagInput = document.getElementById('tagInput');
-                if (!tagInput) {
-                    return;
-                }
-                const maxTags = Number(tagInput.dataset.max || 3);
-                const input = document.getElementById('tagText');
-                const hidden = document.getElementById('tagValues');
-
-                const tags = new Set();
-
-                const render = () => {
-                    tagInput.querySelectorAll('.tag-pill').forEach((pill) => pill.remove());
-                    let index = 0;
-                    tags.forEach((value) => {
-                        const pill = document.createElement('span');
-                        pill.className = 'tag-pill';
-                        pill.textContent = value;
-
-                        const remove = document.createElement('button');
-                        remove.type = 'button';
-                        remove.className = 'tag-remove';
-                        remove.setAttribute('aria-label', 'Sterge tag');
-                        remove.textContent = '×';
-                        remove.addEventListener('click', () => {
-                            tags.delete(value);
-                            render();
-                        });
-
-                        pill.appendChild(remove);
-                        tagInput.insertBefore(pill, input);
-                        index += 1;
-                    });
-                    hidden.value = Array.from(tags).join(', ');
-                };
-
-                const addTag = (value) => {
-                    const cleaned = value.trim();
-                    if (!cleaned || tags.has(cleaned) || tags.size >= maxTags) {
-                        return;
-                    }
-                    tags.add(cleaned);
-                    render();
-                };
-
-                const initialTags = (hidden.value || '')
-                    .split(',')
-                    .map((part) => part.trim())
-                    .filter((part) => part.length > 0);
-                initialTags.forEach((tag) => addTag(tag));
-
-                input.addEventListener('keydown', (event) => {
-                    if (event.key === 'Enter' || event.key === ',' || event.key === ' ') {
-                        event.preventDefault();
-                        addTag(input.value);
-                        input.value = '';
-                    }
-                });
-
-                input.addEventListener('blur', () => {
-                    if (input.value.trim()) {
-                        addTag(input.value);
-                        input.value = '';
-                    }
-                });
-            })();
-        </script>
-        <script th:inline="javascript">
-            (function () {
                 const cloudName = /*[[${cloudinaryCloudName}]]*/ "";
                 const uploadPreset = /*[[${cloudinaryUploadPreset}]]*/ "";
                 const fileInput = document.getElementById('cloudinaryFile');
+                const uploadBtn = document.getElementById('uploadImageBtn');
+                const uploadFileName = document.getElementById('uploadFileName');
+                const uploadError = document.getElementById('cloudinaryError');
                 const urlInput = document.getElementById('cloudinaryUrl');
-                const statusEl = document.getElementById('cloudinaryStatus');
+                const generatedInput = document.getElementById('generatedImageUrl');
                 const existingWrap = document.getElementById('cloudinaryExistingWrap');
-                const imageChoiceRadios = document.querySelectorAll('input[type="radio"][name="imageChoice"]');
+                const generateBtn = document.getElementById('generateAiImageBtn');
+                const aiLoadingIndicator = document.getElementById('aiLoadingIndicator');
+                const generatedError = document.getElementById('generatedImageError');
+                const generatedPreviewWrap = document.getElementById('generatedPreviewWrap');
+                const generatedPreviewImage = document.getElementById('generatedPreviewImage');
                 const form = document.querySelector('form.auth-form');
                 const submitBtn = document.getElementById('submitActivity');
+                const csrfInput = document.querySelector('input[name="_csrf"]');
                 let isUploading = false;
                 const canClientUpload = Boolean(cloudName && uploadPreset);
 
@@ -233,10 +161,42 @@
                     return;
                 }
 
-                const updateStatus = (text, isError) => {
-                    statusEl.textContent = text;
-                    statusEl.style.color = isError ? '#c0392b' : '#6c757d';
+                const showUploadError = (text) => {
+                    if (!uploadError) {
+                        return;
+                    }
+                    if (!text) {
+                        uploadError.textContent = '';
+                        uploadError.classList.add('d-none');
+                        return;
+                    }
+                    uploadError.textContent = text;
+                    uploadError.classList.remove('d-none');
                 };
+
+                const showGenerateError = (text) => {
+                    if (!generatedError) {
+                        return;
+                    }
+                    if (!text) {
+                        generatedError.textContent = '';
+                        generatedError.classList.add('d-none');
+                        return;
+                    }
+                    generatedError.textContent = text;
+                    generatedError.classList.remove('d-none');
+                };
+
+                const setUploading = (loading) => {
+                    if (uploadBtn) {
+                        uploadBtn.disabled = loading;
+                        uploadBtn.textContent = loading ? 'Se incarca imaginea...' : 'Incarca imagine';
+                    }
+                };
+
+                if (uploadBtn) {
+                    uploadBtn.addEventListener('click', () => fileInput.click());
+                }
 
                 fileInput.addEventListener('change', async () => {
                     const file = fileInput.files && fileInput.files[0];
@@ -244,18 +204,19 @@
                         return;
                     }
 
+                    if (uploadFileName) {
+                        uploadFileName.textContent = file.name;
+                    }
+                    showUploadError('');
+
                     if (urlInput) {
                         urlInput.value = '';
                     }
-                    imageChoiceRadios.forEach((radio) => {
-                        radio.checked = false;
-                    });
                     if (existingWrap) {
                         existingWrap.style.display = 'none';
                     }
 
                     if (!canClientUpload) {
-                        updateStatus('Imagine selectată. Se va încărca la trimitere.', false);
                         return;
                     }
 
@@ -263,7 +224,7 @@
                     if (submitBtn) {
                         submitBtn.disabled = true;
                     }
-                    updateStatus('Se încarcă imaginea...', false);
+                    setUploading(true);
                     const formData = new FormData();
                     formData.append('file', file);
                     formData.append('upload_preset', uploadPreset);
@@ -282,27 +243,100 @@
                         }
                         urlInput.value = data.secure_url;
                         fileInput.value = '';
-                        updateStatus('Imagine încărcată cu succes.', false);
                     } catch (error) {
                         urlInput.value = '';
-                        updateStatus('Upload eșuat. Încearcă din nou.', true);
+                        showUploadError('Upload esuat. Incearca din nou.');
                     } finally {
                         isUploading = false;
+                        setUploading(false);
                         if (submitBtn) {
                             submitBtn.disabled = false;
                         }
                     }
                 });
 
-                if (!canClientUpload) {
-                    updateStatus('Imaginea se va încărca la trimitere.', false);
+                function getGenerationPayload() {
+                    const title = (document.querySelector('input[name="title"]')?.value || '').trim();
+                    const description = (document.querySelector('textarea[name="description"]')?.value || '').trim();
+                    return { title, description };
+                }
+
+                async function generateImageViaServer() {
+                    const payload = getGenerationPayload();
+                    const body = new URLSearchParams();
+                    body.set('title', payload.title);
+                    body.set('description', payload.description);
+
+                    const headers = {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    };
+                    if (csrfInput && csrfInput.value) {
+                        headers['X-CSRF-TOKEN'] = csrfInput.value;
+                    }
+
+                    const response = await fetch('/api/activities/generate-image', {
+                        method: 'POST',
+                        headers,
+                        body: body.toString()
+                    });
+                    if (!response.ok) {
+                        throw new Error('Generation failed');
+                    }
+
+                    const data = await response.json();
+                    if (!data.imageUrl) {
+                        throw new Error('Missing imageUrl');
+                    }
+                    return data.imageUrl;
+                }
+
+                function renderGeneratedPreview(url) {
+                    if (!generatedPreviewWrap || !generatedPreviewImage) {
+                        return;
+                    }
+                    generatedPreviewImage.src = url;
+                    generatedPreviewWrap.classList.remove('d-none');
+                }
+
+                if (generateBtn) {
+                    generateBtn.addEventListener('click', async () => {
+                        showGenerateError('');
+                        generateBtn.disabled = true;
+                        if (aiLoadingIndicator) {
+                            aiLoadingIndicator.classList.remove('d-none');
+                        }
+                        try {
+                            const imageUrl = await generateImageViaServer();
+                            if (generatedInput) {
+                                generatedInput.value = imageUrl;
+                            }
+                            renderGeneratedPreview(imageUrl);
+                        } catch (error) {
+                            showGenerateError('Generarea AI a esuat momentan. Incearca din nou.');
+                        } finally {
+                            generateBtn.disabled = false;
+                            if (aiLoadingIndicator) {
+                                aiLoadingIndicator.classList.add('d-none');
+                            }
+                        }
+                    });
+                }
+
+                if (generatedInput && generatedInput.value && generatedInput.value.trim() !== '') {
+                    const existing = generatedInput.value.trim();
+                    const normalized = existing.replace('https://image.pollinations.ai/prompt/', 'https://gen.pollinations.ai/image/');
+                    if (generatedInput) {
+                        generatedInput.value = normalized;
+                    }
+                    renderGeneratedPreview(normalized);
                 }
 
                 if (form) {
                     form.addEventListener('submit', (event) => {
                         if (isUploading) {
                             event.preventDefault();
-                            updateStatus('Așteaptă finalizarea upload-ului.', true);
+                            showUploadError('Asteapta finalizarea upload-ului.');
                             return;
                         }
                         if (canClientUpload && urlInput && urlInput.value && fileInput) {
@@ -311,21 +345,11 @@
                         const hasFile = fileInput.files && fileInput.files.length > 0;
                         if (canClientUpload && hasFile && (!urlInput.value || urlInput.value.trim() === '')) {
                             event.preventDefault();
-                            updateStatus('Imaginea nu s-a încărcat încă. Reîncearcă.', true);
+                            showUploadError('Imaginea nu s-a incarcat inca. Reincearca.');
                         }
                     });
                 }
 
-                imageChoiceRadios.forEach((radio) => {
-                    radio.addEventListener('change', () => {
-                        if (radio.checked && urlInput) {
-                            urlInput.value = '';
-                        }
-                        if (existingWrap) {
-                            existingWrap.style.display = 'none';
-                        }
-                    });
-                });
             })();
         </script>
     </body>

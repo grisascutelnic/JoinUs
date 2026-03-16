@@ -12,6 +12,7 @@ import com.scutelnic.joinus.service.UserReviewService;
 import com.scutelnic.joinus.service.UserService;
 import com.scutelnic.joinus.repository.UserRepository;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -307,8 +308,22 @@ public class PageController {
     }
 
     @GetMapping("/activities")
-    public String activities(Model model) {
-        model.addAttribute("activities", activityService.getAll());
+    public String activities(Model model,
+                             @RequestParam(defaultValue = "0") int page,
+                             @RequestParam(defaultValue = "12") int size) {
+        Page<com.scutelnic.joinus.entity.Activity> activityPage = activityService.getPage(page, size);
+
+        if (activityPage.getTotalPages() > 0 && page >= activityPage.getTotalPages()) {
+            int lastPage = activityPage.getTotalPages() - 1;
+            activityPage = activityService.getPage(lastPage, size);
+        }
+
+        model.addAttribute("activities", activityPage.getContent());
+        model.addAttribute("activityPage", activityPage);
+        model.addAttribute("currentPage", activityPage.getNumber());
+        model.addAttribute("pageSize", activityPage.getSize());
+        model.addAttribute("totalPages", activityPage.getTotalPages());
+        model.addAttribute("visibleTotalPages", Math.max(1, activityPage.getTotalPages()));
         return "activities";
     }
 
