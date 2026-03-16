@@ -392,6 +392,130 @@
       setInterval(loadNotifications, 30000);
     }
 
+    function normalizeSearchText(value) {
+      return (value || '')
+        .toString()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function getMaxTypoDistance(termLength) {
+      if (termLength <= 4) return 1;
+      if (termLength <= 8) return 2;
+      return 3;
+    }
+
+    function levenshteinDistance(a, b, maxDistance) {
+      if (a === b) return 0;
+      if (Math.abs(a.length - b.length) > maxDistance) return maxDistance + 1;
+
+      var previous = new Array(b.length + 1);
+      var current = new Array(b.length + 1);
+
+      for (var j = 0; j <= b.length; j++) {
+        previous[j] = j;
+      }
+
+      for (var i = 1; i <= a.length; i++) {
+        current[0] = i;
+        var rowMin = current[0];
+
+        for (var k = 1; k <= b.length; k++) {
+          var cost = a.charAt(i - 1) === b.charAt(k - 1) ? 0 : 1;
+          current[k] = Math.min(
+            previous[k] + 1,
+            current[k - 1] + 1,
+            previous[k - 1] + cost
+          );
+          if (current[k] < rowMin) {
+            rowMin = current[k];
+          }
+        }
+
+        if (rowMin > maxDistance) {
+          return maxDistance + 1;
+        }
+
+        var temp = previous;
+        previous = current;
+        current = temp;
+      }
+
+      return previous[b.length];
+    }
+
+    function tokenMatchesTerm(token, term) {
+      if (!token || !term) return false;
+      if (token.indexOf(term) !== -1 || term.indexOf(token) !== -1) return true;
+
+      var maxDistance = getMaxTypoDistance(term.length);
+      return levenshteinDistance(token, term, maxDistance) <= maxDistance;
+    }
+
+    function textMatchesSearch(rawText, rawQuery) {
+      var normalizedText = normalizeSearchText(rawText);
+      var normalizedQuery = normalizeSearchText(rawQuery);
+      if (!normalizedQuery) return true;
+      if (!normalizedText) return false;
+      if (normalizedText.indexOf(normalizedQuery) !== -1) return true;
+
+      var textTokens = normalizedText.split(' ').filter(Boolean);
+      var queryTerms = normalizedQuery.split(' ').filter(Boolean);
+
+      return queryTerms.every(function (term) {
+        return textTokens.some(function (token) {
+          return tokenMatchesTerm(token, term);
+        });
+      });
+    }
+
+    function initActivitySearch() {
+      var searchBlocks = document.querySelectorAll('[data-activity-search]');
+      if (!searchBlocks.length) return;
+
+      searchBlocks.forEach(function (searchBlock) {
+        var input = searchBlock.querySelector('[data-activity-search-input]');
+        if (!input) return;
+
+        var section = searchBlock.closest('section');
+        if (!section) return;
+
+        var activityCards = Array.from(section.querySelectorAll('[data-activity-card]'));
+        if (!activityCards.length) return;
+
+        var emptyState = searchBlock.querySelector('[data-activity-search-empty]');
+        var fadeOverlay = section.querySelector('.activity-list-fade');
+
+        function applyFilter() {
+          var query = normalizeSearchText(input.value);
+          var visibleCount = 0;
+
+          activityCards.forEach(function (card) {
+            var isVisible = !query || textMatchesSearch(card.textContent, query);
+            card.classList.toggle('d-none', !isVisible);
+            if (isVisible) {
+              visibleCount += 1;
+            }
+          });
+
+          if (emptyState) {
+            var shouldShowEmpty = !!query && visibleCount === 0;
+            emptyState.classList.toggle('d-none', !shouldShowEmpty);
+          }
+
+          if (fadeOverlay) {
+            fadeOverlay.classList.toggle('d-none', !!query);
+          }
+        }
+
+        input.addEventListener('input', applyFilter);
+      });
+    }
+
     function initBirthDateSelects() {
       var daySelect = document.getElementById('birthDaySelect');
       var monthSelect = document.getElementById('birthMonthSelect');
@@ -445,6 +569,7 @@
       syncHidden();
     }
 
+    initActivitySearch();
     initBirthDateSelects();
   
   })(window.jQuery);

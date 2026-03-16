@@ -110,12 +110,21 @@
 
                         <div class="row">
                             <div class="col-lg-10 col-12 mx-auto">
+                                <div class="activity-search mb-4" data-activity-search>
+                                    <label class="visually-hidden" for="allActivitiesSearch">Cauta activitati</label>
+                                    <div class="activity-search-input-wrap">
+                                        <i class="bi bi-search activity-search-icon" aria-hidden="true"></i>
+                                        <input id="allActivitiesSearch" type="search" class="form-control activity-search-input" data-activity-search-input placeholder="Cauta dupa titlu, categorie sau locatie..." autocomplete="off">
+                                    </div>
+                                    <p class="activity-search-empty mt-3 mb-0 d-none" data-activity-search-empty>Nu am gasit activitati care sa corespunda cautarii.</p>
+                                </div>
+
                                 <div class="activity-list activity-list--section row g-4">
                                     <div class="col-12" th:if="${#lists.isEmpty(activities)}">
                                         <div class="alert alert-light text-center">Nu exista activitati inca.</div>
                                     </div>
 
-                                    <div class="col-lg-4 col-md-6 col-12" th:each="activity : ${activities}">
+                                    <div class="col-lg-4 col-md-6 col-12" th:each="activity : ${activities}" data-activity-card>
                                         <a th:href="@{/activities/{id}(id=${activity.id}, tab='info')}" class="activity-card-link">
                                             <div class="custom-block custom-block-bg activity-card mb-3">
                                                 <div class="row align-items-center">
