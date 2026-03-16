@@ -23,6 +23,8 @@ public interface ActivityMessageReactionRepository extends JpaRepository<Activit
             """)
     List<MessageReactionCountView> countGroupedByMessageIds(@Param("messageIds") List<Long> messageIds);
 
+    long deleteByMessageActivityId(Long activityId);
+
     interface MessageReactionCountView {
         Long getMessageId();
 

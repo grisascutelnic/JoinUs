@@ -119,12 +119,15 @@
                                     <p class="activity-search-empty mt-3 mb-0 d-none" data-activity-search-empty>Nu am gasit activitati care sa corespunda cautarii.</p>
                                 </div>
 
-                                <div class="activity-list activity-list--section row g-4">
+                                <div class="activity-list activity-list--section row g-4" data-unread-sort-list>
                                     <div class="col-12" th:if="${#lists.isEmpty(activities)}">
                                         <div class="alert alert-light text-center">Nu exista activitati inca.</div>
                                     </div>
 
-                                    <div class="col-lg-4 col-md-6 col-12" th:each="activity : ${activities}" data-activity-card>
+                                     <div class="col-lg-4 col-md-6 col-12"
+                                         th:each="activity : ${activities}"
+                                         data-activity-card
+                                         th:attr="data-unread-activity-id=${activity.id}">
                                         <a th:href="@{/activities/{id}(id=${activity.id}, tab='info')}" class="activity-card-link">
                                             <div class="custom-block custom-block-bg activity-card mb-3">
                                                 <div class="row align-items-center">
@@ -136,6 +139,10 @@
                                                     <div class="col-8 col-md-9">
                                                         <div class="d-flex align-items-center mb-2">
                                                             <span class="events-title me-2" th:text="${activity.title}">Activitate</span>
+                                                            <span class="activity-unread-badge"
+                                                                data-unread-badge
+                                                                th:classappend="${activityUnreadCounts == null or activityUnreadCounts[activity.id] == null or activityUnreadCounts[activity.id] <= 0} ? ' d-none'"
+                                                                th:text="${activityUnreadCounts != null and activityUnreadCounts[activity.id] != null ? activityUnreadCounts[activity.id] : 0}">0</span>
                                                             <span class="activity-badge" th:text="${activity.category}">Categorie</span>
                                                         </div>
                                                         <div class="d-flex flex-wrap">

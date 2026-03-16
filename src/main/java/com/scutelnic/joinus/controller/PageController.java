@@ -6,6 +6,7 @@ import com.scutelnic.joinus.dto.UserReviewSummary;
 import com.scutelnic.joinus.entity.User;
 import com.scutelnic.joinus.entity.ParticipationStatus;
 import com.scutelnic.joinus.service.ActivityService;
+import com.scutelnic.joinus.service.ActivityUnreadService;
 import com.scutelnic.joinus.service.ActivityParticipationService;
 import com.scutelnic.joinus.service.CloudinaryService;
 import com.scutelnic.joinus.service.UserReviewService;
@@ -13,6 +14,8 @@ import com.scutelnic.joinus.service.UserService;
 import com.scutelnic.joinus.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -37,6 +40,7 @@ import java.util.Map;
 public class PageController {
 
     private final ActivityService activityService;
+    private final ActivityUnreadService activityUnreadService;
     private final ActivityParticipationService participationService;
     private final UserRepository userRepository;
     private final UserService userService;
@@ -44,12 +48,14 @@ public class PageController {
     private final CloudinaryService cloudinaryService;
 
     public PageController(ActivityService activityService,
+                          ActivityUnreadService activityUnreadService,
                           ActivityParticipationService participationService,
                           UserRepository userRepository,
                           UserService userService,
                           UserReviewService userReviewService,
                           CloudinaryService cloudinaryService) {
         this.activityService = activityService;
+        this.activityUnreadService = activityUnreadService;
         this.participationService = participationService;
         this.userRepository = userRepository;
         this.userService = userService;
@@ -309,13 +315,63 @@ public class PageController {
 
     @GetMapping("/activities")
     public String activities(Model model,
+                             Authentication authentication,
                              @RequestParam(defaultValue = "0") int page,
                              @RequestParam(defaultValue = "12") int size) {
-        Page<com.scutelnic.joinus.entity.Activity> activityPage = activityService.getPage(page, size);
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.max(1, Math.min(size, 30));
 
-        if (activityPage.getTotalPages() > 0 && page >= activityPage.getTotalPages()) {
-            int lastPage = activityPage.getTotalPages() - 1;
-            activityPage = activityService.getPage(lastPage, size);
+        Page<com.scutelnic.joinus.entity.Activity> activityPage;
+        if (isAuthenticated(authentication)) {
+            List<com.scutelnic.joinus.entity.Activity> allActivities = new ArrayList<>(activityService.getAll());
+            List<Long> activityIds = allActivities.stream()
+                    .map(com.scutelnic.joinus.entity.Activity::getId)
+                    .toList();
+
+            Map<Long, Long> unreadCounts = activityUnreadService
+                    .getUnreadCountsByActivityForUser(authentication.getName(), activityIds);
+            Map<Long, java.time.LocalDateTime> latestUnreadByActivity = activityUnreadService
+                    .getLatestUnreadMessageByActivityForUser(authentication.getName(), activityIds);
+
+            allActivities.sort((left, right) -> {
+                long leftUnread = unreadCounts.getOrDefault(left.getId(), 0L);
+                long rightUnread = unreadCounts.getOrDefault(right.getId(), 0L);
+
+                boolean leftHasUnread = leftUnread > 0;
+                boolean rightHasUnread = rightUnread > 0;
+                if (leftHasUnread != rightHasUnread) {
+                    return leftHasUnread ? -1 : 1;
+                }
+
+                if (leftHasUnread) {
+                    java.time.LocalDateTime leftLatest = latestUnreadByActivity.get(left.getId());
+                    java.time.LocalDateTime rightLatest = latestUnreadByActivity.get(right.getId());
+                        int compareLatest = Comparator.<java.time.LocalDateTime>nullsLast(Comparator.reverseOrder())
+                            .compare(leftLatest, rightLatest);
+                    if (compareLatest != 0) {
+                        return compareLatest;
+                    }
+                }
+
+                return Comparator.<java.time.LocalDateTime>nullsLast(Comparator.reverseOrder())
+                    .compare(left.getCreatedAt(), right.getCreatedAt());
+            });
+
+            int total = allActivities.size();
+            int totalPages = total == 0 ? 0 : (int) Math.ceil((double) total / safeSize);
+            int effectivePage = totalPages == 0 ? 0 : Math.min(safePage, totalPages - 1);
+
+            int fromIndex = Math.min(effectivePage * safeSize, total);
+            int toIndex = Math.min(fromIndex + safeSize, allActivities.size());
+            List<com.scutelnic.joinus.entity.Activity> currentSlice = allActivities.subList(fromIndex, toIndex);
+            activityPage = new PageImpl<>(currentSlice, PageRequest.of(effectivePage, safeSize), total);
+            model.addAttribute("activityUnreadCounts", unreadCounts);
+        } else {
+            activityPage = activityService.getPage(safePage, safeSize);
+            if (activityPage.getTotalPages() > 0 && safePage >= activityPage.getTotalPages()) {
+                int lastPage = activityPage.getTotalPages() - 1;
+                activityPage = activityService.getPage(lastPage, safeSize);
+            }
         }
 
         model.addAttribute("activities", activityPage.getContent());
@@ -427,9 +483,38 @@ public class PageController {
             uniqueById.putIfAbsent(activity.getId(), activity);
         }
 
-        return uniqueById.values().stream()
-                .sorted(Comparator.comparing(com.scutelnic.joinus.entity.Activity::getCreatedAt,
-                        Comparator.nullsLast(Comparator.reverseOrder())))
+        List<com.scutelnic.joinus.entity.Activity> sidebarActivities = new ArrayList<>(uniqueById.values());
+        List<Long> sidebarIds = sidebarActivities.stream()
+                .map(com.scutelnic.joinus.entity.Activity::getId)
+                .toList();
+        Map<Long, Long> unreadCounts = activityUnreadService.getUnreadCountsByActivityForUser(authentication.getName(), sidebarIds);
+        Map<Long, java.time.LocalDateTime> latestUnreadByActivity = activityUnreadService
+                .getLatestUnreadMessageByActivityForUser(authentication.getName(), sidebarIds);
+
+        return sidebarActivities.stream()
+                .sorted((left, right) -> {
+                    long leftUnread = unreadCounts.getOrDefault(left.getId(), 0L);
+                    long rightUnread = unreadCounts.getOrDefault(right.getId(), 0L);
+                    boolean leftHasUnread = leftUnread > 0;
+                    boolean rightHasUnread = rightUnread > 0;
+
+                    if (leftHasUnread != rightHasUnread) {
+                        return leftHasUnread ? -1 : 1;
+                    }
+
+                    if (leftHasUnread) {
+                        java.time.LocalDateTime leftLatest = latestUnreadByActivity.get(left.getId());
+                        java.time.LocalDateTime rightLatest = latestUnreadByActivity.get(right.getId());
+                        int byLatest = Comparator.<java.time.LocalDateTime>nullsLast(Comparator.reverseOrder())
+                            .compare(leftLatest, rightLatest);
+                        if (byLatest != 0) {
+                            return byLatest;
+                        }
+                    }
+
+                        return Comparator.<java.time.LocalDateTime>nullsLast(Comparator.reverseOrder())
+                            .compare(left.getCreatedAt(), right.getCreatedAt());
+                })
                 .limit(6)
                 .toList();
     }

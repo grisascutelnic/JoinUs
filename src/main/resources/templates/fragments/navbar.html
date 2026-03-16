@@ -46,7 +46,13 @@
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="/chat" th:href="@{/chat}">Chat</a>
+                        <a class="nav-link navbar-chat-link" href="/chat" th:href="@{/chat}">
+                            Chat
+                            <span id="navbarChatUnreadBadge"
+                                  class="navbar-chat-badge"
+                                  th:classappend="${unreadChatGroupsCount == null or unreadChatGroupsCount <= 0} ? ' d-none'"
+                                  th:text="${unreadChatGroupsCount != null ? unreadChatGroupsCount : 0}">0</span>
+                        </a>
                     </li>
 
                     <li class="nav-item" th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
@@ -169,4 +175,141 @@
             </div>
         </div>
     </div>
+
+    <script th:inline="javascript">
+        (function () {
+            const isAuthenticatedUser = /*[[${#authorization.expression('isAuthenticated()')}]]*/ false;
+            if (!isAuthenticatedUser) {
+                return;
+            }
+
+            const badgeEl = document.getElementById('navbarChatUnreadBadge');
+            const POLL_INTERVAL_MS = 4000;
+            let baseOrderInitialized = false;
+
+            function setNavbarChatBadge(count) {
+                if (!badgeEl) {
+                    return;
+                }
+                const numericCount = Number(count || 0);
+                badgeEl.textContent = String(numericCount);
+                badgeEl.classList.toggle('d-none', numericCount <= 0);
+            }
+
+            function ensureUnreadBadge(card) {
+                let badge = card.querySelector('[data-unread-badge]');
+                if (badge) {
+                    return badge;
+                }
+
+                const isMiniCard = card.classList.contains('activity-mini-card');
+                badge = document.createElement('span');
+                badge.dataset.unreadBadge = 'true';
+                badge.className = isMiniCard ? 'activity-mini-unread-badge' : 'activity-unread-badge';
+
+                const titleRow = card.querySelector('.activity-mini-title-row')
+                    || card.querySelector('.d-flex.align-items-center.mb-2');
+                if (titleRow) {
+                    titleRow.appendChild(badge);
+                }
+                return badge;
+            }
+
+            function updateUnreadBadges(unreadCounts) {
+                const cards = document.querySelectorAll('[data-unread-activity-id]');
+                cards.forEach((card) => {
+                    const activityId = card.dataset.unreadActivityId;
+                    if (!activityId) {
+                        return;
+                    }
+                    const count = Number(unreadCounts?.[activityId] || 0);
+                    const badge = ensureUnreadBadge(card);
+                    if (!badge) {
+                        return;
+                    }
+                    badge.textContent = String(count);
+                    badge.classList.toggle('d-none', count <= 0);
+                });
+            }
+
+            function initializeBaseOrder() {
+                if (baseOrderInitialized) {
+                    return;
+                }
+                const lists = document.querySelectorAll('[data-unread-sort-list]');
+                lists.forEach((list) => {
+                    const items = Array.from(list.querySelectorAll('[data-unread-activity-id]'));
+                    items.forEach((item, index) => {
+                        item.dataset.unreadBaseOrder = String(index);
+                    });
+                });
+                baseOrderInitialized = true;
+            }
+
+            function sortUnreadLists(unreadCounts, latestUnreadByActivity) {
+                initializeBaseOrder();
+                const lists = document.querySelectorAll('[data-unread-sort-list]');
+                lists.forEach((list) => {
+                    const items = Array.from(list.querySelectorAll('[data-unread-activity-id]'));
+                    items.sort((left, right) => {
+                        const leftId = left.dataset.unreadActivityId;
+                        const rightId = right.dataset.unreadActivityId;
+                        const leftCount = Number(unreadCounts?.[leftId] || 0);
+                        const rightCount = Number(unreadCounts?.[rightId] || 0);
+                        const leftHasUnread = leftCount > 0;
+                        const rightHasUnread = rightCount > 0;
+
+                        if (leftHasUnread !== rightHasUnread) {
+                            return leftHasUnread ? -1 : 1;
+                        }
+
+                        if (leftHasUnread) {
+                            const leftLatestRaw = latestUnreadByActivity?.[leftId] || null;
+                            const rightLatestRaw = latestUnreadByActivity?.[rightId] || null;
+                            const leftLatest = leftLatestRaw ? new Date(leftLatestRaw).getTime() : 0;
+                            const rightLatest = rightLatestRaw ? new Date(rightLatestRaw).getTime() : 0;
+                            if (leftLatest !== rightLatest) {
+                                return rightLatest - leftLatest;
+                            }
+                        }
+
+                        const leftBase = Number(left.dataset.unreadBaseOrder || 0);
+                        const rightBase = Number(right.dataset.unreadBaseOrder || 0);
+                        return leftBase - rightBase;
+                    });
+
+                    items.forEach((item) => list.appendChild(item));
+                });
+            }
+
+            function applyUnreadSummary(summary) {
+                if (!summary) {
+                    return;
+                }
+                setNavbarChatBadge(summary.unreadChatGroupsCount || 0);
+                const unreadCounts = summary.activityUnreadCounts || {};
+                const latestUnreadByActivity = summary.latestUnreadByActivity || {};
+                updateUnreadBadges(unreadCounts);
+                sortUnreadLists(unreadCounts, latestUnreadByActivity);
+                window.dispatchEvent(new CustomEvent('joinus-unread-summary', { detail: summary }));
+            }
+
+            function fetchUnreadSummary() {
+                fetch('/api/chat/unread-summary', { credentials: 'same-origin' })
+                    .then((response) => response.ok ? response.json() : null)
+                    .then((summary) => {
+                        if (summary) {
+                            applyUnreadSummary(summary);
+                        }
+                    })
+                    .catch(() => {
+                        // Keep current badges if the request fails.
+                    });
+            }
+
+            window.addEventListener('joinus-force-unread-refresh', fetchUnreadSummary);
+            fetchUnreadSummary();
+            window.setInterval(fetchUnreadSummary, POLL_INTERVAL_MS);
+        })();
+    </script>
 </div>

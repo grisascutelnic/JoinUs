@@ -41,4 +41,26 @@ public interface ActivityMessageSeenRepository extends JpaRepository<ActivityMes
     int insertIgnoreDuplicate(@Param("messageId") Long messageId,
                               @Param("userId") Long userId,
                               @Param("seenAt") LocalDateTime seenAt);
+
+    @Modifying
+    @Transactional
+    @Query(value = """
+            insert into activity_message_seen (message_id, user_id, seen_at)
+            select m.id, :userId, :seenAt
+            from activity_messages m
+            where m.activity_id = :activityId
+              and m.sender_id <> :userId
+              and not exists (
+                  select 1
+                  from activity_message_seen s
+                  where s.message_id = m.id
+                    and s.user_id = :userId
+              )
+            on conflict on constraint uq_message_seen_user do nothing
+            """, nativeQuery = true)
+    int markAllMessagesSeenForActivity(@Param("activityId") Long activityId,
+                                       @Param("userId") Long userId,
+                                       @Param("seenAt") LocalDateTime seenAt);
+
+        long deleteByMessageActivityId(Long activityId);
 }

@@ -1160,6 +1160,30 @@ https://templatemo.com/tm-587-tiya-golf-club
   top: -52px;
   right: 4px;
   z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.activity-main-tools form {
+  margin: 0;
+}
+
+.activity-delete-btn {
+  background: #c74444;
+  border: 1px solid #b13939;
+  color: var(--white-color);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+.activity-delete-btn:hover,
+.activity-delete-btn:focus-visible {
+  background: #b13737;
+  border-color: #9f2f2f;
+  color: var(--white-color);
 }
 
 .activity-chat {
@@ -1294,15 +1318,113 @@ https://templatemo.com/tm-587-tiya-golf-club
   margin-bottom: 4px;
 }
 
+.activity-mini-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.activity-mini-unread-badge,
+.activity-unread-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #d83232;
+  color: #fff;
+  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
 .activity-mini-info small {
   color: var(--p-color);
 }
 
 .activity-tabs {
   display: flex;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
   padding: 20px 24px 10px;
   border-bottom: 1px solid rgba(31, 42, 68, 0.08);
+}
+
+.activity-tabs-left {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.activity-tabs-actions {
+  margin-left: 12px;
+}
+
+.activity-tabs-menu-toggle {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(31, 42, 68, 0.16);
+  background: #fff;
+  color: var(--secondary-color);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.activity-tabs-menu-toggle i {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.activity-actions-menu,
+.poll-actions-menu {
+  min-width: 220px;
+  border: 1px solid rgba(31, 42, 68, 0.14);
+  border-radius: 14px;
+  padding: 8px;
+  box-shadow: 0 14px 30px rgba(31, 42, 68, 0.16);
+}
+
+.activity-actions-menu li + li,
+.poll-actions-menu li + li {
+  margin-top: 8px;
+}
+
+.activity-actions-menu .dropdown-item,
+.poll-actions-menu .dropdown-item {
+  border-radius: 12px;
+  border: 1px solid rgba(31, 42, 68, 0.14);
+  background: #ffffff;
+  padding: 12px 14px;
+  font-size: 16px;
+  font-weight: var(--font-weight-medium);
+  color: var(--secondary-color);
+}
+
+.activity-actions-menu .dropdown-item:hover,
+.activity-actions-menu .dropdown-item:focus,
+.poll-actions-menu .dropdown-item:hover,
+.poll-actions-menu .dropdown-item:focus {
+  background: rgba(44, 111, 183, 0.1);
+  color: #1e3f67;
+}
+
+.activity-actions-menu .dropdown-item.text-danger,
+.poll-actions-menu .dropdown-item.text-danger {
+  color: #b33636;
+}
+
+.activity-actions-menu .dropdown-item.text-danger:hover,
+.activity-actions-menu .dropdown-item.text-danger:focus,
+.poll-actions-menu .dropdown-item.text-danger:hover,
+.poll-actions-menu .dropdown-item.text-danger:focus {
+  background: rgba(195, 70, 70, 0.14);
+  color: #922c2c;
 }
 
 .activity-tab-btn {
@@ -1469,6 +1591,219 @@ https://templatemo.com/tm-587-tiya-golf-club
 
 .participant-dropdown-menu form {
   margin: 0;
+}
+
+.chat-input-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.chat-poll-composer {
+  margin-bottom: 12px;
+}
+
+.chat-poll-composer-inline {
+  background: #f9f7ee;
+  border: 1px solid rgba(31, 42, 68, 0.12);
+  border-radius: 14px;
+  padding: 10px;
+  max-width: 460px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.chat-poll-composer-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.poll-options-container {
+  margin-bottom: 4px;
+}
+
+.poll-option-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 36px;
+  gap: 8px;
+  align-items: center;
+}
+
+.poll-option-remove-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(31, 42, 68, 0.2);
+  background: #fff;
+  color: #4a566d;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  padding: 0;
+}
+
+.poll-option-remove-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.chat-poll-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chat-poll-card {
+  border: 1px solid rgba(31, 42, 68, 0.14);
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px;
+}
+
+.chat-poll-stream-item {
+  align-self: center;
+  width: min(100%, 480px);
+  margin: 6px 0 10px;
+}
+
+.chat-poll-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.chat-poll-question {
+  margin: 0;
+  color: var(--secondary-color);
+  user-select: none;
+}
+
+.chat-poll-question-input {
+  min-height: 36px;
+}
+
+.chat-poll-menu {
+  flex-shrink: 0;
+}
+
+.chat-poll-menu-toggle {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid rgba(31, 42, 68, 0.14);
+  background: #fff;
+  color: #4a566d;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.chat-poll-menu-toggle i {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.chat-poll-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chat-poll-option-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.chat-poll-option-row.is-editing {
+  grid-template-columns: minmax(0, 1fr) auto 34px;
+}
+
+.chat-poll-option-btn {
+  border: 1px solid rgba(31, 42, 68, 0.16);
+  background: #fff;
+  color: var(--secondary-color);
+  border-radius: 10px;
+  text-align: left;
+  padding: 8px 10px;
+  font-weight: var(--font-weight-medium);
+}
+
+.chat-poll-option-btn.is-voted {
+  border-color: rgba(44, 111, 183, 0.45);
+  background: rgba(44, 111, 183, 0.1);
+}
+
+.chat-poll-option-static {
+  cursor: default;
+}
+
+.chat-poll-vote-count {
+  min-width: 36px;
+  border-radius: 10px;
+  background: rgba(31, 42, 68, 0.08);
+  color: var(--secondary-color);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-bold);
+  padding: 0 8px;
+}
+
+.chat-poll-option-delete-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(195, 70, 70, 0.4);
+  background: #fff;
+  color: #b33636;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  padding: 0;
+}
+
+.chat-poll-option-delete-btn:hover,
+.chat-poll-option-delete-btn:focus {
+  background: rgba(195, 70, 70, 0.12);
+}
+
+.chat-poll-add-option-row {
+  margin-top: 8px;
+}
+
+.chat-poll-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.chat-poll-voters-toggle {
+  border: 0;
+  background: transparent;
+  color: #2c6fb7;
+  font-size: 12px;
+  text-align: left;
+  padding: 0;
+}
+
+.chat-poll-voters {
+  margin: 0 0 2px 12px;
+  padding: 0;
+  list-style: disc;
+  color: #4a566d;
+  font-size: 12px;
+}
+
+.chat-poll-empty {
+  color: var(--p-color);
+  font-size: 14px;
 }
 
 .chat-stream {
@@ -1713,6 +2048,7 @@ https://templatemo.com/tm-587-tiya-golf-club
 .chat-input .btn {
   border-radius: 999px;
   padding: 10px 18px;
+  min-width: 72px;
 }
 
 .announcement-list {
@@ -3035,6 +3371,27 @@ strong {
   line-height: 1;
   min-width: 44px;
   text-align: center;
+}
+
+.navbar-chat-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navbar-chat-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #d83232;
+  color: #fff;
+  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
 }
 
 .navbar-notification-badge {

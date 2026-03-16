@@ -258,6 +258,26 @@ public class ActivityController {
         return "redirect:/activities/" + id + "?updated";
     }
 
+    @PostMapping("/activities/{id}/delete")
+    public String deleteActivity(@PathVariable Long id, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login";
+        }
+
+        var activityOpt = activityService.getById(id);
+        if (activityOpt.isEmpty()) {
+            return "redirect:/activities?missing";
+        }
+
+        var activity = activityOpt.get();
+        if (!isOwner(activity.getCreator().getEmail(), authentication.getName())) {
+            return "redirect:/activities/" + id + "?forbidden";
+        }
+
+        activityService.deleteActivityWithRelations(id);
+        return "redirect:/activities?deleted";
+    }
+
     private void prepareFormModel(Model model,
                                   ActivityDto form,
                                   String formAction,

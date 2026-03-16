@@ -84,14 +84,21 @@
                             <aside class="activity-sidebar">
                                 <div class="activity-sidebar-card">
                                     <h5>Alte activitati</h5>
-                                    <div class="activity-mini-list">
+                                     <div class="activity-mini-list" data-unread-sort-list>
                                         <a class="activity-mini-card"
                                            th:each="item : ${otherActivities}"
                                            th:href="@{/activities/{id}(id=${item.id})}"
+                                         th:attr="data-unread-activity-id=${item.id}"
                                            th:classappend="${item.id == activity.id} ? ' is-active'">
                                             <img th:src="${item.imageUrl}" alt="Activitate" class="activity-mini-thumb">
                                             <div class="activity-mini-info">
-                                                <h6 class="mb-1" th:text="${item.title}">Tur ciclist cu ghid</h6>
+                                                <div class="activity-mini-title-row">
+                                                    <h6 class="mb-1" th:text="${item.title}">Tur ciclist cu ghid</h6>
+                                                    <span class="activity-mini-unread-badge"
+                                                            data-unread-badge
+                                                            th:classappend="${activityUnreadCounts == null or activityUnreadCounts[item.id] == null or activityUnreadCounts[item.id] <= 0} ? ' d-none'"
+                                                            th:text="${activityUnreadCounts != null and activityUnreadCounts[item.id] != null ? activityUnreadCounts[item.id] : 0}">0</span>
+                                                </div>
                                                 <small th:text="${#temporals.format(item.date, 'dd MMM') + ', ' + #temporals.format(item.time, 'HH:mm')}">Astazi, 18:30</small>
                                             </div>
                                         </a>
@@ -150,16 +157,28 @@
                             </aside>
 
                             <div class="activity-main-column">
-                            <div class="activity-main-tools" th:if="${#authorization.expression('isAuthenticated()') and activity.creator != null and activity.creator.email == #authentication.name}">
-                                <a class="btn custom-btn" th:href="@{/activities/{id}/edit(id=${activity.id})}">
-                                    Editeaza activitatea
-                                </a>
-                            </div>
                             <section class="activity-chat" aria-live="polite">
                                 <div class="activity-tabs" role="tablist">
-                                    <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-info-panel" data-tab="info">Info</button>
-                                    <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-chat-panel" data-tab="chat" th:if="${canAccessChat}">Chat</button>
-                                    <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-announcements-panel" data-tab="announcements" th:if="${canAccessChat}">Anunturi</button>
+                                    <div class="activity-tabs-left">
+                                        <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-info-panel" data-tab="info">Info</button>
+                                        <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-chat-panel" data-tab="chat" th:if="${canAccessChat}">Chat</button>
+                                        <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-announcements-panel" data-tab="announcements" th:if="${canAccessChat}">Anunturi</button>
+                                    </div>
+
+                                    <div class="dropdown activity-tabs-actions" th:if="${canAccessChat and isActivityCreator}">
+                                        <button class="activity-tabs-menu-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actiuni chat">
+                                            <i class="bi bi-three-dots"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end activity-actions-menu">
+                                            <li><button class="dropdown-item" id="togglePollComposerBtn" type="button">Creeaza un poll</button></li>
+                                            <li><a class="dropdown-item" th:href="@{/activities/{id}/edit(id=${activity.id})}">Editeaza activitatea</a></li>
+                                            <li>
+                                                <form method="post" th:action="@{/activities/{id}/delete(id=${activity.id})}" onsubmit="return confirm('Sigur vrei sa stergi aceasta activitate?');">
+                                                    <button class="dropdown-item text-danger" type="submit">Sterge activitatea</button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </div>
 
                                 <div class="activity-tab-panel" id="activity-info-panel" role="tabpanel" data-panel="info">
@@ -263,9 +282,27 @@
                                 <div class="activity-tab-panel" id="activity-chat-panel" role="tabpanel" data-panel="chat" th:if="${canAccessChat}">
                                     <div class="chat-stream" id="chatStream"></div>
 
+                                    <form class="chat-poll-composer chat-poll-composer-inline d-none" id="chatPollComposer">
+                                        <input class="form-control mb-2" id="pollQuestionInput" type="text" maxlength="280" placeholder="Intrebare poll">
+                                        <div id="pollOptionsContainer" class="poll-options-container">
+                                            <div class="poll-option-input-row mb-2">
+                                                <input class="form-control poll-option-input" type="text" maxlength="160" placeholder="Optiunea 1">
+                                                <button class="poll-option-remove-btn" type="button" aria-label="Sterge optiunea">x</button>
+                                            </div>
+                                            <div class="poll-option-input-row mb-2">
+                                                <input class="form-control poll-option-input" type="text" maxlength="160" placeholder="Optiunea 2">
+                                                <button class="poll-option-remove-btn" type="button" aria-label="Sterge optiunea">x</button>
+                                            </div>
+                                        </div>
+                                        <div class="chat-poll-composer-actions">
+                                            <button class="btn btn-sm custom-border-btn me-2" id="addPollOptionInputBtn" type="button">Adauga inca o optiune</button>
+                                            <button class="btn custom-btn" id="createPollBtn" type="submit">Publica poll</button>
+                                        </div>
+                                    </form>
+
                                     <div class="chat-input">
                                         <input class="form-control" id="chatInput" type="text" placeholder="Scrie un mesaj..." th:disabled="${#authorization.expression('isAnonymous()')}">
-                                        <button class="btn custom-btn" id="chatSendBtn" type="button" th:disabled="${#authorization.expression('isAnonymous()')}"><i class="bi bi-send"></i> Trimite</button>
+                                        <button class="btn custom-btn" id="chatSendBtn" type="button" th:disabled="${#authorization.expression('isAnonymous()')}" aria-label="Trimite mesaj"><i class="bi bi-send"></i></button>
                                     </div>
                                     <small class="text-muted mt-2" th:if="${#authorization.expression('isAnonymous()')}">Autentifica-te ca sa participi la chat.</small>
                                 </div>
@@ -336,6 +373,7 @@
 
                 if (target === 'chat') {
                     setTimeout(scrollChatToBottom, 0);
+                    markCurrentActivityChatAsSeen();
                 }
                 preserveTabContextForSidebarActivities();
                 syncChatPanelHeight();
@@ -372,17 +410,28 @@
 
             const activityId = Number(/*[[${activity.id}]]*/ 0);
             const currentUserId = /*[[${currentUserId}]]*/ null;
+            const isActivityCreator = /*[[${isActivityCreator}]]*/ false;
             const isAuthenticated = /*[[${#authorization.expression('isAuthenticated()')}]]*/ false;
             const canAccessChat = /*[[${canAccessChat}]]*/ false;
             const chatStreamEl = document.getElementById('chatStream');
             const chatInputEl = document.getElementById('chatInput');
             const chatSendBtnEl = document.getElementById('chatSendBtn');
             const activityChatEl = document.querySelector('.activity-chat');
+            const pollComposerEl = document.getElementById('chatPollComposer');
+            const togglePollComposerBtnEl = document.getElementById('togglePollComposerBtn');
+            const pollQuestionInputEl = document.getElementById('pollQuestionInput');
+            const pollOptionsContainerEl = document.getElementById('pollOptionsContainer');
+            const addPollOptionInputBtnEl = document.getElementById('addPollOptionInputBtn');
+            let pollOptionInputCount = 2;
 
             const messageElements = new Map();
             const messageState = new Map();
+            const pollState = new Map();
+            const pollElements = new Map();
+            const pollEditMode = new Set();
             let stompClient = null;
             let seenObserver = null;
+            let markAllSeenInFlight = false;
             const REACTION_OPTIONS = [
                 { type: 'LIKE', emoji: '👍' },
                 { type: 'LOVE', emoji: '❤️' },
@@ -393,6 +442,565 @@
             function formatTime(isoDate) {
                 const date = new Date(isoDate);
                 return date.toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' });
+            }
+
+            function formatDateTime(isoDate) {
+                const date = new Date(isoDate);
+                return date.toLocaleString('ro-RO', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+            }
+
+            function normalizePollForState(poll) {
+                if (!poll || !poll.id) return null;
+                return {
+                    id: Number(poll.id),
+                    activityId: Number(poll.activityId),
+                    creatorId: Number(poll.creatorId),
+                    creatorName: poll.creatorName || 'Utilizator',
+                    question: poll.question || '',
+                    createdAt: poll.createdAt,
+                    currentUserOptionId: poll.currentUserOptionId ? Number(poll.currentUserOptionId) : null,
+                    options: Array.isArray(poll.options)
+                        ? poll.options.map((option) => ({
+                            optionId: Number(option.optionId),
+                            text: option.text || '',
+                            voteCount: Number(option.voteCount || 0),
+                            votedByCurrentUser: Boolean(option.votedByCurrentUser),
+                            voters: Array.isArray(option.voters) ? option.voters : []
+                        }))
+                        : []
+                };
+            }
+
+            function toggleVotersList(toggleBtn) {
+                const targetId = toggleBtn?.dataset?.target;
+                if (!targetId) return;
+                const listEl = document.getElementById(targetId);
+                if (!listEl) return;
+                const isHidden = listEl.classList.contains('d-none');
+                listEl.classList.toggle('d-none', !isHidden);
+                toggleBtn.textContent = isHidden ? 'Ascunde votanti' : 'Vezi votanti';
+            }
+
+            function renderPollContent(container, poll) {
+                container.innerHTML = '';
+                const canManagePoll = Boolean(isActivityCreator);
+                const canUsePollMenu = currentUserId !== null;
+                const isEditing = pollEditMode.has(poll.id);
+
+                const header = document.createElement('div');
+                header.className = 'chat-poll-header';
+
+                let title;
+                if (isEditing && canManagePoll) {
+                    title = document.createElement('input');
+                    title.type = 'text';
+                    title.maxLength = 280;
+                    title.className = 'form-control chat-poll-question-input';
+                    title.value = poll.question;
+                    title.dataset.pollEditField = 'question';
+                } else {
+                    title = document.createElement('h6');
+                    title.className = 'chat-poll-question';
+                    title.textContent = poll.question;
+                }
+
+                header.appendChild(title);
+                if (canUsePollMenu) {
+                    const menuWrap = document.createElement('div');
+                    menuWrap.className = 'dropdown chat-poll-menu';
+
+                    const menuToggle = document.createElement('button');
+                    menuToggle.type = 'button';
+                    menuToggle.className = 'chat-poll-menu-toggle';
+                    menuToggle.setAttribute('data-bs-toggle', 'dropdown');
+                    menuToggle.setAttribute('aria-expanded', 'false');
+                    menuToggle.setAttribute('aria-label', 'Actiuni poll');
+                    menuToggle.innerHTML = '<i class="bi bi-three-dots"></i>';
+
+                    const menu = document.createElement('ul');
+                    menu.className = 'dropdown-menu dropdown-menu-end poll-actions-menu';
+
+                    if (canManagePoll) {
+                        const menuEditItem = document.createElement('li');
+                        const menuEditButton = document.createElement('button');
+                        menuEditButton.type = 'button';
+                        menuEditButton.className = 'dropdown-item';
+                        menuEditButton.dataset.pollAction = isEditing ? 'cancel-edit' : 'start-edit';
+                        menuEditButton.dataset.pollId = String(poll.id);
+                        menuEditButton.textContent = isEditing ? 'Renunta la editare' : 'Editeaza';
+                        menuEditItem.appendChild(menuEditButton);
+
+                        const menuDeleteItem = document.createElement('li');
+                        const menuDeleteButton = document.createElement('button');
+                        menuDeleteButton.type = 'button';
+                        menuDeleteButton.className = 'dropdown-item text-danger';
+                        menuDeleteButton.dataset.pollAction = 'delete';
+                        menuDeleteButton.dataset.pollId = String(poll.id);
+                        menuDeleteButton.textContent = 'Sterge';
+                        menuDeleteItem.appendChild(menuDeleteButton);
+
+                        menu.appendChild(menuEditItem);
+                        menu.appendChild(menuDeleteItem);
+                    } else {
+                        const menuAddOptionItem = document.createElement('li');
+                        const menuAddOptionButton = document.createElement('button');
+                        menuAddOptionButton.type = 'button';
+                        menuAddOptionButton.className = 'dropdown-item';
+                        menuAddOptionButton.dataset.pollAction = 'add-option';
+                        menuAddOptionButton.dataset.pollId = String(poll.id);
+                        menuAddOptionButton.textContent = 'Adauga optiune';
+                        menuAddOptionItem.appendChild(menuAddOptionButton);
+                        menu.appendChild(menuAddOptionItem);
+                    }
+
+                    menuWrap.appendChild(menuToggle);
+                    menuWrap.appendChild(menu);
+                    header.appendChild(menuWrap);
+                }
+
+                const optionsWrap = document.createElement('div');
+                optionsWrap.className = 'chat-poll-options';
+
+                poll.options.forEach((option) => {
+                    const optionRow = document.createElement('div');
+                    optionRow.className = 'chat-poll-option-row';
+                    if (isEditing && canManagePoll) {
+                        optionRow.classList.add('is-editing');
+                    }
+
+                    let leftControl;
+                    if (isEditing && canManagePoll) {
+                        const optionLabel = document.createElement('div');
+                        optionLabel.className = 'chat-poll-option-btn chat-poll-option-static';
+                        optionLabel.textContent = option.text;
+                        leftControl = optionLabel;
+                    } else {
+                        const voteBtn = document.createElement('button');
+                        voteBtn.type = 'button';
+                        voteBtn.className = 'chat-poll-option-btn';
+                        if (option.votedByCurrentUser) {
+                            voteBtn.classList.add('is-voted');
+                        }
+                        voteBtn.dataset.pollAction = 'vote';
+                        voteBtn.dataset.pollId = String(poll.id);
+                        voteBtn.dataset.optionId = String(option.optionId);
+                        voteBtn.textContent = option.text;
+                        leftControl = voteBtn;
+                    }
+
+                    const count = document.createElement('span');
+                    count.className = 'chat-poll-vote-count';
+                    count.textContent = `${option.voteCount}`;
+
+                    optionRow.appendChild(leftControl);
+                    optionRow.appendChild(count);
+
+                    if (isEditing && canManagePoll) {
+                        const deleteOptionBtn = document.createElement('button');
+                        deleteOptionBtn.type = 'button';
+                        deleteOptionBtn.className = 'chat-poll-option-delete-btn';
+                        deleteOptionBtn.dataset.pollAction = 'delete-option';
+                        deleteOptionBtn.dataset.pollId = String(poll.id);
+                        deleteOptionBtn.dataset.optionId = String(option.optionId);
+                        deleteOptionBtn.setAttribute('aria-label', 'Sterge optiunea');
+                        deleteOptionBtn.textContent = 'x';
+                        optionRow.appendChild(deleteOptionBtn);
+                    }
+
+                    optionsWrap.appendChild(optionRow);
+
+                    if (!(isEditing && canManagePoll)) {
+                        const votersToggle = document.createElement('button');
+                        votersToggle.type = 'button';
+                        votersToggle.className = 'chat-poll-voters-toggle';
+                        votersToggle.dataset.pollAction = 'toggle-voters';
+                        votersToggle.dataset.target = `poll-${poll.id}-option-${option.optionId}-voters`;
+                        votersToggle.textContent = 'Vezi votanti';
+                        if (option.voteCount === 0) {
+                            votersToggle.disabled = true;
+                        }
+
+                        const votersList = document.createElement('ul');
+                        votersList.className = 'chat-poll-voters d-none';
+                        votersList.id = votersToggle.dataset.target;
+                        option.voters.forEach((voter) => {
+                            const item = document.createElement('li');
+                            item.textContent = `${voter.userName} (${formatDateTime(voter.votedAt)})`;
+                            votersList.appendChild(item);
+                        });
+
+                        optionsWrap.appendChild(votersToggle);
+                        optionsWrap.appendChild(votersList);
+                    }
+                });
+
+                if (isEditing && canManagePoll) {
+                    const addOptionRow = document.createElement('div');
+                    addOptionRow.className = 'chat-poll-add-option-row';
+
+                    const newOptionInput = document.createElement('input');
+                    newOptionInput.type = 'text';
+                    newOptionInput.maxLength = 160;
+                    newOptionInput.className = 'form-control';
+                    newOptionInput.placeholder = 'Optiune noua';
+                    newOptionInput.dataset.pollEditField = 'new-option';
+
+                    addOptionRow.appendChild(newOptionInput);
+
+                    const footer = document.createElement('div');
+                    footer.className = 'chat-poll-edit-actions';
+
+                    const saveBtn = document.createElement('button');
+                    saveBtn.type = 'button';
+                    saveBtn.className = 'btn btn-sm custom-btn';
+                    saveBtn.dataset.pollAction = 'save-edit';
+                    saveBtn.dataset.pollId = String(poll.id);
+                    saveBtn.textContent = 'Salveaza';
+
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.type = 'button';
+                    cancelBtn.className = 'btn btn-sm custom-border-btn';
+                    cancelBtn.dataset.pollAction = 'cancel-edit';
+                    cancelBtn.dataset.pollId = String(poll.id);
+                    cancelBtn.textContent = 'Anuleaza';
+
+                    footer.appendChild(cancelBtn);
+                    footer.appendChild(saveBtn);
+                    optionsWrap.appendChild(addOptionRow);
+                    optionsWrap.appendChild(footer);
+                }
+
+                container.appendChild(header);
+                container.appendChild(optionsWrap);
+            }
+
+            function upsertPoll(poll, appendToEnd = true) {
+                const normalized = normalizePollForState(poll);
+                if (!normalized) return;
+                pollState.set(normalized.id, normalized);
+
+                const emptyState = document.getElementById('chatEmptyState');
+                if (emptyState) {
+                    emptyState.remove();
+                }
+
+                let wrapper = pollElements.get(normalized.id);
+                if (!wrapper) {
+                    wrapper = document.createElement('div');
+                    wrapper.className = 'chat-poll-stream-item';
+                    wrapper.dataset.pollId = String(normalized.id);
+                    wrapper.dataset.createdAt = normalized.createdAt;
+                    wrapper.dataset.senderId = String(normalized.creatorId);
+
+                    const pollContainer = document.createElement('div');
+                    pollContainer.className = 'chat-poll-card';
+                    wrapper.appendChild(pollContainer);
+
+                    pollElements.set(normalized.id, wrapper);
+
+                    if (appendToEnd) {
+                        chatStreamEl.appendChild(wrapper);
+                    }
+                }
+
+                const pollContainer = wrapper.querySelector('.chat-poll-card');
+                if (pollContainer) {
+                    renderPollContent(pollContainer, normalized);
+                }
+            }
+
+            function removePoll(pollId) {
+                const numericPollId = Number(pollId);
+                if (!numericPollId) return;
+                pollState.delete(numericPollId);
+                pollEditMode.delete(numericPollId);
+                const wrapper = pollElements.get(numericPollId);
+                if (wrapper && wrapper.parentElement) {
+                    wrapper.parentElement.removeChild(wrapper);
+                }
+                pollElements.delete(numericPollId);
+            }
+
+            function publishPollCreate(question, options) {
+                if (!stompClient || !stompClient.connected) return;
+                stompClient.publish({
+                    destination: `/app/activities/${activityId}/polls/create`,
+                    body: JSON.stringify({ question, options })
+                });
+            }
+
+            function publishPollVote(pollId, optionId) {
+                if (!stompClient || !stompClient.connected) return;
+                stompClient.publish({
+                    destination: `/app/activities/${activityId}/polls/vote`,
+                    body: JSON.stringify({ pollId: Number(pollId), optionId: Number(optionId) })
+                });
+            }
+
+            function publishPollEdit(pollId, question) {
+                if (!stompClient || !stompClient.connected) return;
+                stompClient.publish({
+                    destination: `/app/activities/${activityId}/polls/edit`,
+                    body: JSON.stringify({ pollId: Number(pollId), question })
+                });
+            }
+
+            function publishPollDelete(pollId) {
+                if (!stompClient || !stompClient.connected) return;
+                stompClient.publish({
+                    destination: `/app/activities/${activityId}/polls/delete`,
+                    body: JSON.stringify({ pollId: Number(pollId) })
+                });
+            }
+
+            function publishPollAddOption(pollId, optionText) {
+                if (!stompClient || !stompClient.connected) return;
+                stompClient.publish({
+                    destination: `/app/activities/${activityId}/polls/add-option`,
+                    body: JSON.stringify({ pollId: Number(pollId), optionText })
+                });
+            }
+
+            function publishPollDeleteOption(pollId, optionId) {
+                if (!stompClient || !stompClient.connected) return;
+                stompClient.publish({
+                    destination: `/app/activities/${activityId}/polls/delete-option`,
+                    body: JSON.stringify({ pollId: Number(pollId), optionId: Number(optionId) })
+                });
+            }
+
+            function wirePollComposer() {
+                if (!pollComposerEl || !togglePollComposerBtnEl) return;
+
+                const updatePollRemoveButtonsState = () => {
+                    if (!pollOptionsContainerEl) {
+                        return;
+                    }
+                    const rows = Array.from(pollOptionsContainerEl.querySelectorAll('.poll-option-input-row'));
+                    const canRemove = rows.length > 2;
+                    rows.forEach((row, index) => {
+                        const input = row.querySelector('.poll-option-input');
+                        if (input) {
+                            input.placeholder = `Optiunea ${index + 1}`;
+                        }
+                        const removeBtn = row.querySelector('.poll-option-remove-btn');
+                        if (removeBtn) {
+                            removeBtn.disabled = !canRemove;
+                            removeBtn.setAttribute('aria-disabled', canRemove ? 'false' : 'true');
+                        }
+                    });
+                    pollOptionInputCount = rows.length;
+                };
+
+                const resetPollOptionInputs = () => {
+                    if (!pollOptionsContainerEl) {
+                        return;
+                    }
+                    pollOptionsContainerEl.innerHTML = '';
+                    pollOptionInputCount = 0;
+                    for (let i = 0; i < 2; i += 1) {
+                        pollOptionInputCount += 1;
+                        const row = document.createElement('div');
+                        row.className = 'poll-option-input-row mb-2';
+
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.maxLength = 160;
+                        input.className = 'form-control poll-option-input';
+                        input.placeholder = `Optiunea ${pollOptionInputCount}`;
+
+                        const removeBtn = document.createElement('button');
+                        removeBtn.type = 'button';
+                        removeBtn.className = 'poll-option-remove-btn';
+                        removeBtn.setAttribute('aria-label', 'Sterge optiunea');
+                        removeBtn.textContent = 'x';
+
+                        row.appendChild(input);
+                        row.appendChild(removeBtn);
+                        pollOptionsContainerEl.appendChild(row);
+                    }
+                    updatePollRemoveButtonsState();
+                };
+
+                const appendPollOptionInput = () => {
+                    if (!pollOptionsContainerEl) {
+                        return;
+                    }
+                    pollOptionInputCount += 1;
+                    const row = document.createElement('div');
+                    row.className = 'poll-option-input-row mb-2';
+
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.maxLength = 160;
+                    input.className = 'form-control poll-option-input';
+                    input.placeholder = `Optiunea ${pollOptionInputCount}`;
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'poll-option-remove-btn';
+                    removeBtn.setAttribute('aria-label', 'Sterge optiunea');
+                    removeBtn.textContent = 'x';
+
+                    row.appendChild(input);
+                    row.appendChild(removeBtn);
+                    pollOptionsContainerEl.appendChild(row);
+                    updatePollRemoveButtonsState();
+                    input.focus();
+                };
+
+                if (pollOptionsContainerEl) {
+                    pollOptionsContainerEl.addEventListener('click', (event) => {
+                        const removeBtn = event.target.closest('.poll-option-remove-btn');
+                        if (!removeBtn) {
+                            return;
+                        }
+                        const rows = pollOptionsContainerEl.querySelectorAll('.poll-option-input-row');
+                        if (rows.length <= 2) {
+                            return;
+                        }
+                        const row = removeBtn.closest('.poll-option-input-row');
+                        if (!row) {
+                            return;
+                        }
+                        row.remove();
+                        updatePollRemoveButtonsState();
+                    });
+                }
+
+                if (addPollOptionInputBtnEl) {
+                    addPollOptionInputBtnEl.addEventListener('click', appendPollOptionInput);
+                }
+
+                togglePollComposerBtnEl.addEventListener('click', () => {
+                    activateTab('chat');
+                    pollComposerEl.classList.remove('d-none');
+                    setTimeout(() => {
+                        pollQuestionInputEl?.focus();
+                    }, 0);
+                });
+
+                pollComposerEl.addEventListener('submit', (event) => {
+                    event.preventDefault();
+                    const question = (pollQuestionInputEl?.value || '').trim();
+                    const options = Array.from(pollComposerEl.querySelectorAll('.poll-option-input'))
+                        .map((input) => input.value)
+                        .map((value) => (value || '').trim())
+                        .filter((value) => value.length > 0);
+
+                    if (!question || options.length < 2) {
+                        return;
+                    }
+
+                    publishPollCreate(question, options);
+                    if (pollQuestionInputEl) {
+                        pollQuestionInputEl.value = '';
+                    }
+                    resetPollOptionInputs();
+                    pollComposerEl.classList.add('d-none');
+                });
+
+                resetPollOptionInputs();
+            }
+
+            function wirePollActions() {
+                if (!chatStreamEl) return;
+                chatStreamEl.addEventListener('click', (event) => {
+                    const target = event.target.closest('[data-poll-action]');
+                    if (!target) return;
+
+                    const action = target.dataset.pollAction;
+                    const pollId = Number(target.dataset.pollId);
+
+                    if (action === 'vote' && pollId) {
+                        const optionId = Number(target.dataset.optionId);
+                        if (optionId) {
+                            publishPollVote(pollId, optionId);
+                        }
+                        return;
+                    }
+
+                    if (action === 'toggle-voters') {
+                        toggleVotersList(target);
+                        return;
+                    }
+
+                    const state = pollState.get(pollId);
+                    if (!state) return;
+
+                    if (!isActivityCreator && action !== 'toggle-voters' && action !== 'vote') {
+                        if (action !== 'add-option') {
+                            return;
+                        }
+                    }
+
+                    if (action === 'start-edit') {
+                        pollEditMode.add(pollId);
+                        upsertPoll(state, false);
+                        return;
+                    }
+
+                    if (action === 'cancel-edit') {
+                        pollEditMode.delete(pollId);
+                        upsertPoll(state, false);
+                        return;
+                    }
+
+                    if (action === 'save-edit') {
+                        const card = target.closest('.chat-poll-card');
+                        if (!card) {
+                            return;
+                        }
+
+                        const questionInput = card.querySelector('[data-poll-edit-field="question"]');
+                        const nextQuestion = (questionInput?.value || '').trim();
+                        if (!nextQuestion) {
+                            window.alert('Intrebarea poll-ului este obligatorie.');
+                            return;
+                        }
+
+                        if (nextQuestion !== (state.question || '')) {
+                            publishPollEdit(pollId, nextQuestion);
+                        }
+
+                        const newOptionInput = card.querySelector('[data-poll-edit-field="new-option"]');
+                        const newOptionText = (newOptionInput?.value || '').trim();
+                        if (newOptionText) {
+                            publishPollAddOption(pollId, newOptionText);
+                        }
+
+                        pollEditMode.delete(pollId);
+                        upsertPoll(state, false);
+                        return;
+                    }
+
+                    if (action === 'delete-option' && pollId) {
+                        const optionId = Number(target.dataset.optionId);
+                        if (!optionId) {
+                            return;
+                        }
+                        if (window.confirm('Sigur vrei sa stergi aceasta optiune?')) {
+                            publishPollDeleteOption(pollId, optionId);
+                        }
+                        return;
+                    }
+
+                    if (action === 'delete') {
+                        if (window.confirm('Sigur vrei sa stergi acest poll?')) {
+                            publishPollDelete(pollId);
+                        }
+                        return;
+                    }
+
+                    if (action === 'add-option') {
+                        const nextOption = window.prompt('Adauga optiune noua in poll:');
+                        if (nextOption && nextOption.trim()) {
+                            publishPollAddOption(pollId, nextOption.trim());
+                        }
+                        return;
+                    }
+
+                });
             }
 
             function isOwnMessageState(state) {
@@ -671,6 +1279,24 @@
                 chatStreamEl.scrollTop = chatStreamEl.scrollHeight;
             }
 
+            function markCurrentActivityChatAsSeen() {
+                if (!isAuthenticated || !canAccessChat || activityId <= 0 || markAllSeenInFlight) {
+                    return;
+                }
+                markAllSeenInFlight = true;
+                fetch(`/api/activities/${activityId}/messages/mark-all-seen`, {
+                    method: 'POST',
+                    credentials: 'same-origin'
+                })
+                    .catch(() => {
+                        // Keep current UI state if request fails.
+                    })
+                    .finally(() => {
+                        markAllSeenInFlight = false;
+                        window.dispatchEvent(new Event('joinus-force-unread-refresh'));
+                    });
+            }
+
             function syncChatPanelHeight() {
                 if (!activityChatEl) return;
                 if (window.innerWidth <= 991) {
@@ -731,18 +1357,42 @@
                 });
             }
 
-            async function loadInitialMessages() {
-                const response = await fetch(`/api/activities/${activityId}/messages?limit=60`, { credentials: 'same-origin' });
-                if (!response.ok) {
-                    return [];
+            async function loadInitialTimeline() {
+                const [messagesResponse, pollsResponse] = await Promise.all([
+                    fetch(`/api/activities/${activityId}/messages?limit=60`, { credentials: 'same-origin' }),
+                    fetch(`/api/activities/${activityId}/polls`, { credentials: 'same-origin' })
+                ]);
+
+                const messages = messagesResponse.ok ? await messagesResponse.json() : [];
+                const polls = pollsResponse.ok ? await pollsResponse.json() : [];
+
+                const timeline = [];
+                if (Array.isArray(messages)) {
+                    messages.forEach((message) => {
+                        timeline.push({ type: 'message', createdAt: message.createdAt, payload: message });
+                    });
                 }
-                const messages = await response.json();
-                messages.forEach(renderMessage);
-                if (messages.length === 0 && chatStreamEl) {
+                if (Array.isArray(polls)) {
+                    polls.forEach((poll) => {
+                        timeline.push({ type: 'poll', createdAt: poll.createdAt, payload: poll });
+                    });
+                }
+
+                timeline.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+                timeline.forEach((item) => {
+                    if (item.type === 'message') {
+                        renderMessage(item.payload);
+                    } else {
+                        upsertPoll(item.payload, true);
+                    }
+                });
+
+                if (timeline.length === 0 && chatStreamEl) {
                     chatStreamEl.innerHTML = '<p id="chatEmptyState" class="text-muted text-center my-3">Nu exista mesaje inca. Fii primul care scrie in chat.</p>';
                 }
+
                 scrollChatToBottom();
-                return messages;
+                return timeline;
             }
 
             function setupSeenObserver() {
@@ -812,6 +1462,20 @@
                         );
                     });
 
+                    stompClient.subscribe(`/topic/activities/${activityId}/polls`, (frame) => {
+                        const event = JSON.parse(frame.body);
+                        if (!event) {
+                            return;
+                        }
+                        if (event.action === 'deleted') {
+                            removePoll(event.pollId);
+                            return;
+                        }
+                        if (event.poll) {
+                            upsertPoll(event.poll);
+                        }
+                    });
+
                     publishDeliveredForRenderedMessages();
                     publishSeenForVisibleMessages();
                 };
@@ -846,12 +1510,14 @@
             activateTab(initialTab);
 
             if (isAuthenticated && canAccessChat && activityId > 0) {
-                loadInitialMessages()
+                loadInitialTimeline()
                         .then(() => {
                             setupSeenObserver();
                             connectChatSocket();
                             wireSendMessage();
                             wireReactionClicks();
+                            wirePollComposer();
+                            wirePollActions();
                             syncChatPanelHeight();
                         })
                         .catch(() => {

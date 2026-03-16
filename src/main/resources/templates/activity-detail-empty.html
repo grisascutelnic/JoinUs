@@ -56,13 +56,20 @@
                                 <aside class="activity-sidebar">
                                     <div class="activity-sidebar-card">
                                         <h5>Activitatile tale</h5>
-                                        <div class="activity-mini-list" th:if="${otherActivities != null and !#lists.isEmpty(otherActivities)}">
+                                        <div class="activity-mini-list" data-unread-sort-list th:if="${otherActivities != null and !#lists.isEmpty(otherActivities)}">
                                             <a class="activity-mini-card"
                                                th:each="item : ${otherActivities}"
-                                                              th:href="@{/activities/{id}(id=${item.id})}">
+                                                              th:href="@{/activities/{id}(id=${item.id})}"
+                                               th:attr="data-unread-activity-id=${item.id}">
                                                 <img th:src="${item.imageUrl}" alt="Activitate" class="activity-mini-thumb">
                                                 <div class="activity-mini-info">
-                                                    <h6 class="mb-1" th:text="${item.title}">Tur ciclist cu ghid</h6>
+                                                    <div class="activity-mini-title-row">
+                                                        <h6 class="mb-1" th:text="${item.title}">Tur ciclist cu ghid</h6>
+                                                        <span class="activity-mini-unread-badge"
+                                                              data-unread-badge
+                                                              th:classappend="${activityUnreadCounts == null or activityUnreadCounts[item.id] == null or activityUnreadCounts[item.id] <= 0} ? ' d-none'"
+                                                              th:text="${activityUnreadCounts != null and activityUnreadCounts[item.id] != null ? activityUnreadCounts[item.id] : 0}">0</span>
+                                                    </div>
                                                     <small th:text="${#temporals.format(item.date, 'dd MMM') + ', ' + #temporals.format(item.time, 'HH:mm')}">Astazi, 18:30</small>
                                                 </div>
                                             </a>
@@ -76,9 +83,11 @@
                                 <div class="activity-main-column">
                                     <section class="activity-chat" aria-live="polite">
                                         <div class="activity-tabs" role="tablist">
-                                            <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" data-tab="info">Info</button>
-                                            <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" data-tab="chat">Chat</button>
-                                            <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" data-tab="announcements">Anunturi</button>
+                                            <div class="activity-tabs-left">
+                                                <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" data-tab="info">Info</button>
+                                                <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" data-tab="chat">Chat</button>
+                                                <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" data-tab="announcements">Anunturi</button>
+                                            </div>
                                         </div>
 
                                         <div class="activity-tab-panel" role="tabpanel" data-panel="info">

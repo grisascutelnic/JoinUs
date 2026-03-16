@@ -4,6 +4,10 @@ import com.scutelnic.joinus.dto.chat.ChatMessageResponse;
 import com.scutelnic.joinus.dto.chat.MessageReactionSummaryResponse;
 import com.scutelnic.joinus.dto.chat.MessageReactionUpdateEvent;
 import com.scutelnic.joinus.dto.chat.MessageSeenSummaryResponse;
+import com.scutelnic.joinus.dto.chat.PollOptionSummaryResponse;
+import com.scutelnic.joinus.dto.chat.PollResponse;
+import com.scutelnic.joinus.dto.chat.PollUpdateEvent;
+import com.scutelnic.joinus.dto.chat.PollVoterResponse;
 import com.scutelnic.joinus.dto.chat.SeenUpdateEvent;
 import com.scutelnic.joinus.dto.chat.SeenUserResponse;
 import com.scutelnic.joinus.entity.Activity;
@@ -11,31 +15,44 @@ import com.scutelnic.joinus.entity.ActivityMessage;
 import com.scutelnic.joinus.entity.ActivityMessageReaction;
 import com.scutelnic.joinus.entity.ActivityMessageReactionType;
 import com.scutelnic.joinus.entity.ActivityMessageSeen;
+import com.scutelnic.joinus.entity.ActivityPoll;
+import com.scutelnic.joinus.entity.ActivityPollOption;
+import com.scutelnic.joinus.entity.ActivityPollVote;
 import com.scutelnic.joinus.entity.User;
 import com.scutelnic.joinus.repository.ActivityMessageDeliveredRepository;
 import com.scutelnic.joinus.repository.ActivityMessageReactionRepository;
 import com.scutelnic.joinus.repository.ActivityMessageRepository;
 import com.scutelnic.joinus.repository.ActivityMessageSeenRepository;
+import com.scutelnic.joinus.repository.ActivityPollOptionRepository;
+import com.scutelnic.joinus.repository.ActivityPollRepository;
+import com.scutelnic.joinus.repository.ActivityPollVoteRepository;
 import com.scutelnic.joinus.repository.ActivityRepository;
 import com.scutelnic.joinus.repository.UserRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 public class ActivityChatService {
 
     private static final int MAX_HISTORY_LIMIT = 100;
+    private static final int MAX_POLL_QUESTION_LENGTH = 280;
+    private static final int MAX_POLL_OPTION_LENGTH = 160;
+    private static final int MAX_POLL_OPTIONS = 10;
     private static final List<ActivityMessageReactionType> SUPPORTED_REACTIONS = List.of(
             ActivityMessageReactionType.LIKE,
             ActivityMessageReactionType.LOVE,
@@ -49,6 +66,9 @@ public class ActivityChatService {
     private final ActivityMessageDeliveredRepository deliveredRepository;
     private final ActivityMessageReactionRepository reactionRepository;
     private final ActivityMessageSeenRepository seenRepository;
+    private final ActivityPollRepository pollRepository;
+    private final ActivityPollOptionRepository pollOptionRepository;
+    private final ActivityPollVoteRepository pollVoteRepository;
     private final ActivityParticipationService participationService;
 
     public ActivityChatService(ActivityRepository activityRepository,
@@ -57,6 +77,9 @@ public class ActivityChatService {
                                ActivityMessageDeliveredRepository deliveredRepository,
                                ActivityMessageReactionRepository reactionRepository,
                                ActivityMessageSeenRepository seenRepository,
+                               ActivityPollRepository pollRepository,
+                               ActivityPollOptionRepository pollOptionRepository,
+                               ActivityPollVoteRepository pollVoteRepository,
                                ActivityParticipationService participationService) {
         this.activityRepository = activityRepository;
         this.userRepository = userRepository;
@@ -64,7 +87,224 @@ public class ActivityChatService {
         this.deliveredRepository = deliveredRepository;
         this.reactionRepository = reactionRepository;
         this.seenRepository = seenRepository;
+        this.pollRepository = pollRepository;
+        this.pollOptionRepository = pollOptionRepository;
+        this.pollVoteRepository = pollVoteRepository;
         this.participationService = participationService;
+    }
+
+    public List<PollResponse> getPolls(Long activityId, String userEmail) {
+        requireChatAccess(activityId, userEmail);
+        User currentUser = requireUserByEmail(userEmail);
+        List<ActivityPoll> polls = pollRepository.findByActivityIdOrderByCreatedAtDesc(activityId);
+        if (polls.isEmpty()) {
+            return List.of();
+        }
+        return buildPollResponses(polls, currentUser.getId());
+    }
+
+    @Transactional
+    public PollUpdateEvent createPoll(Long activityId, String userEmail, String question, List<String> options) {
+        requireChatAccess(activityId, userEmail);
+        Activity activity = requireActivity(activityId);
+        User creator = requireUserByEmail(userEmail);
+
+        String normalizedQuestion = normalizePollQuestion(question);
+        List<String> normalizedOptions = normalizePollOptions(options);
+
+        ActivityPoll poll = new ActivityPoll();
+        poll.setActivity(activity);
+        poll.setCreator(creator);
+        poll.setQuestion(normalizedQuestion);
+        ActivityPoll savedPoll = pollRepository.save(poll);
+
+        for (int i = 0; i < normalizedOptions.size(); i++) {
+            ActivityPollOption option = new ActivityPollOption();
+            option.setPoll(savedPoll);
+            option.setText(normalizedOptions.get(i));
+            option.setPosition(i);
+            pollOptionRepository.save(option);
+        }
+
+        PollResponse response = getPollResponseById(activityId, savedPoll.getId(), creator.getId());
+        return new PollUpdateEvent("created", savedPoll.getId(), response);
+    }
+
+    @Transactional
+    public PollUpdateEvent votePoll(Long activityId, Long pollId, Long optionId, String userEmail) {
+        if (pollId == null || optionId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pollId and optionId are required");
+        }
+
+        requireChatAccess(activityId, userEmail);
+        User voter = requireUserByEmail(userEmail);
+
+        ActivityPoll poll = pollRepository.findByIdAndActivityId(pollId, activityId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Poll not found"));
+
+        ActivityPollOption option = pollOptionRepository.findByIdAndPollId(optionId, pollId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Option does not belong to poll"));
+
+        ActivityPollVote vote = pollVoteRepository.findByPollIdAndVoterId(pollId, voter.getId()).orElse(null);
+        if (vote == null) {
+            vote = new ActivityPollVote();
+            vote.setPoll(poll);
+            vote.setVoter(voter);
+        }
+        vote.setOption(option);
+        vote.setVotedAt(LocalDateTime.now());
+        pollVoteRepository.save(vote);
+
+        PollResponse response = getPollResponseById(activityId, pollId, voter.getId());
+        return new PollUpdateEvent("voted", pollId, response);
+    }
+
+    @Transactional
+    public PollUpdateEvent editPoll(Long activityId, Long pollId, String question, String userEmail) {
+        if (pollId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pollId is required");
+        }
+
+        requireChatAccess(activityId, userEmail);
+        User actor = requireActivityAuthor(activityId, userEmail);
+
+        ActivityPoll poll = pollRepository.findByIdAndActivityId(pollId, activityId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Poll not found"));
+
+        poll.setQuestion(normalizePollQuestion(question));
+        pollRepository.save(poll);
+
+        PollResponse response = getPollResponseById(activityId, pollId, actor.getId());
+        return new PollUpdateEvent("updated", pollId, response);
+    }
+
+    @Transactional
+    public PollUpdateEvent addPollOption(Long activityId, Long pollId, String optionText, String userEmail) {
+        if (pollId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pollId is required");
+        }
+
+        requireChatAccess(activityId, userEmail);
+        User actor = requireUserByEmail(userEmail);
+
+        ActivityPoll poll = pollRepository.findByIdAndActivityId(pollId, activityId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Poll not found"));
+
+        List<ActivityPollOption> existing = pollOptionRepository.findByPollId(pollId);
+        if (existing.size() >= MAX_POLL_OPTIONS) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Poll already has maximum number of options");
+        }
+
+        String normalized = normalizePollOption(optionText);
+        boolean duplicate = existing.stream()
+                .anyMatch(option -> option.getText() != null && option.getText().trim().equalsIgnoreCase(normalized));
+        if (duplicate) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Option already exists");
+        }
+
+        int nextPosition = existing.stream()
+                .map(ActivityPollOption::getPosition)
+                .max(Integer::compareTo)
+                .orElse(-1) + 1;
+
+        ActivityPollOption option = new ActivityPollOption();
+        option.setPoll(poll);
+        option.setText(normalized);
+        option.setPosition(nextPosition);
+        pollOptionRepository.save(option);
+
+        PollResponse response = getPollResponseById(activityId, pollId, actor.getId());
+        return new PollUpdateEvent("option_added", pollId, response);
+    }
+
+    @Transactional
+    public PollUpdateEvent editPollOption(Long activityId,
+                                          Long pollId,
+                                          Long optionId,
+                                          String optionText,
+                                          String userEmail) {
+        if (pollId == null || optionId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pollId and optionId are required");
+        }
+
+        requireChatAccess(activityId, userEmail);
+        User actor = requireActivityAuthor(activityId, userEmail);
+
+        pollRepository.findByIdAndActivityId(pollId, activityId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Poll not found"));
+
+        ActivityPollOption option = pollOptionRepository.findByIdAndPollId(optionId, pollId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Option does not belong to poll"));
+
+        String normalized = normalizePollOption(optionText);
+        List<ActivityPollOption> existing = pollOptionRepository.findByPollId(pollId);
+        boolean duplicate = existing.stream()
+                .anyMatch(current -> !current.getId().equals(optionId)
+                        && current.getText() != null
+                        && current.getText().trim().equalsIgnoreCase(normalized));
+        if (duplicate) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Option already exists");
+        }
+
+        option.setText(normalized);
+        pollOptionRepository.save(option);
+
+        PollResponse response = getPollResponseById(activityId, pollId, actor.getId());
+        return new PollUpdateEvent("option_updated", pollId, response);
+    }
+
+    @Transactional
+    public PollUpdateEvent deletePollOption(Long activityId, Long pollId, Long optionId, String userEmail) {
+        if (pollId == null || optionId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pollId and optionId are required");
+        }
+
+        requireChatAccess(activityId, userEmail);
+        User actor = requireActivityAuthor(activityId, userEmail);
+
+        pollRepository.findByIdAndActivityId(pollId, activityId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Poll not found"));
+
+        List<ActivityPollOption> existing = pollOptionRepository.findByPollIdOrderByPositionAsc(pollId);
+        if (existing.size() <= 2) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A poll must keep at least 2 options");
+        }
+
+        ActivityPollOption target = existing.stream()
+                .filter(option -> option.getId().equals(optionId))
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Option does not belong to poll"));
+
+        pollVoteRepository.deleteByOptionId(optionId);
+        pollOptionRepository.delete(target);
+
+        List<ActivityPollOption> remaining = pollOptionRepository.findByPollIdOrderByPositionAsc(pollId);
+        for (int i = 0; i < remaining.size(); i++) {
+            remaining.get(i).setPosition(i);
+        }
+        pollOptionRepository.saveAll(remaining);
+
+        PollResponse response = getPollResponseById(activityId, pollId, actor.getId());
+        return new PollUpdateEvent("option_deleted", pollId, response);
+    }
+
+    @Transactional
+    public PollUpdateEvent deletePoll(Long activityId, Long pollId, String userEmail) {
+        if (pollId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pollId is required");
+        }
+
+        requireChatAccess(activityId, userEmail);
+        requireActivityAuthor(activityId, userEmail);
+
+        ActivityPoll poll = pollRepository.findByIdAndActivityId(pollId, activityId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Poll not found"));
+
+        pollVoteRepository.deleteByPollId(pollId);
+        pollOptionRepository.deleteByPollId(pollId);
+        pollRepository.delete(poll);
+
+        return new PollUpdateEvent("deleted", pollId, null);
     }
 
     public List<ChatMessageResponse> getRecentMessages(Long activityId, int requestedLimit, String userEmail) {
@@ -210,6 +450,13 @@ public class ActivityChatService {
         long deliveredCount = deliveredRepository.countByMessageIdAndUserIdNot(messageId, senderId);
         long seenCount = seenRepository.countByMessageIdAndUserIdNot(messageId, senderId);
         return new SeenUpdateEvent(messageId, deliveredCount, seenCount);
+    }
+
+    @Transactional
+    public void markAllMessagesSeen(Long activityId, String userEmail) {
+        requireChatAccess(activityId, userEmail);
+        User user = requireUserByEmail(userEmail);
+        seenRepository.markAllMessagesSeenForActivity(activityId, user.getId(), LocalDateTime.now());
     }
 
     public List<SeenUserResponse> getSeenUsers(Long messageId, String userEmail) {
@@ -386,5 +633,158 @@ public class ActivityChatService {
         if (!participationService.canAccessChat(activityId, userEmail)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Nu ai acces la chat pentru aceasta activitate");
         }
+    }
+
+    private User requireActivityAuthor(Long activityId, String userEmail) {
+        User user = requireUserByEmail(userEmail);
+        Activity activity = requireActivity(activityId);
+        if (activity.getCreator() == null || !activity.getCreator().getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Doar autorul activitatii poate modifica poll-urile");
+        }
+        return user;
+    }
+
+    private PollResponse getPollResponseById(Long activityId, Long pollId, Long currentUserId) {
+        ActivityPoll poll = pollRepository.findByIdAndActivityId(pollId, activityId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Poll not found"));
+        return buildPollResponses(List.of(poll), currentUserId).getFirst();
+    }
+
+    private List<PollResponse> buildPollResponses(List<ActivityPoll> polls, Long currentUserId) {
+        List<Long> pollIds = polls.stream().map(ActivityPoll::getId).toList();
+        List<ActivityPollOption> options = pollOptionRepository.findByPollIdInOrderByPollIdAscPositionAsc(pollIds);
+        List<ActivityPollVote> votes = pollVoteRepository.findByPollIdInOrderByVotedAtAsc(pollIds);
+
+        Map<Long, List<ActivityPollOption>> optionsByPoll = new LinkedHashMap<>();
+        for (ActivityPoll poll : polls) {
+            optionsByPoll.put(poll.getId(), new ArrayList<>());
+        }
+        for (ActivityPollOption option : options) {
+            optionsByPoll.computeIfAbsent(option.getPoll().getId(), key -> new ArrayList<>()).add(option);
+        }
+
+        Map<Long, Map<Long, List<PollVoterResponse>>> votersByPollAndOption = new LinkedHashMap<>();
+        Map<Long, Map<Long, Long>> countsByPollAndOption = new LinkedHashMap<>();
+        Map<Long, Long> currentVoteByPoll = new LinkedHashMap<>();
+
+        for (ActivityPoll poll : polls) {
+            votersByPollAndOption.put(poll.getId(), new LinkedHashMap<>());
+            countsByPollAndOption.put(poll.getId(), new LinkedHashMap<>());
+        }
+
+        for (ActivityPollVote vote : votes) {
+            Long pollId = vote.getPoll().getId();
+            Long optionId = vote.getOption().getId();
+
+            countsByPollAndOption
+                    .computeIfAbsent(pollId, key -> new LinkedHashMap<>())
+                    .merge(optionId, 1L, Long::sum);
+
+            votersByPollAndOption
+                    .computeIfAbsent(pollId, key -> new LinkedHashMap<>())
+                    .computeIfAbsent(optionId, key -> new ArrayList<>())
+                    .add(new PollVoterResponse(
+                            vote.getVoter().getId(),
+                            vote.getVoter().getFullName(),
+                            vote.getVotedAt()
+                    ));
+
+            if (currentUserId != null && currentUserId.equals(vote.getVoter().getId())) {
+                currentVoteByPoll.put(pollId, optionId);
+            }
+        }
+
+        List<PollResponse> response = new ArrayList<>();
+        for (ActivityPoll poll : polls) {
+            Long pollId = poll.getId();
+            Long currentOptionId = currentVoteByPoll.get(pollId);
+            List<PollOptionSummaryResponse> optionResponses = new ArrayList<>();
+
+            List<ActivityPollOption> pollOptions = optionsByPoll.getOrDefault(pollId, List.of());
+            for (ActivityPollOption option : pollOptions) {
+                Long optionId = option.getId();
+                long count = countsByPollAndOption.getOrDefault(pollId, Map.of()).getOrDefault(optionId, 0L);
+                List<PollVoterResponse> voters = votersByPollAndOption
+                        .getOrDefault(pollId, Map.of())
+                        .getOrDefault(optionId, List.of());
+
+                optionResponses.add(new PollOptionSummaryResponse(
+                        optionId,
+                        option.getText(),
+                        count,
+                        currentOptionId != null && currentOptionId.equals(optionId),
+                        List.copyOf(voters)
+                ));
+            }
+
+            response.add(new PollResponse(
+                    pollId,
+                    poll.getActivity().getId(),
+                    poll.getCreator().getId(),
+                    poll.getCreator().getFullName(),
+                    poll.getQuestion(),
+                    poll.getCreatedAt(),
+                    currentOptionId,
+                    List.copyOf(optionResponses)
+            ));
+        }
+
+        return response;
+    }
+
+    private String normalizePollQuestion(String question) {
+        if (question == null || question.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Poll question is required");
+        }
+        String normalized = question.trim();
+        if (normalized.length() > MAX_POLL_QUESTION_LENGTH) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Poll question is too long");
+        }
+        return normalized;
+    }
+
+    private List<String> normalizePollOptions(List<String> options) {
+        if (options == null || options.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At least 2 options are required");
+        }
+
+        Set<String> seen = new HashSet<>();
+        List<String> result = new ArrayList<>();
+        for (String raw : options) {
+            if (raw == null) {
+                continue;
+            }
+            String normalized = raw.trim();
+            if (normalized.isEmpty()) {
+                continue;
+            }
+            normalized = normalizePollOption(normalized);
+            String key = normalized.toLowerCase();
+            if (seen.contains(key)) {
+                continue;
+            }
+            seen.add(key);
+            result.add(normalized);
+            if (result.size() == MAX_POLL_OPTIONS) {
+                break;
+            }
+        }
+
+        if (result.size() < 2) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At least 2 different options are required");
+        }
+
+        return result;
+    }
+
+    private String normalizePollOption(String optionText) {
+        if (optionText == null || optionText.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Poll option is required");
+        }
+        String normalized = optionText.trim();
+        if (normalized.length() > MAX_POLL_OPTION_LENGTH) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Poll option is too long");
+        }
+        return normalized;
     }
 }

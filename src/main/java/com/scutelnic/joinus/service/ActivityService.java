@@ -3,9 +3,18 @@ package com.scutelnic.joinus.service;
 import com.scutelnic.joinus.entity.Activity;
 import com.scutelnic.joinus.entity.User;
 import com.scutelnic.joinus.repository.ActivityRepository;
+import com.scutelnic.joinus.repository.ActivityMessageDeliveredRepository;
+import com.scutelnic.joinus.repository.ActivityMessageReactionRepository;
+import com.scutelnic.joinus.repository.ActivityMessageRepository;
+import com.scutelnic.joinus.repository.ActivityMessageSeenRepository;
+import com.scutelnic.joinus.repository.ActivityParticipationRepository;
+import com.scutelnic.joinus.repository.ActivityPollOptionRepository;
+import com.scutelnic.joinus.repository.ActivityPollRepository;
+import com.scutelnic.joinus.repository.ActivityPollVoteRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,9 +28,33 @@ import org.springframework.data.domain.Sort;
 public class ActivityService {
 
     private final ActivityRepository activityRepository;
+    private final ActivityParticipationRepository activityParticipationRepository;
+    private final ActivityMessageRepository activityMessageRepository;
+    private final ActivityMessageSeenRepository activityMessageSeenRepository;
+    private final ActivityMessageDeliveredRepository activityMessageDeliveredRepository;
+    private final ActivityMessageReactionRepository activityMessageReactionRepository;
+    private final ActivityPollRepository activityPollRepository;
+    private final ActivityPollOptionRepository activityPollOptionRepository;
+    private final ActivityPollVoteRepository activityPollVoteRepository;
 
-    public ActivityService(ActivityRepository activityRepository) {
+    public ActivityService(ActivityRepository activityRepository,
+                           ActivityParticipationRepository activityParticipationRepository,
+                           ActivityMessageRepository activityMessageRepository,
+                           ActivityMessageSeenRepository activityMessageSeenRepository,
+                           ActivityMessageDeliveredRepository activityMessageDeliveredRepository,
+                           ActivityMessageReactionRepository activityMessageReactionRepository,
+                           ActivityPollRepository activityPollRepository,
+                           ActivityPollOptionRepository activityPollOptionRepository,
+                           ActivityPollVoteRepository activityPollVoteRepository) {
         this.activityRepository = activityRepository;
+        this.activityParticipationRepository = activityParticipationRepository;
+        this.activityMessageRepository = activityMessageRepository;
+        this.activityMessageSeenRepository = activityMessageSeenRepository;
+        this.activityMessageDeliveredRepository = activityMessageDeliveredRepository;
+        this.activityMessageReactionRepository = activityMessageReactionRepository;
+        this.activityPollRepository = activityPollRepository;
+        this.activityPollOptionRepository = activityPollOptionRepository;
+        this.activityPollVoteRepository = activityPollVoteRepository;
     }
 
     public Activity create(Activity activity) {
@@ -77,5 +110,18 @@ public class ActivityService {
 
     public List<Activity> getByCreator(Long creatorId) {
         return activityRepository.findAllByCreatorIdOrderByCreatedAtDesc(creatorId);
+    }
+
+    @Transactional
+    public void deleteActivityWithRelations(Long activityId) {
+        activityMessageSeenRepository.deleteByMessageActivityId(activityId);
+        activityMessageDeliveredRepository.deleteByMessageActivityId(activityId);
+        activityMessageReactionRepository.deleteByMessageActivityId(activityId);
+        activityMessageRepository.deleteByActivityId(activityId);
+        activityParticipationRepository.deleteByActivityId(activityId);
+        activityPollVoteRepository.deleteByPollActivityId(activityId);
+        activityPollOptionRepository.deleteByPollActivityId(activityId);
+        activityPollRepository.deleteByActivityId(activityId);
+        activityRepository.deleteById(activityId);
     }
 }

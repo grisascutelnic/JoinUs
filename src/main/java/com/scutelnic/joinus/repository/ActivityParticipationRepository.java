@@ -23,4 +23,6 @@ public interface ActivityParticipationRepository extends JpaRepository<ActivityP
     boolean existsByActivityIdAndUserIdAndStatus(Long activityId, Long userId, ParticipationStatus status);
 
     long countByActivityIdAndStatus(Long activityId, ParticipationStatus status);
+
+    long deleteByActivityId(Long activityId);
 }

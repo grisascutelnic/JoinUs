@@ -25,4 +25,6 @@ public interface ActivityMessageDeliveredRepository extends JpaRepository<Activi
     int insertIgnoreDuplicate(@Param("messageId") Long messageId,
                               @Param("userId") Long userId,
                               @Param("deliveredAt") LocalDateTime deliveredAt);
+
+        long deleteByMessageActivityId(Long activityId);
 }
