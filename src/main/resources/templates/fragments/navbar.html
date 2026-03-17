@@ -8,7 +8,30 @@
                 </span>
             </a>
 
-            <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <div class="d-lg-none navbar-mobile-top-actions ms-auto" th:if="${#authorization.expression('isAuthenticated()')}">
+                <a class="navbar-mobile-top-link" href="/chat" th:href="@{/chat}" aria-label="Chat">
+                    <i class="bi bi-chat-dots"></i>
+                    <span class="navbar-mobile-top-badge d-none"
+                          data-chat-unread-badge="true"
+                          id="navbarChatUnreadBadgeMobile"
+                          th:classappend="${unreadChatGroupsCount == null or unreadChatGroupsCount <= 0} ? ' d-none'"
+                          th:text="${unreadChatGroupsCount != null ? unreadChatGroupsCount : 0}">0</span>
+                </a>
+                <a class="navbar-mobile-top-link navbar-mobile-top-link-bell"
+                   data-notifications-trigger="true"
+                   data-bs-toggle="offcanvas"
+                   href="#notificationsPanel"
+                   role="button"
+                   aria-controls="notificationsPanel"
+                   aria-label="Notificari">
+                    <i class="bi bi-bell"></i>
+                    <span class="navbar-mobile-top-badge d-none"
+                          id="navbarNotificationBadgeMobile"
+                          data-navbar-notification-badge="true">0</span>
+                </a>
+            </div>
+
+            <button class="navbar-toggler ms-2 navbar-mobile-menu-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
@@ -26,11 +49,12 @@
                         <a class="nav-link" href="/calendar" th:href="@{/calendar}">Calendar</a>
                     </li>
 
-                    <li class="nav-item">
+                    <li class="nav-item d-none d-lg-block">
                         <a class="nav-link navbar-chat-link" href="/chat" th:href="@{/chat}">
                             Chat
                             <span id="navbarChatUnreadBadge"
                                   class="navbar-chat-badge"
+                                  data-chat-unread-badge="true"
                                   th:classappend="${unreadChatGroupsCount == null or unreadChatGroupsCount <= 0} ? ' d-none'"
                                   th:text="${unreadChatGroupsCount != null ? unreadChatGroupsCount : 0}">0</span>
                         </a>
@@ -40,10 +64,10 @@
                         <a class="nav-link" href="/admin" th:href="@{/admin}">Admin</a>
                     </li>
 
-                    <li class="nav-item" th:if="${#authorization.expression('isAuthenticated()')}">
+                    <li class="nav-item d-none d-lg-block" th:if="${#authorization.expression('isAuthenticated()')}">
                         <a class="nav-link navbar-bell-link" data-notifications-trigger="true" data-bs-toggle="offcanvas" href="#notificationsPanel" role="button" aria-controls="notificationsPanel" aria-label="Notificari">
                             <i class="bi bi-bell"></i>
-                            <span id="navbarNotificationBadge" class="navbar-notification-badge d-none">0</span>
+                            <span id="navbarNotificationBadge" class="navbar-notification-badge d-none" data-navbar-notification-badge="true">0</span>
                         </a>
                     </li>
                 </ul>
@@ -183,17 +207,19 @@
                 return;
             }
 
-            const badgeEl = document.getElementById('navbarChatUnreadBadge');
+            const chatBadgeEls = Array.from(document.querySelectorAll('[data-chat-unread-badge="true"]'));
             const POLL_INTERVAL_MS = 4000;
             let baseOrderInitialized = false;
 
             function setNavbarChatBadge(count) {
-                if (!badgeEl) {
+                if (!chatBadgeEls.length) {
                     return;
                 }
                 const numericCount = Number(count || 0);
-                badgeEl.textContent = String(numericCount);
-                badgeEl.classList.toggle('d-none', numericCount <= 0);
+                chatBadgeEls.forEach((badgeEl) => {
+                    badgeEl.textContent = String(numericCount);
+                    badgeEl.classList.toggle('d-none', numericCount <= 0);
+                });
             }
 
             function ensureUnreadBadge(card) {

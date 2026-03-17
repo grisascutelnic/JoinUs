@@ -51,10 +51,6 @@
                 <section class="hero-section d-flex justify-content-center align-items-center" id="section_home" style="background-image: none !important;">
                     <div class="section-overlay"></div>
 
-                    <svg class="activity-detail-top-wave" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
-                        <path fill="var(--secondary-color)" fill-opacity="1" d="M0,224 C240,160 480,288 720,224 C960,160 1200,288 1440,224 L1440,0 L0,0 Z"></path>
-                    </svg>
-
                     <div class="container">
                         <div class="row">
                             <div class="col-12 hero-content">
@@ -116,8 +112,9 @@
                                             Anunturi
                                             <span id="activityAnnouncementsBadge" class="activity-tab-unread-badge d-none">0</span>
                                         </button>
-                                        <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-participants-panel" data-tab="participants" th:if="${isActivityCreator or canAccessChat}">
-                                            Participanti
+                                        <button class="activity-tab-btn activity-tab-btn--icon" type="button" role="tab" aria-selected="false" aria-controls="activity-participants-panel" data-tab="participants" th:if="${isActivityCreator or canAccessChat}" aria-label="Participanti" title="Participanti">
+                                            <i class="bi bi-people-fill" aria-hidden="true"></i>
+                                            <span class="visually-hidden">Participanti</span>
                                             <span class="activity-tab-unread-badge"
                                                   th:if="${isActivityCreator and pendingParticipationRequests != null and !#lists.isEmpty(pendingParticipationRequests)}"
                                                   th:text="${#lists.size(pendingParticipationRequests)}">0</span>

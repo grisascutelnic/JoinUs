@@ -324,17 +324,19 @@
     }
 
     function updateNotificationBadge(unreadCount) {
-      var badge = document.getElementById('navbarNotificationBadge');
-      if (!badge) return;
+      var badges = document.querySelectorAll('[data-navbar-notification-badge="true"]');
+      if (!badges.length) return;
 
-      if (!unreadCount || unreadCount < 1) {
-        badge.classList.add('d-none');
-        badge.textContent = '0';
-        return;
-      }
+      badges.forEach(function (badge) {
+        if (!unreadCount || unreadCount < 1) {
+          badge.classList.add('d-none');
+          badge.textContent = '0';
+          return;
+        }
 
-      badge.classList.remove('d-none');
-      badge.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
+        badge.classList.remove('d-none');
+        badge.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
+      });
     }
 
     function renderNotifications(data) {

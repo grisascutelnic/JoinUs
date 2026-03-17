@@ -914,6 +914,7 @@ https://templatemo.com/tm-587-tiya-golf-club
 }
 
 .activity-detail-section {
+  background-color: var(--section-bg-color);
   padding-top: 0;
   padding-bottom: 12px;
 }
@@ -1432,6 +1433,19 @@ https://templatemo.com/tm-587-tiya-golf-club
   color: var(--secondary-color);
   border-radius: 999px;
   padding: 8px 16px;
+.activity-tab-btn--icon {
+  min-width: 46px;
+  padding-left: 12px;
+  padding-right: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+.activity-tab-btn--icon i {
+  font-size: 16px;
+  line-height: 1;
+}
   font-weight: var(--font-weight-medium);
   display: inline-flex;
   align-items: center;
@@ -2154,8 +2168,25 @@ https://templatemo.com/tm-587-tiya-golf-club
 
 @media (max-width: 991px) {
   .activity-detail-section {
-    padding-top: 12px;
+    padding-top: 0;
     padding-bottom: 12px;
+  }
+
+  .page-activity-detail {
+    --activity-wave-gap: 0;
+    --activity-wave-bottom-gap: 0;
+  }
+
+  .page-activity-detail .activity-detail-container {
+    margin-top: 0;
+    border-radius: 18px;
+    padding-top: 14px;
+    overflow: hidden;
+  }
+
+  .page-activity-detail .activity-detail-container::before,
+  .page-activity-detail .activity-detail-container::after {
+    display: none;
   }
 
   .activity-detail-grid {
@@ -2191,7 +2222,30 @@ https://templatemo.com/tm-587-tiya-golf-club
 
 @media (max-width: 600px) {
   .activity-tabs {
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 10px;
+    padding: 14px 14px 10px;
+  }
+
+  .activity-tabs-left {
+    gap: 8px;
+  }
+
+  .activity-tabs-actions {
+    margin-left: 0;
+    justify-self: end;
+  }
+
+  .activity-tab-btn {
+    padding: 7px 14px;
+    font-size: 15px;
+  }
+
+  .activity-tabs-menu-toggle {
+    width: 36px;
+    height: 36px;
   }
 
   .chat-bubble {
@@ -2241,6 +2295,11 @@ https://templatemo.com/tm-587-tiya-golf-club
   .page-activity-detail .hero-section h2,
   .page-profile .hero-section h2 {
     font-size: 22px;
+  }
+
+
+  .page-activity-detail .hero-section {
+    min-height: 240px;
   }
 
   .activity-detail-hero-layout {
@@ -3749,6 +3808,57 @@ strong {
   line-height: 18px;
 }
 
+.navbar-mobile-top-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.navbar-mobile-menu-toggle {
+  margin-left: 14px !important;
+}
+
+.navbar-mobile-top-link {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(224, 230, 240, 0.45);
+  background: rgba(224, 230, 240, 0.08);
+  color: #e7ecf5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.navbar-mobile-top-link:hover,
+.navbar-mobile-top-link:focus {
+  color: #f1f4fa;
+  background: rgba(224, 230, 240, 0.16);
+}
+
+.navbar-mobile-top-link i {
+  font-size: 19px;
+  line-height: 1;
+}
+
+.navbar-mobile-top-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #d83232;
+  color: #fff;
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  line-height: 16px;
+  text-align: center;
+}
+
 .notifications-list {
   display: flex;
   flex-direction: column;
@@ -4708,16 +4818,25 @@ strong {
     min-height: 300px;
     padding-top: 118px;
     padding-bottom: 20px;
-  }
-
-  .page-activity-detail .activity-detail-top-wave {
-    display: none;
+    overflow: hidden;
   }
 
   .page-activity-detail .hero-wave-mobile {
     top: auto;
-    bottom: -1px;
+    bottom: -4px;
     height: 320px;
+  }
+
+  .page-activity-detail .hero-section::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 5px;
+    background: var(--section-bg-color);
+    pointer-events: none;
+    z-index: 2;
   }
 
   .page-activity-detail .hero-section .hero-content {
@@ -4773,12 +4892,12 @@ strong {
   .page-activity-detail {
     --activity-wave-height: 98px;
     --activity-wave-bottom-height: 260px;
-    --activity-wave-gap: 36px;
-    --activity-wave-bottom-gap: 10px;
+    --activity-wave-gap: 0;
+    --activity-wave-bottom-gap: 0;
   }
 
   .page-activity-detail .activity-detail-container {
-    margin: var(--activity-wave-gap) auto var(--activity-wave-bottom-gap);
+    margin: 0 auto var(--activity-wave-bottom-gap);
     padding-top: 16px;
   }
 
