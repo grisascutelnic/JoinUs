@@ -80,40 +80,32 @@
                                 </div>
 
                                 <div class="activity-card activity-card-right">
-                                    <div class="activity-card-header">
-                                        <h4>Opțional</h4>
-                                    </div>
-                                    <div class="image-actions-stack">
-                                        <div class="image-section-card image-section-card--upload">
-                                            <button type="button" class="btn custom-btn custom-border-btn w-100" id="uploadImageBtn">Incarca imagine</button>
+                                    <div class="image-actions-split">
+                                        <section class="image-action-pane image-action-pane--upload">
+                                            <button type="button" class="btn image-action-tile" id="uploadImageBtn">Incarca imagine</button>
                                             <input type="file" id="cloudinaryFile" name="imageFile" accept="image/*" class="d-none">
                                             <input type="hidden" th:field="*{imageUrl}" id="cloudinaryUrl">
                                             <input type="hidden" th:field="*{imageChoice}" id="generatedImageUrl">
-                                            <div class="image-file-name" id="uploadFileName">Nicio imagine selectata</div>
-                                            <div class="image-inline-error d-none" id="cloudinaryError"></div>
-                                            <div class="mt-2" id="cloudinaryExistingWrap"
-                                                 th:if="${activityForm.imageUrl != null and !#strings.isEmpty(activityForm.imageUrl)}">
-                                                <img th:src="${activityForm.imageUrl}" alt="Imagine curenta activitate"
-                                                     style="width: 140px; height: 90px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(31, 42, 68, 0.16);">
-                                            </div>
-                                            <div class="image-inline-error" th:if="${imageError}" th:text="${imageError}"></div>
-                                        </div>
+                                        </section>
 
-                                        <div class="image-actions-divider" aria-hidden="true">
-                                            <span>SAU</span>
-                                        </div>
+                                        <div class="image-actions-or" aria-hidden="true">sau</div>
 
-                                        <div class="image-section-card image-section-card--ai">
-                                            <button type="button" class="btn custom-btn custom-border-btn w-100" id="generateAiImageBtn">Genereaza imagine AI</button>
-                                            <div class="ai-loading d-none" id="aiLoadingIndicator">
-                                                <span class="ai-loading-spinner" aria-hidden="true"></span>
-                                                <span>Se genereaza imaginea...</span>
-                                            </div>
-                                            <div class="image-inline-error d-none" id="generatedImageError"></div>
-                                            <div class="mt-2 d-none" id="generatedPreviewWrap">
-                                                <img id="generatedPreviewImage" alt="Imagine generata AI"
-                                                     style="width: 100%; max-width: 280px; height: 160px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(31, 42, 68, 0.16);">
-                                            </div>
+                                        <section class="image-action-pane image-action-pane--ai">
+                                            <button type="button" class="btn image-action-tile" id="generateAiImageBtn">Genereaza imagine AI</button>
+                                        </section>
+                                    </div>
+
+                                    <div class="image-preview-stage">
+                                        <div class="ai-loading d-none" id="aiLoadingIndicator">
+                                            <span class="ai-loading-spinner" aria-hidden="true"></span>
+                                        </div>
+                                        <div class="image-inline-error d-none" id="cloudinaryError"></div>
+                                        <div class="image-inline-error d-none" id="generatedImageError"></div>
+                                        <div class="image-preview-wrap d-none" id="generatedPreviewWrap">
+                                            <img id="generatedPreviewImage" class="image-preview-image" alt="Preview imagine activitate">
+                                        </div>
+                                        <div class="image-preview-placeholder" id="imagePreviewPlaceholder" aria-hidden="true">
+                                            <i class="bi bi-image image-preview-icon"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -141,16 +133,15 @@
                 const uploadPreset = /*[[${cloudinaryUploadPreset}]]*/ "";
                 const fileInput = document.getElementById('cloudinaryFile');
                 const uploadBtn = document.getElementById('uploadImageBtn');
-                const uploadFileName = document.getElementById('uploadFileName');
                 const uploadError = document.getElementById('cloudinaryError');
                 const urlInput = document.getElementById('cloudinaryUrl');
                 const generatedInput = document.getElementById('generatedImageUrl');
-                const existingWrap = document.getElementById('cloudinaryExistingWrap');
                 const generateBtn = document.getElementById('generateAiImageBtn');
                 const aiLoadingIndicator = document.getElementById('aiLoadingIndicator');
                 const generatedError = document.getElementById('generatedImageError');
                 const generatedPreviewWrap = document.getElementById('generatedPreviewWrap');
                 const generatedPreviewImage = document.getElementById('generatedPreviewImage');
+                const imagePreviewPlaceholder = document.getElementById('imagePreviewPlaceholder');
                 const form = document.querySelector('form.auth-form');
                 const submitBtn = document.getElementById('submitActivity');
                 const csrfInput = document.querySelector('input[name="_csrf"]');
@@ -203,17 +194,11 @@
                     if (!file) {
                         return;
                     }
-
-                    if (uploadFileName) {
-                        uploadFileName.textContent = file.name;
-                    }
                     showUploadError('');
+                    renderGeneratedPreview(URL.createObjectURL(file));
 
                     if (urlInput) {
                         urlInput.value = '';
-                    }
-                    if (existingWrap) {
-                        existingWrap.style.display = 'none';
                     }
 
                     if (!canClientUpload) {
@@ -297,6 +282,9 @@
                     }
                     generatedPreviewImage.src = url;
                     generatedPreviewWrap.classList.remove('d-none');
+                    if (imagePreviewPlaceholder) {
+                        imagePreviewPlaceholder.classList.add('d-none');
+                    }
                 }
 
                 if (generateBtn) {
@@ -330,6 +318,10 @@
                         generatedInput.value = normalized;
                     }
                     renderGeneratedPreview(normalized);
+                }
+
+                if (urlInput && urlInput.value && urlInput.value.trim() !== '') {
+                    renderGeneratedPreview(urlInput.value.trim());
                 }
 
                 if (form) {

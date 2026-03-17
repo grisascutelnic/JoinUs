@@ -54,13 +54,7 @@ public class ActivityController {
             return "redirect:/profile/edit?birthDateRequired&fromActivity";
         }
 
-        ActivityDto form = new ActivityDto();
-        form.setDate(LocalDate.now());
-        form.setTime(LocalTime.of(18, 0));
-        form.setCapacity(10);
-        form.setCategory("Comunitate");
-        prepareFormModel(model, form, "/activities", "Formular activitate", "Completeaza detaliile si alege o imagine.", "Creeaza activitate", false);
-        return "create-activity";
+        return "redirect:/activities?openCreate=true";
     }
 
     @PostMapping("/activities")

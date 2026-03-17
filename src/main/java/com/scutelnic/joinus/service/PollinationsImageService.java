@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -14,13 +16,14 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class PollinationsImageService {
+
+    private static final Logger log = LoggerFactory.getLogger(PollinationsImageService.class);
 
     private final String apiKey;
     private final HttpClient httpClient;
@@ -41,7 +44,7 @@ public class PollinationsImageService {
         String negativePrompt = buildNegativePrompt(title, description);
         String encodedPrompt = URLEncoder.encode(prompt, StandardCharsets.UTF_8).replace("+", "%20");
         String encodedNegative = URLEncoder.encode(negativePrompt, StandardCharsets.UTF_8).replace("+", "%20");
-        int seed = ThreadLocalRandom.current().nextInt(1000, 999999);
+        int seed = buildStableSeed(title, description);
 
         String base = "https://gen.pollinations.ai/image/"
                 + encodedPrompt
@@ -153,57 +156,41 @@ public class PollinationsImageService {
     private String buildPrompt(String title, String description) {
         String safeTitle = clean(title, "community activity");
         String safeDescription = clean(description, "people gathering together");
-        String criticalAnchors = buildCriticalAnchors(safeTitle + " " + safeDescription);
-        String antiDrift = buildGlobalAntiDriftConstraints(safeTitle + " " + safeDescription);
 
         TranslationResult translated = translateToEnglish(safeTitle, safeDescription);
-        if (translated != null) {
-            String translatedPrompt = buildPromptFromTranslation(translated, criticalAnchors, antiDrift);
-            return enforceSemanticAlignment(safeTitle, safeDescription, translatedPrompt);
-        }
+        String titleEn = translated == null ? safeTitle : clean(translated.titleEn, safeTitle);
+        String descriptionEn = translated == null ? safeDescription : clean(translated.descriptionEn, safeDescription);
 
-        PromptSpec promptSpec = buildPromptSpecViaTextModel(safeTitle, safeDescription);
-        if (promptSpec != null) {
-            String specPrompt = buildPromptFromSpec(promptSpec, criticalAnchors, antiDrift, safeTitle, safeDescription);
-            return enforceSemanticAlignment(safeTitle, safeDescription, specPrompt);
-        }
-
-        String autoPrompt = buildPromptViaTextModel(safeTitle, safeDescription);
-        if (autoPrompt != null && !autoPrompt.isBlank()) {
-            String adjusted = autoPrompt;
-            if (!criticalAnchors.isBlank()) {
-                adjusted = adjusted + ". Critical constraints: " + criticalAnchors + ".";
+        PromptPlan plan = composeImagePrompt(titleEn, descriptionEn);
+        if (plan != null && plan.prompt != null && !plan.prompt.isBlank()) {
+            String finalPrompt = plan.prompt;
+            if (!plan.keyObjects.isEmpty()) {
+                finalPrompt = finalPrompt + " Mandatory visible elements: " + String.join(", ", plan.keyObjects) + ".";
             }
-            if (!antiDrift.isBlank()) {
-                adjusted = adjusted + " Anti-drift constraints: " + antiDrift + ".";
-            }
-            return enforceSemanticAlignment(safeTitle, safeDescription, adjusted);
+            return finalPrompt;
         }
 
-        String hints = buildSemanticHints(safeTitle + " " + safeDescription);
-
-        String fallbackPrompt = "Photorealistic event photo, no text, no watermark. "
-                + "Understand Romanian input exactly and keep the core activity. "
-                + "Activity title: " + safeTitle + ". "
-                + "Activity details: " + safeDescription + ". "
-                + "Important visual elements: " + hints + ". "
-                + (criticalAnchors.isBlank() ? "" : "Critical constraints: " + criticalAnchors + ". ")
-                + (antiDrift.isBlank() ? "" : "Anti-drift constraints: " + antiDrift + ". ")
-                + "Do not generate generic random outdoor crowd scene. "
-                + "Natural light, detailed, vibrant, 16:9.";
-        return enforceSemanticAlignment(safeTitle, safeDescription, fallbackPrompt);
+        return "Photorealistic event photo, documentary style. "
+                + "Main activity: " + titleEn + ". "
+                + "Scene details: " + descriptionEn + ". "
+                + "Realistic people, natural lighting, sharp focus, high detail, cinematic composition, 16:9. "
+                + "No text, no logo, no watermark.";
     }
 
-    private TranslationResult translateToEnglish(String title, String description) {
+    private PromptPlan composeImagePrompt(String titleEn, String descriptionEn) {
         if (apiKey.isBlank()) {
             return null;
         }
 
-        String systemMessage = "You are a precise Romanian-to-English translator for activity descriptions. "
-                + "Translate meaning faithfully, preserve concrete objects/actions, and avoid paraphrasing away key nouns. "
-                + "Output STRICT JSON only: {\"title_en\":string,\"description_en\":string}.";
-        String userMessage = "title_ro: " + title + "\n"
-                + "description_ro: " + description;
+        String systemMessage = "You are an expert prompt writer for photorealistic image generation. "
+                + "Create one concise English prompt that is faithful to the user activity. "
+                + "Do not change the activity type, subject, or key objects. "
+                + "Do not invent unrelated events. "
+                + "Extract key visual objects explicitly mentioned by user and include them in key_objects. "
+                + "Output STRICT JSON only: {\"prompt\":string,\"key_objects\":string[]}.";
+        String userMessage = "title_en: " + titleEn + "\n"
+                + "description_en: " + descriptionEn + "\n"
+                + "requirements: photorealistic, natural lighting, realistic people, no text, no watermark, 16:9.";
 
         try {
             ObjectNode requestNode = objectMapper.createObjectNode();
@@ -218,8 +205,87 @@ public class PollinationsImageService {
                     .put("content", userMessage));
 
             requestNode.set("messages", messagesNode);
-            requestNode.put("temperature", 0.0);
+            requestNode.put("temperature", 0.1);
             requestNode.put("max_tokens", 220);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://gen.pollinations.ai/v1/chat/completions"))
+                    .header("Authorization", "Bearer " + apiKey)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(requestNode.toString(), StandardCharsets.UTF_8))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                return null;
+            }
+
+            JsonNode root = objectMapper.readTree(response.body());
+            String content = root.path("choices").path(0).path("message").path("content").asText("");
+            if (content.isBlank()) {
+                return null;
+            }
+
+            JsonNode json = parseLooseJsonObject(content);
+            if (json == null || !json.isObject()) {
+                return null;
+            }
+
+            String prompt = textOrBlank(json, "prompt");
+            if (prompt.isBlank()) {
+                return null;
+            }
+
+            PromptPlan plan = new PromptPlan();
+            plan.prompt = prompt.length() > 500 ? prompt.substring(0, 500).trim() : prompt;
+            plan.keyObjects = parseStringArray(json.path("key_objects"));
+
+            if (plan.keyObjects.isEmpty()) {
+                plan.keyObjects = parseFallbackKeyObjects(titleEn, descriptionEn);
+            }
+
+            return plan;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private int buildStableSeed(String title, String description) {
+        String base = clean(title, "") + "|" + clean(description, "");
+        int hash = Math.abs(base.toLowerCase(Locale.ROOT).hashCode());
+        int seed = (hash % 999000) + 1000;
+        if (seed <= 0) {
+            return ThreadLocalRandom.current().nextInt(1000, 999999);
+        }
+        return seed;
+    }
+
+    private TranslationResult translateToEnglish(String title, String description) {
+        if (apiKey.isBlank()) {
+            return null;
+        }
+
+        String systemMessage = "You are a precise Romanian-to-English translator for activity content. "
+            + "Translate faithfully and naturally, preserving original meaning and context. "
+            + "Output STRICT JSON only: {\"title_en\":string,\"description_en\":string}.";
+        String userMessage = "title_ro: " + title + "\n"
+                + "description_ro: " + description;
+
+        try {
+            ObjectNode requestNode = objectMapper.createObjectNode();
+            requestNode.put("model", "openai-fast");
+
+            ArrayNode messagesNode = objectMapper.createArrayNode();
+            messagesNode.add(objectMapper.createObjectNode()
+                    .put("role", "system")
+                    .put("content", systemMessage));
+            messagesNode.add(objectMapper.createObjectNode()
+                    .put("role", "user")
+                    .put("content", userMessage));
+
+            requestNode.set("messages", messagesNode);
+            requestNode.put("temperature", 0.0);
+            requestNode.put("max_tokens", 180);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://gen.pollinations.ai/v1/chat/completions"))
@@ -253,225 +319,59 @@ public class PollinationsImageService {
             TranslationResult result = new TranslationResult();
             result.titleEn = titleEn.isBlank() ? title : titleEn;
             result.descriptionEn = descriptionEn.isBlank() ? description : descriptionEn;
+            log.debug("AI image translation: roTitle='{}' -> enTitle='{}'", title, result.titleEn);
             return result;
         } catch (Exception ex) {
             return null;
         }
     }
 
-    private String buildPromptFromTranslation(TranslationResult translated,
-                                              String criticalAnchors,
-                                              String antiDrift) {
-        String titleEn = clean(translated.titleEn, "community activity");
-        String descriptionEn = clean(translated.descriptionEn, "people gathering together");
-
-        return "Photorealistic image. "
-            + "Main activity: " + titleEn + ". "
-            + "Context: " + descriptionEn + ". "
-            + "Show the core action and objects clearly in foreground. "
-            + "No text, no watermark, realistic people, natural lighting, 16:9.";
-    }
-
-    private String enforceSemanticAlignment(String titleRo, String descriptionRo, String promptEn) {
-        if (apiKey.isBlank() || promptEn == null || promptEn.isBlank()) {
-            return promptEn;
-        }
-
-        String systemMessage = "You are a strict semantic alignment checker. "
-                + "Compare Romanian source text with an English image prompt. "
-                + "If prompt changes key entities/actions, rewrite it to preserve exact activity intent. "
-                + "Return STRICT JSON only: {\"aligned\":boolean,\"corrected_prompt\":string}. "
-                + "Do not add markdown.";
-        String userMessage = "source_title_ro: " + titleRo + "\n"
-                + "source_description_ro: " + descriptionRo + "\n"
-                + "candidate_prompt_en: " + promptEn;
-
-        try {
-            ObjectNode requestNode = objectMapper.createObjectNode();
-            requestNode.put("model", "openai-fast");
-
-            ArrayNode messagesNode = objectMapper.createArrayNode();
-            messagesNode.add(objectMapper.createObjectNode()
-                    .put("role", "system")
-                    .put("content", systemMessage));
-            messagesNode.add(objectMapper.createObjectNode()
-                    .put("role", "user")
-                    .put("content", userMessage));
-
-            requestNode.set("messages", messagesNode);
-            requestNode.put("temperature", 0.0);
-            requestNode.put("max_tokens", 260);
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://gen.pollinations.ai/v1/chat/completions"))
-                    .header("Authorization", "Bearer " + apiKey)
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(requestNode.toString(), StandardCharsets.UTF_8))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                return promptEn;
-            }
-
-            JsonNode root = objectMapper.readTree(response.body());
-            String content = root.path("choices").path(0).path("message").path("content").asText("");
-            JsonNode json = parseLooseJsonObject(content);
-            if (json == null || !json.isObject()) {
-                return promptEn;
-            }
-
-            boolean aligned = json.path("aligned").asBoolean(true);
-            String corrected = textOrBlank(json, "corrected_prompt");
-            if (aligned || corrected.isBlank()) {
-                return promptEn;
-            }
-            return corrected;
-        } catch (Exception ex) {
-            return promptEn;
-        }
-    }
-
-    private String normalizeRomanian(String text) {
-        return (text == null ? "" : text)
-                .toLowerCase(Locale.ROOT)
-                .replace("ă", "a")
-                .replace("â", "a")
-                .replace("î", "i")
-                .replace("ș", "s")
-                .replace("ş", "s")
-                .replace("ț", "t")
-                .replace("ţ", "t");
-    }
-
     private String buildNegativePrompt(String title, String description) {
-        String normalized = normalizeRomanian(title + " " + description);
-
-        List<String> negatives = new ArrayList<>();
-        negatives.add("text, watermark, logo, banner, sign");
-        negatives.add("blurry, low quality, distorted anatomy");
-
-        boolean allowsMarketScene = containsAny(normalized,
-                "targ", "piata", "market", "fair", "festival", "expoz", "expo", "workshop", "atelier", "vanz", "cumpar");
-        if (!allowsMarketScene) {
-            negatives.add("market stalls, fair booth, craft table, city square crowd, random shopping crowd");
-            negatives.add("umbrellas in crowd, street bazaar");
+        String normalized = (clean(title, "") + " " + clean(description, "")).toLowerCase(Locale.ROOT);
+        String base = "text, watermark, logo, signature, banner, blurry, low quality, distorted anatomy, deformed face, extra limbs";
+        if (!containsAny(normalized, "beer", "alcohol", "drink", "party", "cocktail", "bottle", "pub", "bar")) {
+            return base + ", beer, alcohol bottles, party table";
         }
-
-        return String.join(", ", negatives);
+        return base;
     }
 
-    private String buildPromptFromSpec(PromptSpec spec,
-                                       String criticalAnchors,
-                                       String antiDrift,
-                                       String safeTitle,
-                                       String safeDescription) {
-        String activity = nonBlankOrDefault(spec.activity, safeTitle);
-        String mainSubject = nonBlankOrDefault(spec.mainSubject, "people doing the exact activity");
-        String locationType = nonBlankOrDefault(spec.locationType, "outdoor community location");
-        String environment = nonBlankOrDefault(spec.environment, "natural light");
-        String style = nonBlankOrDefault(spec.style, "photorealistic documentary photo");
-
-        String mustHave = spec.mustHaveObjects.isEmpty()
-                ? mainSubject
-                : String.join(", ", spec.mustHaveObjects);
-
-        String mustAvoid = spec.mustAvoidObjects.isEmpty()
-                ? "unrelated crowd scene, unrelated objects"
-                : String.join(", ", spec.mustAvoidObjects);
-
-        return "Photorealistic event image, no text, no watermark. "
-                + "Activity: " + activity + ". "
-                + "Main subject MUST be clearly visible: " + mainSubject + ". "
-                + "Location type: " + locationType + ". "
-                + "Environment: " + environment + ". "
-                + "Must-have objects: " + mustHave + ". "
-                + "Must-avoid objects: " + mustAvoid + ". "
-                + (criticalAnchors.isBlank() ? "" : "Critical constraints: " + criticalAnchors + ". ")
-                + (antiDrift.isBlank() ? "" : "Anti-drift constraints: " + antiDrift + ". ")
-                + "Style: " + style + ". "
-                + "User context: title=" + safeTitle + "; details=" + safeDescription + ". "
-                + "Natural light, high detail, cinematic composition, 16:9.";
+    private boolean containsAny(String text, String... terms) {
+        for (String term : terms) {
+            if (text.contains(term)) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    private PromptSpec buildPromptSpecViaTextModel(String title, String description) {
-        if (apiKey.isBlank()) {
-            return null;
+    private List<String> parseStringArray(JsonNode node) {
+        List<String> values = new ArrayList<>();
+        if (node == null || !node.isArray()) {
+            return values;
         }
-
-        String systemMessage = "You are an image prompt planner. "
-                + "Read Romanian or English event text and output STRICT JSON only (no markdown). "
-                + "Preserve exact intent and disambiguate nouns correctly. "
-                + "For Romanian 'masina', use passenger car/automobile unless explicitly tractor/truck/bus/farm machine. "
-            + "Do not convert hobbies into market/fair/workshop scenes unless user explicitly asks for market/fair/exhibition/workshop. "
-                + "JSON schema: {"
-                + "\"activity\":string,"
-                + "\"main_subject\":string,"
-                + "\"location_type\":string,"
-                + "\"environment\":string,"
-                + "\"must_have_objects\":string[],"
-                + "\"must_avoid_objects\":string[],"
-                + "\"style\":string"
-                + "}.";
-
-        String userMessage = "title: " + title + "\n"
-                + "description: " + description;
-
-        try {
-            ObjectNode requestNode = objectMapper.createObjectNode();
-            requestNode.put("model", "openai-fast");
-
-            ArrayNode messagesNode = objectMapper.createArrayNode();
-            messagesNode.add(objectMapper.createObjectNode()
-                    .put("role", "system")
-                    .put("content", systemMessage));
-            messagesNode.add(objectMapper.createObjectNode()
-                    .put("role", "user")
-                    .put("content", userMessage));
-
-            requestNode.set("messages", messagesNode);
-            requestNode.put("temperature", 0.1);
-            requestNode.put("max_tokens", 220);
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://gen.pollinations.ai/v1/chat/completions"))
-                    .header("Authorization", "Bearer " + apiKey)
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(requestNode.toString(), StandardCharsets.UTF_8))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                return null;
+        for (JsonNode item : node) {
+            String value = item.asText("").trim();
+            if (!value.isBlank()) {
+                values.add(value);
             }
-
-            JsonNode root = objectMapper.readTree(response.body());
-            String content = root.path("choices").path(0).path("message").path("content").asText("");
-            if (content.isBlank()) {
-                return null;
-            }
-
-            JsonNode specNode = parseLooseJsonObject(content);
-            if (specNode == null || !specNode.isObject()) {
-                return null;
-            }
-
-            PromptSpec spec = new PromptSpec();
-            spec.activity = textOrBlank(specNode, "activity");
-            spec.mainSubject = textOrBlank(specNode, "main_subject");
-            spec.locationType = textOrBlank(specNode, "location_type");
-            spec.environment = textOrBlank(specNode, "environment");
-            spec.style = textOrBlank(specNode, "style");
-            spec.mustHaveObjects = stringList(specNode.get("must_have_objects"));
-            spec.mustAvoidObjects = stringList(specNode.get("must_avoid_objects"));
-
-            if (spec.activity.isBlank() && spec.mainSubject.isBlank()) {
-                return null;
-            }
-            return spec;
-        } catch (Exception ex) {
-            return null;
         }
+        return values;
+    }
+
+    private List<String> parseFallbackKeyObjects(String titleEn, String descriptionEn) {
+        List<String> fallback = new ArrayList<>();
+        String main = clean(titleEn, "");
+        String context = clean(descriptionEn, "");
+        if (!main.isBlank()) {
+            fallback.add(main);
+        }
+        if (!context.isBlank()) {
+            String firstClause = context.split("[\\.;,]")[0].trim();
+            if (!firstClause.isBlank() && !firstClause.equalsIgnoreCase(main)) {
+                fallback.add(firstClause);
+            }
+        }
+        return fallback;
     }
 
     private JsonNode parseLooseJsonObject(String raw) {
@@ -500,20 +400,6 @@ public class PollinationsImageService {
         }
     }
 
-    private List<String> stringList(JsonNode node) {
-        if (node == null || !node.isArray()) {
-            return Collections.emptyList();
-        }
-        List<String> values = new ArrayList<>();
-        for (JsonNode item : node) {
-            String value = item.asText("").trim();
-            if (!value.isBlank()) {
-                values.add(value);
-            }
-        }
-        return values;
-    }
-
     private String textOrBlank(JsonNode node, String field) {
         if (node == null || field == null) {
             return "";
@@ -521,220 +407,16 @@ public class PollinationsImageService {
         return node.path(field).asText("").trim();
     }
 
-    private String nonBlankOrDefault(String value, String fallback) {
-        return value == null || value.isBlank() ? fallback : value;
-    }
-
-    private static class PromptSpec {
-        private String activity = "";
-        private String mainSubject = "";
-        private String locationType = "";
-        private String environment = "";
-        private List<String> mustHaveObjects = Collections.emptyList();
-        private List<String> mustAvoidObjects = Collections.emptyList();
-        private String style = "";
-    }
-
     private static class TranslationResult {
         private String titleEn = "";
         private String descriptionEn = "";
     }
 
-    private String buildPromptViaTextModel(String title, String description) {
-        if (apiKey.isBlank()) {
-            return null;
-        }
-
-        String userMessage = "Title: " + title + "\nDescription: " + description;
-        String systemMessage = "You are an expert image prompt engineer. "
-                + "Convert the user's activity title and description into one short, precise, photorealistic image prompt in English. "
-                + "Preserve exact activity intent and context (Romanian inputs included). "
-            + "Object fidelity is mandatory: the main object/activity from input must be clearly visible in the scene. "
-            + "Disambiguate Romanian terms correctly: 'masina' means passenger car/automobile unless user explicitly asks tractor, truck, bus, or farm machinery. "
-            + "If user says car drive/walk with car/road trip, prefer road, forest road, mountain road with a normal car. "
-                + "Avoid generic crowds if not requested. "
-                + "Output ONLY the final prompt text, no markdown, no quotes.";
-
-        try {
-            ObjectNode requestNode = objectMapper.createObjectNode();
-            requestNode.put("model", "openai-fast");
-
-            ArrayNode messagesNode = objectMapper.createArrayNode();
-            messagesNode.add(objectMapper.createObjectNode()
-                .put("role", "system")
-                .put("content", systemMessage));
-            messagesNode.add(objectMapper.createObjectNode()
-                .put("role", "user")
-                .put("content", userMessage));
-
-            requestNode.set("messages", messagesNode);
-            requestNode.put("temperature", 0.2);
-            requestNode.put("max_tokens", 180);
-
-            String requestBody = requestNode.toString();
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://gen.pollinations.ai/v1/chat/completions"))
-                    .header("Authorization", "Bearer " + apiKey)
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                return null;
-            }
-
-            JsonNode root = objectMapper.readTree(response.body());
-            JsonNode content = root.path("choices").path(0).path("message").path("content");
-            if (content.isMissingNode() || content.asText().isBlank()) {
-                return null;
-            }
-
-            String generated = content.asText().trim();
-            if (generated.length() > 500) {
-                return generated.substring(0, 500).trim();
-            }
-            return generated;
-        } catch (Exception ex) {
-            return null;
-        }
+    private static class PromptPlan {
+        private String prompt = "";
+        private List<String> keyObjects = new ArrayList<>();
     }
 
-    private String buildSemanticHints(String text) {
-        String normalized = text.toLowerCase(Locale.ROOT)
-                .replace("ă", "a")
-                .replace("â", "a")
-                .replace("î", "i")
-                .replace("ș", "s")
-                .replace("ş", "s")
-                .replace("ț", "t")
-                .replace("ţ", "t");
-
-        List<String> hints = new ArrayList<>();
-
-        if (containsAny(normalized, "sah", "chess")) {
-            hints.add("chessboard, chess pieces, people playing chess outdoors");
-            hints.add("focus on the chess game");
-        }
-
-        boolean hasCooking = containsAny(normalized,
-                "gatit", "gati", "frigarui", "frigaru", "gratar", "grill", "bbq", "barbecue", "cooking");
-        boolean hasOutdoor = containsAny(normalized,
-                "natura", "afara", "parc", "padure", "forest", "outdoor", "camp", "campfire", "picnic");
-
-        if (hasCooking && hasOutdoor) {
-            hints.add("outdoor barbecue scene, skewers on grill, food cooking over fire");
-            hints.add("people grilling in nature, picnic table, smoke from grill");
-            hints.add("focus on cooking process and food, not random crowd");
-            hints.add("no market fair, no street protest, no festival crowd");
-        } else if (hasCooking) {
-            hints.add("cooking activity, grilled food, barbecue tools, close-up on food and grill");
-            hints.add("no unrelated crowd scene");
-        }
-
-        boolean hasCycling = containsAny(normalized, "cicl", "biciclet", "cycling", "bike", "mtb");
-        boolean hasMountain = containsAny(normalized, "munte", "munti", "montan", "mountain", "trail", "traseu");
-
-        if (hasCycling && hasMountain) {
-            hints.add("mountain biking on alpine trail, forest mountain path, elevation scenery");
-            hints.add("cyclists with MTB helmets on off-road route");
-            hints.add("no city street race, no urban boulevard");
-        } else if (hasCycling) {
-            hints.add("cycling activity, bicycles in motion, outdoor ride");
-        }
-        if (containsAny(normalized, "fotbal", "football", "soccer")) {
-            hints.add("soccer ball, football field, active play moment");
-        }
-        if (containsAny(normalized, "alerg", "running", "jog")) {
-            hints.add("running movement, park path, athletic posture");
-        }
-        if (containsAny(normalized, "yoga", "medit")) {
-            hints.add("yoga poses, calm posture, wellness atmosphere");
-        }
-        if (containsAny(normalized, "drumet", "hike", "traseu", "munte")) {
-            hints.add("hiking trail, mountain path, trekking group");
-        }
-        if (containsAny(normalized, "dans", "dance")) {
-            hints.add("dance movement, dynamic body posture");
-        }
-        if (containsAny(normalized, "pict", "paint", "arta", "art")) {
-            hints.add("art materials, painting scene, creative workshop");
-        }
-
-        if (hints.isEmpty()) {
-            return "people engaged in the exact described activity";
-        }
-        return String.join(", ", hints);
-    }
-
-    private String buildCriticalAnchors(String text) {
-        String normalized = normalizeRomanian(text);
-
-        List<String> anchors = new ArrayList<>();
-
-        boolean hasCar = containsAny(normalized, "masina", "automobil", "car", "road trip", "drive");
-        boolean hasFarmVehicle = containsAny(normalized, "tractor", "combine", "buldozer", "camion", "truck", "bus");
-        if (hasCar && !hasFarmVehicle) {
-            anchors.add("show a passenger car (automobile) as primary subject");
-            anchors.add("do not show tractor, farm machinery, or construction vehicle");
-        }
-
-        if (containsAny(normalized, "padure", "forest", "natura", "outdoor") && hasCar) {
-            anchors.add("place the car on a forest road or nature route");
-        }
-
-        boolean hasCycling = containsAny(normalized, "cicl", "biciclet", "cycling", "bike", "mtb");
-        if (hasCycling) {
-            anchors.add("show bicycles clearly as primary subject");
-            anchors.add("avoid motor vehicles dominating the frame");
-        }
-
-        if (containsAny(normalized, "sah", "chess")) {
-            anchors.add("chessboard and chess pieces must be visible");
-        }
-
-        boolean hasHorseRiding = containsAny(normalized, "calar", "calarit", "calarie", "cai", "cal", "horse", "horses", "riding");
-        if (hasHorseRiding) {
-            anchors.add("horses and riders must be the primary subject");
-            anchors.add("outdoor riding scene in park or nature trail");
-            anchors.add("do not show market stalls, workshop tables, or street fair");
-        }
-
-        boolean hasParachute = containsAny(normalized, "parasuta", "parasut", "parasutism", "skydiv", "jump");
-        if (hasParachute) {
-            anchors.add("parachute and skydiver must be clearly visible in air");
-            anchors.add("no umbrellas, no rain accessories, no street crowd scene");
-        }
-
-        if (containsAny(normalized, "gatit", "frigarui", "gratar", "bbq", "barbecue")) {
-            anchors.add("grill and food preparation must be visible");
-            anchors.add("avoid market crowd scene unless explicitly requested");
-        }
-
-        return String.join(", ", anchors);
-    }
-
-    private String buildGlobalAntiDriftConstraints(String text) {
-        String normalized = normalizeRomanian(text);
-
-        boolean allowsMarketScene = containsAny(normalized,
-                "targ", "piata", "market", "fair", "expoz", "expo", "workshop", "atelier", "vanz", "cumpar");
-
-        if (!allowsMarketScene) {
-            return "avoid market stalls, fair booths, exhibition tables, and unrelated commercial crowd scene";
-        }
-        return "";
-    }
-
-    private boolean containsAny(String text, String... tokens) {
-        for (String token : tokens) {
-            if (text.contains(token)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     private String clean(String value, String fallback) {
         if (value == null || value.isBlank()) {

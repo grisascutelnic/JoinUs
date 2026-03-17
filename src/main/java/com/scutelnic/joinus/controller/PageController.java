@@ -1,5 +1,6 @@
 package com.scutelnic.joinus.controller;
 
+import com.scutelnic.joinus.dto.ActivityDto;
 import com.scutelnic.joinus.dto.ProfileUpdateRequest;
 import com.scutelnic.joinus.dto.UserReviewRequest;
 import com.scutelnic.joinus.dto.UserReviewSummary;
@@ -31,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -321,7 +323,8 @@ public class PageController {
     public String activities(Model model,
                              Authentication authentication,
                              @RequestParam(defaultValue = "0") int page,
-                             @RequestParam(defaultValue = "12") int size) {
+                             @RequestParam(defaultValue = "12") int size,
+                             @RequestParam(defaultValue = "false") boolean openCreate) {
         int safePage = Math.max(page, 0);
         int safeSize = Math.max(1, Math.min(size, 30));
 
@@ -384,6 +387,23 @@ public class PageController {
         model.addAttribute("pageSize", activityPage.getSize());
         model.addAttribute("totalPages", activityPage.getTotalPages());
         model.addAttribute("visibleTotalPages", Math.max(1, activityPage.getTotalPages()));
+
+        if (isAuthenticated(authentication)) {
+            if (!model.containsAttribute("activityForm")) {
+                ActivityDto form = new ActivityDto();
+                form.setDate(LocalDate.now());
+                form.setTime(LocalTime.of(18, 0));
+                form.setCapacity(10);
+                form.setCategory("Comunitate");
+                model.addAttribute("activityForm", form);
+            }
+            model.addAttribute("formAction", "/activities");
+            model.addAttribute("submitLabel", "Creeaza activitate");
+            model.addAttribute("cloudinaryCloudName", cloudinaryService.getCloudName());
+            model.addAttribute("cloudinaryUploadPreset", cloudinaryService.getUploadPreset());
+            model.addAttribute("openCreateModal", openCreate);
+        }
+
         return "activities";
     }
 
