@@ -101,6 +101,26 @@ public class ActivityParticipationController {
         return "redirect:/activities/" + activityId;
     }
 
+    @PostMapping("/activities/{activityId}/leave")
+    public String leaveActivity(@PathVariable Long activityId,
+                                Authentication authentication,
+                                RedirectAttributes redirectAttributes) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login";
+        }
+
+        try {
+            participationService.leaveActivity(activityId, authentication.getName());
+            redirectAttributes.addFlashAttribute("participationMessage", "Ai parasit activitatea.");
+            redirectAttributes.addFlashAttribute("participationMessageType", "info");
+        } catch (ResponseStatusException ex) {
+            redirectAttributes.addFlashAttribute("participationMessage", mapMessage(ex.getReason(), "Nu am putut parasi activitatea."));
+            redirectAttributes.addFlashAttribute("participationMessageType", "danger");
+        }
+
+        return "redirect:/activities/" + activityId;
+    }
+
     private String mapMessage(String reason, String fallback) {
         if (reason == null || reason.isBlank()) {
             return fallback;

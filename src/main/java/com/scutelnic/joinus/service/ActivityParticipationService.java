@@ -108,6 +108,31 @@ public class ActivityParticipationService {
         participationRepository.save(request);
     }
 
+    @Transactional
+    public void leaveActivity(Long activityId, String userEmail) {
+        Activity activity = requireActivity(activityId);
+        User user = requireUserByEmail(userEmail);
+
+        if (isCreator(activity, user)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Organizatorul nu poate parasi propria activitate");
+        }
+
+        ActivityParticipation participation = participationRepository.findByActivityIdAndUserId(activityId, user.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nu esti participant la aceasta activitate"));
+
+        if (participation.getStatus() == ParticipationStatus.LEFT) {
+            return;
+        }
+
+        if (participation.getStatus() != ParticipationStatus.APPROVED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Doar participantii acceptati pot parasi activitatea");
+        }
+
+        participation.setStatus(ParticipationStatus.LEFT);
+        participation.setRespondedAt(LocalDateTime.now());
+        participationRepository.save(participation);
+    }
+
     @Transactional(readOnly = true)
     public boolean canAccessChat(Long activityId, String userEmail) {
         if (userEmail == null || userEmail.isBlank()) {

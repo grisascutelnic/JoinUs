@@ -477,6 +477,10 @@ public class PageController {
                                 participationMessage = "Ai fost exclus din aceasta activitate.";
                                 participationMessageType = "danger";
                                 session.removeAttribute(approvedNoticeSessionKey(id));
+                            } else if (participationStatus == ParticipationStatus.LEFT) {
+                                participationMessage = "Ai parasit aceasta activitate.";
+                                participationMessageType = "info";
+                                session.removeAttribute(approvedNoticeSessionKey(id));
                             } else if (participationStatus == ParticipationStatus.BLOCKED) {
                                 participationMessage = "Nu poti participa la aceasta activitate.";
                                 participationMessageType = "danger";

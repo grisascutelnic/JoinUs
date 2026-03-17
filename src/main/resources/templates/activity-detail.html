@@ -121,16 +121,21 @@
                                         </button>
                                     </div>
 
-                                    <div class="dropdown activity-tabs-actions" th:if="${canAccessChat and isActivityCreator}">
+                                    <div class="dropdown activity-tabs-actions" th:if="${canAccessChat}">
                                         <button class="activity-tabs-menu-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actiuni chat">
                                             <i class="bi bi-three-dots"></i>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end activity-actions-menu">
-                                            <li><button class="dropdown-item" id="togglePollComposerBtn" type="button">Creeaza un poll</button></li>
-                                            <li><a class="dropdown-item" th:href="@{/activities/{id}/edit(id=${activity.id})}">Editeaza activitatea</a></li>
-                                            <li>
+                                            <li th:if="${isActivityCreator}"><button class="dropdown-item" id="togglePollComposerBtn" type="button">Creeaza un poll</button></li>
+                                            <li th:if="${isActivityCreator}"><a class="dropdown-item" th:href="@{/activities/{id}/edit(id=${activity.id})}">Editeaza activitatea</a></li>
+                                            <li th:if="${isActivityCreator}">
                                                 <form method="post" th:action="@{/activities/{id}/delete(id=${activity.id})}" onsubmit="return confirm('Sigur vrei sa stergi aceasta activitate?');">
                                                     <button class="dropdown-item text-danger" type="submit">Sterge activitatea</button>
+                                                </form>
+                                            </li>
+                                            <li th:if="${!isActivityCreator and participationStatus == T(com.scutelnic.joinus.entity.ParticipationStatus).APPROVED}">
+                                                <form method="post" th:action="@{/activities/{id}/leave(id=${activity.id})}" onsubmit="return confirm('Sigur vrei sa parasesti aceasta activitate?');">
+                                                    <button class="dropdown-item text-danger" type="submit">Paraseste activitatea</button>
                                                 </form>
                                             </li>
                                         </ul>
@@ -1464,9 +1469,8 @@
                     return;
                 }
 
-                const tabsEl = activityChatEl.querySelector('.activity-tabs');
                 const infoPanel = document.getElementById('activity-info-panel');
-                if (!tabsEl || !infoPanel) {
+                if (!infoPanel) {
                     activityChatEl.style.height = '';
                     if (sidebarCardEl) {
                         sidebarCardEl.style.height = '';
@@ -1482,9 +1486,13 @@
                     infoPanel.classList.add('is-active');
                 }
 
-                const tabsHeight = Math.ceil(tabsEl.getBoundingClientRect().height);
-                const infoHeight = Math.ceil(infoPanel.scrollHeight);
-                const targetHeight = Math.max(700, tabsHeight + infoHeight);
+                activityChatEl.style.height = 'auto';
+                if (sidebarCardEl) {
+                    sidebarCardEl.style.height = 'auto';
+                }
+
+                const measuredContentHeight = Math.ceil(activityChatEl.scrollHeight);
+                const targetHeight = Math.max(700, measuredContentHeight + 16);
 
                 if (switchedFromPanel) {
                     infoPanel.classList.remove('is-active');
@@ -1493,10 +1501,7 @@
 
                 activityChatEl.style.height = `${targetHeight}px`;
                 if (sidebarCardEl) {
-                    window.requestAnimationFrame(() => {
-                        const measuredRightHeight = Math.ceil(activityChatEl.getBoundingClientRect().height);
-                        sidebarCardEl.style.height = `${Math.max(700, measuredRightHeight)}px`;
-                    });
+                    sidebarCardEl.style.height = `${targetHeight}px`;
                 }
             }
 

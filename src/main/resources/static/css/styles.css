@@ -205,10 +205,11 @@ https://templatemo.com/tm-587-tiya-golf-club
 }
 
 .page-activities .activity-card .activity-unread-badge {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  position: static;
+  right: auto;
+  top: auto;
+  transform: none;
+  margin-left: auto;
 }
 
 .page-index .activity-card .activity-image-badge,
@@ -1431,7 +1432,6 @@ https://templatemo.com/tm-587-tiya-golf-club
   display: flex;
   align-items: center;
   gap: 8px;
-  padding-right: 28px;
 }
 
 .activity-mini-unread-badge,
@@ -1454,9 +1454,7 @@ https://templatemo.com/tm-587-tiya-golf-club
 }
 
 .activity-mini-unread-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
+  position: static;
 }
 
 .activity-mini-info small {
