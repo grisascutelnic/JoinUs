@@ -1,6 +1,7 @@
 package com.scutelnic.joinus.service;
 
 import com.scutelnic.joinus.dto.chat.ChatMessageResponse;
+import com.scutelnic.joinus.dto.chat.AnnouncementResponse;
 import com.scutelnic.joinus.dto.chat.MessageReactionSummaryResponse;
 import com.scutelnic.joinus.dto.chat.MessageReactionUpdateEvent;
 import com.scutelnic.joinus.dto.chat.MessageSeenSummaryResponse;
@@ -15,6 +16,7 @@ import com.scutelnic.joinus.entity.ActivityMessage;
 import com.scutelnic.joinus.entity.ActivityMessageReaction;
 import com.scutelnic.joinus.entity.ActivityMessageReactionType;
 import com.scutelnic.joinus.entity.ActivityMessageSeen;
+import com.scutelnic.joinus.entity.ActivityMessageType;
 import com.scutelnic.joinus.entity.ActivityPoll;
 import com.scutelnic.joinus.entity.ActivityPollOption;
 import com.scutelnic.joinus.entity.ActivityPollVote;
@@ -45,11 +47,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ActivityChatService {
 
     private static final int MAX_HISTORY_LIMIT = 100;
+    private static final int MAX_ANNOUNCEMENT_LENGTH = 1000;
+    private static final String LEGACY_WELCOME_ANNOUNCEMENT = "Bun venit in grup! Foloseste acest tab pentru anunturi importante despre activitate.";
+    private static final String DEFAULT_WELCOME_ANNOUNCEMENT = "Bun venit in grup! Mult succes la activitate si distractie placuta tuturor participantilor!";
     private static final int MAX_POLL_QUESTION_LENGTH = 280;
     private static final int MAX_POLL_OPTION_LENGTH = 160;
     private static final int MAX_POLL_OPTIONS = 10;
@@ -101,6 +107,72 @@ public class ActivityChatService {
             return List.of();
         }
         return buildPollResponses(polls, currentUser.getId());
+    }
+
+    @Transactional
+    public void ensureDefaultWelcomeAnnouncement(Long activityId) {
+        Activity activity = requireActivity(activityId);
+        if (activity.getCreator() == null) {
+            return;
+        }
+
+        List<ActivityMessage> existingAnnouncements = messageRepository
+                .findByActivityIdAndMessageTypeOrderByCreatedAtAscIdAsc(activityId, ActivityMessageType.ANNOUNCEMENT);
+
+        if (!existingAnnouncements.isEmpty()) {
+            List<ActivityMessage> toUpdate = new ArrayList<>();
+            for (ActivityMessage announcement : existingAnnouncements) {
+                String content = announcement.getContent();
+                if (content == null) {
+                    continue;
+                }
+                if (!content.trim().equals(LEGACY_WELCOME_ANNOUNCEMENT)) {
+                    continue;
+                }
+                announcement.setContent(DEFAULT_WELCOME_ANNOUNCEMENT);
+                toUpdate.add(announcement);
+            }
+            if (!toUpdate.isEmpty()) {
+                messageRepository.saveAll(toUpdate);
+            }
+            return;
+        }
+
+        ActivityMessage announcement = new ActivityMessage();
+        announcement.setActivity(activity);
+        announcement.setSender(activity.getCreator());
+        announcement.setContent(DEFAULT_WELCOME_ANNOUNCEMENT);
+        announcement.setMessageType(ActivityMessageType.ANNOUNCEMENT);
+        messageRepository.save(announcement);
+    }
+
+    public List<AnnouncementResponse> getAnnouncements(Long activityId, String userEmail) {
+        requireChatAccess(activityId, userEmail);
+        ensureDefaultWelcomeAnnouncement(activityId);
+
+        List<ActivityMessage> announcements = messageRepository
+                .findByActivityIdAndMessageTypeOrderByCreatedAtAscIdAsc(activityId, ActivityMessageType.ANNOUNCEMENT);
+        if (announcements.isEmpty()) {
+            return List.of();
+        }
+
+        return announcements.stream()
+                .map(this::toAnnouncementResponse)
+                .toList();
+    }
+
+    public AnnouncementResponse createAnnouncement(Long activityId, String userEmail, String content) {
+        User author = requireActivityAuthor(activityId, userEmail);
+        Activity activity = requireActivity(activityId);
+
+        ActivityMessage announcement = new ActivityMessage();
+        announcement.setActivity(activity);
+        announcement.setSender(author);
+        announcement.setContent(normalizeAnnouncementContent(content));
+        announcement.setMessageType(ActivityMessageType.ANNOUNCEMENT);
+
+        ActivityMessage saved = messageRepository.save(announcement);
+        return toAnnouncementResponse(saved);
     }
 
     @Transactional
@@ -313,9 +385,11 @@ public class ActivityChatService {
         User currentUser = requireUserByEmail(userEmail);
         int limit = Math.max(1, Math.min(MAX_HISTORY_LIMIT, requestedLimit));
         List<ActivityMessage> messages = messageRepository.findByActivityIdOrderByCreatedAtDescIdDesc(
-                activityId,
-                PageRequest.of(0, limit)
-        );
+            activityId,
+            PageRequest.of(0, limit)
+        ).stream()
+                .filter(message -> message.getMessageType() == null || message.getMessageType() == ActivityMessageType.CHAT)
+            .collect(Collectors.toCollection(ArrayList::new));
         Collections.reverse(messages);
 
         List<Long> messageIds = messages.stream().map(ActivityMessage::getId).toList();
@@ -344,6 +418,7 @@ public class ActivityChatService {
         message.setActivity(activity);
         message.setSender(sender);
         message.setContent(normalizedContent);
+        message.setMessageType(ActivityMessageType.CHAT);
         ActivityMessage saved = messageRepository.save(message);
         return toMessageResponse(saved, Map.of(), Map.of());
     }
@@ -457,6 +532,13 @@ public class ActivityChatService {
         requireChatAccess(activityId, userEmail);
         User user = requireUserByEmail(userEmail);
         seenRepository.markAllMessagesSeenForActivity(activityId, user.getId(), LocalDateTime.now());
+    }
+
+    @Transactional
+    public void markAllAnnouncementsSeen(Long activityId, String userEmail) {
+        requireChatAccess(activityId, userEmail);
+        User user = requireUserByEmail(userEmail);
+        seenRepository.markAllAnnouncementsSeenForActivity(activityId, user.getId(), LocalDateTime.now());
     }
 
     public List<SeenUserResponse> getSeenUsers(Long messageId, String userEmail) {
@@ -627,6 +709,28 @@ public class ActivityChatService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Message is too long");
         }
         return normalized;
+    }
+
+    private String normalizeAnnouncementContent(String content) {
+        if (content == null || content.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Announcement content is required");
+        }
+        String normalized = content.trim();
+        if (normalized.length() > MAX_ANNOUNCEMENT_LENGTH) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Announcement is too long");
+        }
+        return normalized;
+    }
+
+    private AnnouncementResponse toAnnouncementResponse(ActivityMessage message) {
+        return new AnnouncementResponse(
+                message.getId(),
+                message.getActivity().getId(),
+                message.getSender().getId(),
+                message.getSender().getFullName(),
+                message.getContent(),
+                message.getCreatedAt()
+        );
     }
 
     private void requireChatAccess(Long activityId, String userEmail) {

@@ -8,6 +8,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
@@ -32,6 +34,10 @@ public class ActivityMessage {
     @Column(nullable = false, length = 1500)
     private String content;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "message_type", length = 24)
+    private ActivityMessageType messageType;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -39,6 +45,9 @@ public class ActivityMessage {
     protected void onCreate() {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
+        }
+        if (messageType == null) {
+            messageType = ActivityMessageType.CHAT;
         }
     }
 
@@ -80,5 +89,13 @@ public class ActivityMessage {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public ActivityMessageType getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(ActivityMessageType messageType) {
+        this.messageType = messageType;
     }
 }

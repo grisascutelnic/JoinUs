@@ -2,6 +2,8 @@ package com.scutelnic.joinus.controller;
 
 import com.scutelnic.joinus.dto.chat.ChatMessageRequest;
 import com.scutelnic.joinus.dto.chat.ChatMessageResponse;
+import com.scutelnic.joinus.dto.chat.AnnouncementCreateRequest;
+import com.scutelnic.joinus.dto.chat.AnnouncementResponse;
 import com.scutelnic.joinus.dto.chat.DeliveredEventRequest;
 import com.scutelnic.joinus.dto.chat.MessageReactionEventRequest;
 import com.scutelnic.joinus.dto.chat.MessageReactionUpdateEvent;
@@ -43,6 +45,15 @@ public class ActivityChatWebSocketController {
         String email = requirePrincipal(principal);
         ChatMessageResponse created = activityChatService.sendMessage(activityId, email, request.content());
         messagingTemplate.convertAndSend(topicForActivity(activityId), created);
+    }
+
+    @MessageMapping("/activities/{activityId}/announcements/create")
+    public void createAnnouncement(@DestinationVariable Long activityId,
+                                   AnnouncementCreateRequest request,
+                                   Principal principal) {
+        String email = requirePrincipal(principal);
+        AnnouncementResponse created = activityChatService.createAnnouncement(activityId, email, request.content());
+        messagingTemplate.convertAndSend(announcementsTopicForActivity(activityId), created);
     }
 
     @MessageMapping("/activities/{activityId}/seen")
@@ -172,5 +183,9 @@ public class ActivityChatWebSocketController {
 
     private String pollsTopicForActivity(Long activityId) {
         return "/topic/activities/" + activityId + "/polls";
+    }
+
+    private String announcementsTopicForActivity(Long activityId) {
+        return "/topic/activities/" + activityId + "/announcements";
     }
 }

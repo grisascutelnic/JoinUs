@@ -104,56 +104,6 @@
                                         </a>
                                     </div>
                                 </div>
-
-                                <section class="activity-participants-card" id="activityParticipantsCard" th:if="${isActivityCreator or canAccessChat}">
-                                    <h5 class="mb-3">Participanti</h5>
-                                    <div class="participants-container">
-                                        <p class="text-muted mb-0" th:if="${#lists.isEmpty(approvedParticipationRequests) and (!isActivityCreator or #lists.isEmpty(pendingParticipationRequests))}">
-                                            Nu exista participanti sau cereri in asteptare.
-                                        </p>
-
-                                        <div class="participation-request-card" th:if="${isActivityCreator}" th:each="request : ${pendingParticipationRequests}">
-                                            <a class="participant-profile-link" th:href="@{/users/{id}(id=${request.user.id})}">
-                                                <strong th:text="${request.user.fullName}">Nume utilizator</strong>
-                                                <small class="d-block text-muted" th:text="${request.user.email}">email@example.com</small>
-                                                <small class="d-block text-muted"
-                                                       th:text="${#temporals.format(request.requestedAt, 'dd MMM yyyy, HH:mm')}">10 Feb 2026, 14:20</small>
-                                            </a>
-                                            <div class="participation-request-actions">
-                                                <form method="post"
-                                                      th:action="@{/activities/{id}/participation-requests/{requestId}/approve(id=${activity.id}, requestId=${request.id})}">
-                                                    <button class="btn participation-action-btn is-accept" type="submit" title="Accepta">
-                                                        <i class="bi bi-check-lg"></i>
-                                                    </button>
-                                                </form>
-                                                <form method="post"
-                                                      th:action="@{/activities/{id}/participation-requests/{requestId}/reject(id=${activity.id}, requestId=${request.id})}">
-                                                    <button class="btn participation-action-btn is-reject" type="submit" title="Respinge">
-                                                        <i class="bi bi-x-lg"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </div>
-
-                                        <div class="participation-request-card is-approved" th:each="request : ${approvedParticipationRequests}">
-                                            <a class="participant-profile-link" th:href="@{/users/{id}(id=${request.user.id})}">
-                                                <strong th:text="${request.user.fullName}">Nume utilizator</strong>
-                                                <small class="d-block text-muted" th:text="${request.user.email}">email@example.com</small>
-                                            </a>
-                                            <div class="dropdown" th:if="${isActivityCreator}">
-                                                <button class="btn participation-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Actiuni">
-                                                    <i class="bi bi-list"></i>
-                                                </button>
-                                                <div class="dropdown-menu dropdown-menu-end participant-dropdown-menu">
-                                                    <form method="post"
-                                                          th:action="@{/activities/{id}/participation-requests/{requestId}/exclude(id=${activity.id}, requestId=${request.id})}">
-                                                        <button class="dropdown-item text-danger" type="submit">Exclude participant</button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </section>
                             </aside>
 
                             <div class="activity-main-column">
@@ -162,7 +112,16 @@
                                     <div class="activity-tabs-left">
                                         <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-info-panel" data-tab="info">Info</button>
                                         <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-chat-panel" data-tab="chat" th:if="${canAccessChat}">Chat</button>
-                                        <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-announcements-panel" data-tab="announcements" th:if="${canAccessChat}">Anunturi</button>
+                                        <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-announcements-panel" data-tab="announcements" th:if="${canAccessChat}">
+                                            Anunturi
+                                            <span id="activityAnnouncementsBadge" class="activity-tab-unread-badge d-none">0</span>
+                                        </button>
+                                        <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-participants-panel" data-tab="participants" th:if="${isActivityCreator or canAccessChat}">
+                                            Participanti
+                                            <span class="activity-tab-unread-badge"
+                                                  th:if="${isActivityCreator and pendingParticipationRequests != null and !#lists.isEmpty(pendingParticipationRequests)}"
+                                                  th:text="${#lists.size(pendingParticipationRequests)}">0</span>
+                                        </button>
                                     </div>
 
                                     <div class="dropdown activity-tabs-actions" th:if="${canAccessChat and isActivityCreator}">
@@ -282,24 +241,6 @@
                                 <div class="activity-tab-panel" id="activity-chat-panel" role="tabpanel" data-panel="chat" th:if="${canAccessChat}">
                                     <div class="chat-stream" id="chatStream"></div>
 
-                                    <form class="chat-poll-composer chat-poll-composer-inline d-none" id="chatPollComposer">
-                                        <input class="form-control mb-2" id="pollQuestionInput" type="text" maxlength="280" placeholder="Intrebare poll">
-                                        <div id="pollOptionsContainer" class="poll-options-container">
-                                            <div class="poll-option-input-row mb-2">
-                                                <input class="form-control poll-option-input" type="text" maxlength="160" placeholder="Optiunea 1">
-                                                <button class="poll-option-remove-btn" type="button" aria-label="Sterge optiunea">x</button>
-                                            </div>
-                                            <div class="poll-option-input-row mb-2">
-                                                <input class="form-control poll-option-input" type="text" maxlength="160" placeholder="Optiunea 2">
-                                                <button class="poll-option-remove-btn" type="button" aria-label="Sterge optiunea">x</button>
-                                            </div>
-                                        </div>
-                                        <div class="chat-poll-composer-actions">
-                                            <button class="btn btn-sm custom-border-btn me-2" id="addPollOptionInputBtn" type="button">Adauga inca o optiune</button>
-                                            <button class="btn custom-btn" id="createPollBtn" type="submit">Publica poll</button>
-                                        </div>
-                                    </form>
-
                                     <div class="chat-input">
                                         <input class="form-control" id="chatInput" type="text" placeholder="Scrie un mesaj..." th:disabled="${#authorization.expression('isAnonymous()')}">
                                         <button class="btn custom-btn" id="chatSendBtn" type="button" th:disabled="${#authorization.expression('isAnonymous()')}" aria-label="Trimite mesaj"><i class="bi bi-send"></i></button>
@@ -308,21 +249,65 @@
                                 </div>
 
                                 <div class="activity-tab-panel" id="activity-announcements-panel" role="tabpanel" data-panel="announcements" th:if="${canAccessChat}">
-                                    <div class="announcement-list">
-                                        <div class="announcement-card">
-                                            <strong>Organizator</strong>
-                                            <p class="mb-2">Avem nevoie de 2 voluntari pentru a ghida grupul din spate.</p>
-                                            <small>Actualizat astazi, 17:40</small>
+                                    <div class="announcement-composer" th:if="${isActivityCreator}">
+                                        <form id="announcementForm" class="announcement-form">
+                                            <textarea class="form-control" id="announcementInput" rows="3" maxlength="1000" placeholder="Scrie un anunt pentru participanti..."></textarea>
+                                            <div class="announcement-form-actions">
+                                                <button type="submit" class="btn custom-btn btn-sm">Publica anunt</button>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                    <div class="announcement-list" id="announcementList">
+                                        <p class="text-muted text-center my-3" id="announcementEmptyState">Nu exista anunturi inca.</p>
+                                    </div>
+                                </div>
+
+                                <div class="activity-tab-panel" id="activity-participants-panel" role="tabpanel" data-panel="participants" th:if="${isActivityCreator or canAccessChat}">
+                                    <div class="participants-container">
+                                        <p class="text-muted mb-0" th:if="${#lists.isEmpty(approvedParticipationRequests) and (!isActivityCreator or #lists.isEmpty(pendingParticipationRequests))}">
+                                            Nu exista participanti sau cereri in asteptare.
+                                        </p>
+
+                                        <div class="participation-request-card" th:if="${isActivityCreator}" th:each="request : ${pendingParticipationRequests}">
+                                            <a class="participant-profile-link" th:href="@{/users/{id}(id=${request.user.id})}">
+                                                <strong th:text="${request.user.fullName}">Nume utilizator</strong>
+                                                <small class="d-block text-muted" th:text="${request.user.email}">email@example.com</small>
+                                                <small class="d-block text-muted"
+                                                       th:text="${#temporals.format(request.requestedAt, 'dd MMM yyyy, HH:mm')}">10 Feb 2026, 14:20</small>
+                                            </a>
+                                            <div class="participation-request-actions">
+                                                <form method="post"
+                                                      th:action="@{/activities/{id}/participation-requests/{requestId}/approve(id=${activity.id}, requestId=${request.id})}">
+                                                    <button class="btn participation-action-btn is-accept" type="submit" title="Accepta">
+                                                        <i class="bi bi-check-lg"></i>
+                                                    </button>
+                                                </form>
+                                                <form method="post"
+                                                      th:action="@{/activities/{id}/participation-requests/{requestId}/reject(id=${activity.id}, requestId=${request.id})}">
+                                                    <button class="btn participation-action-btn is-reject" type="submit" title="Respinge">
+                                                        <i class="bi bi-x-lg"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </div>
-                                        <div class="announcement-card">
-                                            <strong>Update traseu</strong>
-                                            <p class="mb-2">Vom opri la Podul Muncii pentru o poza de grup.</p>
-                                            <small>Actualizat ieri</small>
-                                        </div>
-                                        <div class="announcement-card">
-                                            <strong>Memento</strong>
-                                            <p class="mb-2">Nu uitati sa aveti lumini la bicicleta si apa.</p>
-                                            <small>Acum 2 zile</small>
+
+                                        <div class="participation-request-card is-approved" th:each="request : ${approvedParticipationRequests}">
+                                            <a class="participant-profile-link" th:href="@{/users/{id}(id=${request.user.id})}">
+                                                <strong th:text="${request.user.fullName}">Nume utilizator</strong>
+                                                <small class="d-block text-muted" th:text="${request.user.email}">email@example.com</small>
+                                            </a>
+                                            <div class="dropdown" th:if="${isActivityCreator}">
+                                                <button class="btn participation-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Actiuni">
+                                                    <i class="bi bi-list"></i>
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-end participant-dropdown-menu">
+                                                    <form method="post"
+                                                          th:action="@{/activities/{id}/participation-requests/{requestId}/exclude(id=${activity.id}, requestId=${request.id})}">
+                                                        <button class="dropdown-item text-danger" type="submit">Exclude participant</button>
+                                                    </form>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -338,6 +323,36 @@
         </main>
 
         <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+        <div class="modal fade" id="pollComposerModal" tabindex="-1" aria-labelledby="pollComposerModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="pollComposerModalLabel">Creeaza un poll</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form class="chat-poll-composer" id="chatPollComposer">
+                            <input class="form-control mb-2" id="pollQuestionInput" type="text" maxlength="280" placeholder="Intrebare poll">
+                            <div id="pollOptionsContainer" class="poll-options-container">
+                                <div class="poll-option-input-row mb-2">
+                                    <input class="form-control poll-option-input" type="text" maxlength="160" placeholder="Optiunea 1">
+                                    <button class="poll-option-remove-btn" type="button" aria-label="Sterge optiunea">x</button>
+                                </div>
+                                <div class="poll-option-input-row mb-2">
+                                    <input class="form-control poll-option-input" type="text" maxlength="160" placeholder="Optiunea 2">
+                                    <button class="poll-option-remove-btn" type="button" aria-label="Sterge optiunea">x</button>
+                                </div>
+                            </div>
+                            <div class="chat-poll-composer-actions">
+                                <button class="btn btn-sm custom-border-btn me-2" id="addPollOptionInputBtn" type="button">Adauga inca o optiune</button>
+                                <button class="btn custom-btn" id="createPollBtn" type="submit">Publica poll</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- JAVASCRIPT FILES -->
         <script src="/js/jquery.min.js"></script>
@@ -375,6 +390,9 @@
                     setTimeout(scrollChatToBottom, 0);
                     markCurrentActivityChatAsSeen();
                 }
+                if (target === 'announcements') {
+                    markCurrentActivityAnnouncementsAsSeen();
+                }
                 preserveTabContextForSidebarActivities();
                 syncChatPanelHeight();
             }
@@ -386,7 +404,7 @@
             });
 
             const requestedTab = new URLSearchParams(window.location.search).get('tab');
-            const validTabs = ['info', 'chat', 'announcements'];
+            const validTabs = ['info', 'chat', 'announcements', 'participants'];
             const initialTab = validTabs.includes(requestedTab) ? requestedTab : 'info';
 
             function preserveTabContextForSidebarActivities() {
@@ -413,11 +431,18 @@
             const isActivityCreator = /*[[${isActivityCreator}]]*/ false;
             const isAuthenticated = /*[[${#authorization.expression('isAuthenticated()')}]]*/ false;
             const canAccessChat = /*[[${canAccessChat}]]*/ false;
+            const csrfHeaderName = /*[[${_csrf.headerName}]]*/ 'X-CSRF-TOKEN';
+            const csrfToken = /*[[${_csrf.token}]]*/ '';
             const chatStreamEl = document.getElementById('chatStream');
             const chatInputEl = document.getElementById('chatInput');
             const chatSendBtnEl = document.getElementById('chatSendBtn');
             const activityChatEl = document.querySelector('.activity-chat');
+            const announcementListEl = document.getElementById('announcementList');
+            const announcementFormEl = document.getElementById('announcementForm');
+            const announcementInputEl = document.getElementById('announcementInput');
+            const activityAnnouncementsBadgeEl = document.getElementById('activityAnnouncementsBadge');
             const pollComposerEl = document.getElementById('chatPollComposer');
+            const pollComposerModalEl = document.getElementById('pollComposerModal');
             const togglePollComposerBtnEl = document.getElementById('togglePollComposerBtn');
             const pollQuestionInputEl = document.getElementById('pollQuestionInput');
             const pollOptionsContainerEl = document.getElementById('pollOptionsContainer');
@@ -429,9 +454,11 @@
             const pollState = new Map();
             const pollElements = new Map();
             const pollEditMode = new Set();
+            const announcementElements = new Map();
             let stompClient = null;
             let seenObserver = null;
             let markAllSeenInFlight = false;
+            let markAnnouncementsSeenInFlight = false;
             const REACTION_OPTIONS = [
                 { type: 'LIKE', emoji: '👍' },
                 { type: 'LOVE', emoji: '❤️' },
@@ -447,6 +474,122 @@
             function formatDateTime(isoDate) {
                 const date = new Date(isoDate);
                 return date.toLocaleString('ro-RO', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+            }
+
+            function escapeHtml(value) {
+                return String(value == null ? '' : value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            function setAnnouncementBadge(count) {
+                if (!activityAnnouncementsBadgeEl) {
+                    return;
+                }
+                const safeCount = Number(count || 0);
+                activityAnnouncementsBadgeEl.textContent = String(safeCount);
+                activityAnnouncementsBadgeEl.classList.toggle('d-none', safeCount <= 0);
+            }
+
+            function applyAnnouncementUnreadSummary(summary) {
+                if (!summary || !activityId || !canAccessChat) {
+                    return;
+                }
+                const counts = summary.announcementUnreadCounts || {};
+                const count = Number(counts[String(activityId)] ?? counts[activityId] ?? 0);
+                setAnnouncementBadge(count);
+            }
+
+            function renderAnnouncement(announcement) {
+                if (!announcementListEl || !announcement || !announcement.id) {
+                    return;
+                }
+
+                const emptyState = document.getElementById('announcementEmptyState');
+                if (emptyState) {
+                    emptyState.remove();
+                }
+
+                const id = Number(announcement.id);
+                let card = announcementElements.get(id);
+                if (!card) {
+                    card = document.createElement('div');
+                    card.className = 'announcement-card';
+                    card.dataset.announcementId = String(id);
+                    announcementElements.set(id, card);
+                    announcementListEl.appendChild(card);
+                }
+
+                card.innerHTML = `
+                    <strong>${escapeHtml(announcement.senderName || 'Organizator')}</strong>
+                    <p class="mb-2">${escapeHtml(announcement.content || '')}</p>
+                    <small>${escapeHtml(formatDateTime(announcement.createdAt))}</small>
+                `;
+            }
+
+            async function loadAnnouncements() {
+                if (!isAuthenticated || !canAccessChat || !announcementListEl) {
+                    return;
+                }
+                const response = await fetch(`/api/activities/${activityId}/announcements`, {
+                    credentials: 'same-origin'
+                });
+                const announcements = response.ok ? await response.json() : [];
+                announcementListEl.innerHTML = '';
+                announcementElements.clear();
+                if (!Array.isArray(announcements) || announcements.length === 0) {
+                    announcementListEl.innerHTML = '<p class="text-muted text-center my-3" id="announcementEmptyState">Nu exista anunturi inca.</p>';
+                    return;
+                }
+                announcements.forEach((announcement) => {
+                    renderAnnouncement(announcement);
+                });
+            }
+
+            function publishAnnouncement(content) {
+                if (!stompClient || !stompClient.connected) return;
+                stompClient.publish({
+                    destination: `/app/activities/${activityId}/announcements/create`,
+                    body: JSON.stringify({ content })
+                });
+            }
+
+            function wireAnnouncementComposer() {
+                if (!announcementFormEl || !announcementInputEl) {
+                    return;
+                }
+                announcementFormEl.addEventListener('submit', (event) => {
+                    event.preventDefault();
+                    const content = (announcementInputEl.value || '').trim();
+                    if (!content) {
+                        return;
+                    }
+                    publishAnnouncement(content);
+                    announcementInputEl.value = '';
+                });
+            }
+
+            function markCurrentActivityAnnouncementsAsSeen() {
+                if (!isAuthenticated || !canAccessChat || activityId <= 0 || markAnnouncementsSeenInFlight) {
+                    return;
+                }
+                markAnnouncementsSeenInFlight = true;
+                fetch(`/api/activities/${activityId}/announcements/mark-all-seen`, {
+                    method: 'POST',
+                    headers: csrfToken ? { [csrfHeaderName]: csrfToken } : {},
+                    credentials: 'same-origin'
+                })
+                    .catch(() => {
+                        // Keep UI as-is on failure.
+                    })
+                    .finally(() => {
+                        markAnnouncementsSeenInFlight = false;
+                        setAnnouncementBadge(0);
+                        window.dispatchEvent(new Event('joinus-force-unread-refresh'));
+                    });
             }
 
             function normalizePollForState(poll) {
@@ -771,6 +914,7 @@
 
             function wirePollComposer() {
                 if (!pollComposerEl || !togglePollComposerBtnEl) return;
+                const pollComposerModal = pollComposerModalEl ? bootstrap.Modal.getOrCreateInstance(pollComposerModalEl) : null;
 
                 const updatePollRemoveButtonsState = () => {
                     if (!pollOptionsContainerEl) {
@@ -874,7 +1018,9 @@
 
                 togglePollComposerBtnEl.addEventListener('click', () => {
                     activateTab('chat');
-                    pollComposerEl.classList.remove('d-none');
+                    if (pollComposerModal) {
+                        pollComposerModal.show();
+                    }
                     setTimeout(() => {
                         pollQuestionInputEl?.focus();
                     }, 0);
@@ -897,8 +1043,19 @@
                         pollQuestionInputEl.value = '';
                     }
                     resetPollOptionInputs();
-                    pollComposerEl.classList.add('d-none');
+                    if (pollComposerModal) {
+                        pollComposerModal.hide();
+                    }
                 });
+
+                if (pollComposerModalEl) {
+                    pollComposerModalEl.addEventListener('hidden.bs.modal', () => {
+                        if (pollQuestionInputEl) {
+                            pollQuestionInputEl.value = '';
+                        }
+                        resetPollOptionInputs();
+                    });
+                }
 
                 resetPollOptionInputs();
             }
@@ -1286,6 +1443,7 @@
                 markAllSeenInFlight = true;
                 fetch(`/api/activities/${activityId}/messages/mark-all-seen`, {
                     method: 'POST',
+                    headers: csrfToken ? { [csrfHeaderName]: csrfToken } : {},
                     credentials: 'same-origin'
                 })
                     .catch(() => {
@@ -1476,6 +1634,19 @@
                         }
                     });
 
+                    stompClient.subscribe(`/topic/activities/${activityId}/announcements`, (frame) => {
+                        const announcement = JSON.parse(frame.body);
+                        renderAnnouncement(announcement);
+
+                        const activePanel = document.querySelector('.activity-tab-panel.is-active');
+                        const onAnnouncementsTab = activePanel && activePanel.dataset.panel === 'announcements';
+                        if (onAnnouncementsTab) {
+                            markCurrentActivityAnnouncementsAsSeen();
+                        } else {
+                            window.dispatchEvent(new Event('joinus-force-unread-refresh'));
+                        }
+                    });
+
                     publishDeliveredForRenderedMessages();
                     publishSeenForVisibleMessages();
                 };
@@ -1509,20 +1680,29 @@
             preserveTabContextForSidebarActivities();
             activateTab(initialTab);
 
+            window.addEventListener('joinus-unread-summary', (event) => {
+                applyAnnouncementUnreadSummary(event.detail);
+            });
+
             if (isAuthenticated && canAccessChat && activityId > 0) {
-                loadInitialTimeline()
-                        .then(() => {
-                            setupSeenObserver();
-                            connectChatSocket();
-                            wireSendMessage();
-                            wireReactionClicks();
-                            wirePollComposer();
-                            wirePollActions();
-                            syncChatPanelHeight();
-                        })
-                        .catch(() => {
-                            // Ignore initial load failures.
-                        });
+                Promise.all([loadInitialTimeline(), loadAnnouncements()])
+                    .then(() => {
+                        setupSeenObserver();
+                        connectChatSocket();
+                        wireSendMessage();
+                        wireReactionClicks();
+                        wirePollComposer();
+                        wirePollActions();
+                        wireAnnouncementComposer();
+                        if (initialTab === 'announcements') {
+                            markCurrentActivityAnnouncementsAsSeen();
+                        }
+                        syncChatPanelHeight();
+                        window.dispatchEvent(new Event('joinus-force-unread-refresh'));
+                    })
+                    .catch(() => {
+                        // Ignore initial load failures.
+                    });
             } else {
                 syncChatPanelHeight();
             }

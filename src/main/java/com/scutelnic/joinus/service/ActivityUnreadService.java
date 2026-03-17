@@ -64,6 +64,16 @@ public class ActivityUnreadService {
         return buildLatestUnread(user.getId(), accessible);
     }
 
+    public Map<Long, Long> getUnreadAnnouncementCountsByActivityForUser(String userEmail,
+                                                                         Collection<Long> requestedActivityIds) {
+        User user = resolveUser(userEmail);
+        if (user == null) {
+            return Map.of();
+        }
+        List<Long> accessible = filterRequestedToAccessible(user, requestedActivityIds);
+        return buildUnreadAnnouncementCounts(user.getId(), accessible);
+    }
+
     private User resolveUser(String userEmail) {
         if (userEmail == null || userEmail.isBlank()) {
             return null;
@@ -139,5 +149,24 @@ public class ActivityUnreadService {
             latestByActivity.put(row.getActivityId(), row.getLatestMessageAt());
         }
         return latestByActivity;
+    }
+
+    private Map<Long, Long> buildUnreadAnnouncementCounts(Long userId, List<Long> activityIds) {
+        if (userId == null || activityIds == null || activityIds.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, Long> counts = new LinkedHashMap<>();
+        List<ActivityMessageRepository.ActivityUnreadSummaryProjection> rows =
+                activityMessageRepository.findUnreadAnnouncementSummaryByActivityIdsAndUserId(activityIds, userId);
+        for (ActivityMessageRepository.ActivityUnreadSummaryProjection row : rows) {
+            if (row.getActivityId() == null || row.getUnreadCount() == null) {
+                continue;
+            }
+            if (row.getUnreadCount() > 0) {
+                counts.put(row.getActivityId(), row.getUnreadCount());
+            }
+        }
+        return counts;
     }
 }

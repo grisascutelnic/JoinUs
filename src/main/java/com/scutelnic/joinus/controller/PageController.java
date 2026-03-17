@@ -6,6 +6,7 @@ import com.scutelnic.joinus.dto.UserReviewSummary;
 import com.scutelnic.joinus.entity.User;
 import com.scutelnic.joinus.entity.ParticipationStatus;
 import com.scutelnic.joinus.service.ActivityService;
+import com.scutelnic.joinus.service.ActivityChatService;
 import com.scutelnic.joinus.service.ActivityUnreadService;
 import com.scutelnic.joinus.service.ActivityParticipationService;
 import com.scutelnic.joinus.service.CloudinaryService;
@@ -40,6 +41,7 @@ import java.util.Map;
 public class PageController {
 
     private final ActivityService activityService;
+    private final ActivityChatService activityChatService;
     private final ActivityUnreadService activityUnreadService;
     private final ActivityParticipationService participationService;
     private final UserRepository userRepository;
@@ -48,6 +50,7 @@ public class PageController {
     private final CloudinaryService cloudinaryService;
 
     public PageController(ActivityService activityService,
+                          ActivityChatService activityChatService,
                           ActivityUnreadService activityUnreadService,
                           ActivityParticipationService participationService,
                           UserRepository userRepository,
@@ -55,6 +58,7 @@ public class PageController {
                           UserReviewService userReviewService,
                           CloudinaryService cloudinaryService) {
         this.activityService = activityService;
+        this.activityChatService = activityChatService;
         this.activityUnreadService = activityUnreadService;
         this.participationService = participationService;
         this.userRepository = userRepository;
@@ -387,6 +391,7 @@ public class PageController {
     public String activityDetail(@PathVariable Long id, Model model, Authentication authentication, HttpSession session) {
         return activityService.getById(id)
                 .map(activity -> {
+                    activityChatService.ensureDefaultWelcomeAnnouncement(activity.getId());
                     model.addAttribute("activity", activity);
                     model.addAttribute("otherActivities", resolveSidebarActivities(id, authentication));
                     model.addAttribute("canAccessChat", false);

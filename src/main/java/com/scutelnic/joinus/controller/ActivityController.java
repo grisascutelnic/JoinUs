@@ -2,6 +2,7 @@ package com.scutelnic.joinus.controller;
 
 import com.scutelnic.joinus.dto.ActivityDto;
 import com.scutelnic.joinus.service.ActivityService;
+import com.scutelnic.joinus.service.ActivityChatService;
 import com.scutelnic.joinus.service.CloudinaryService;
 import com.scutelnic.joinus.service.PollinationsImageService;
 import com.scutelnic.joinus.repository.UserRepository;
@@ -30,15 +31,18 @@ public class ActivityController {
     private final CloudinaryService cloudinaryService;
     private final PollinationsImageService pollinationsImageService;
     private final UserRepository userRepository;
+    private final ActivityChatService activityChatService;
 
     public ActivityController(ActivityService activityService,
                               CloudinaryService cloudinaryService,
                               PollinationsImageService pollinationsImageService,
-                              UserRepository userRepository) {
+                              UserRepository userRepository,
+                              ActivityChatService activityChatService) {
         this.activityService = activityService;
         this.cloudinaryService = cloudinaryService;
         this.pollinationsImageService = pollinationsImageService;
         this.userRepository = userRepository;
+        this.activityChatService = activityChatService;
     }
 
     @GetMapping("/activities/new")
@@ -102,7 +106,7 @@ public class ActivityController {
         }
 
         String imageUrl = resolveImageUrlForCreate(form);
-        activityService.create(
+        var createdActivity = activityService.create(
                 form.getTitle(),
                 form.getDescription(),
                 form.getDate(),
@@ -115,6 +119,7 @@ public class ActivityController {
                 imageUrl,
                 creator
         );
+            activityChatService.ensureDefaultWelcomeAnnouncement(createdActivity.getId());
 
         return "redirect:/activities?created";
     }

@@ -166,7 +166,7 @@
       openAuthModal(initialAuth, false);
     }
 
-    var ACTIVITY_TABS = ['info', 'chat', 'announcements'];
+    var ACTIVITY_TABS = ['info', 'chat', 'announcements', 'participants'];
 
     function isValidActivityTab(tab) {
       return ACTIVITY_TABS.indexOf(tab) !== -1;
@@ -225,6 +225,47 @@
         setPreferredActivityTab('chat');
       });
     }
+
+    function setActiveNavbarLinkByPath() {
+      var links = document.querySelectorAll('.navbar-nav .nav-link[href]');
+      if (!links.length) {
+        return;
+      }
+
+      var path = window.location.pathname || '/';
+      var currentTab = new URLSearchParams(window.location.search).get('tab');
+      if (path.length > 1 && path.endsWith('/')) {
+        path = path.slice(0, -1);
+      }
+
+      var targetHref = '/';
+      if (path === '/activities' || path.indexOf('/activities/') === 0) {
+        targetHref = currentTab === 'chat' ? '/chat' : '/activities';
+      } else if (path === '/calendar' || path.indexOf('/calendar/') === 0) {
+        targetHref = '/calendar';
+      } else if (path === '/chat' || path.indexOf('/chat/') === 0) {
+        targetHref = '/chat';
+      } else if (path === '/admin' || path.indexOf('/admin/') === 0) {
+        targetHref = '/admin';
+      }
+
+      links.forEach(function (link) {
+        var hrefAttr = link.getAttribute('href');
+        if (!hrefAttr || hrefAttr.charAt(0) !== '/') {
+          return;
+        }
+        link.classList.remove('active');
+        link.classList.add('inactive');
+      });
+
+      var activeLink = document.querySelector('.navbar-nav .nav-link[href="' + targetHref + '"]');
+      if (activeLink) {
+        activeLink.classList.add('active');
+        activeLink.classList.remove('inactive');
+      }
+    }
+
+    setActiveNavbarLinkByPath();
 
     syncPreferredActivityTabContext();
     applyPreferredActivityTabContext();

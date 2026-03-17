@@ -17,47 +17,192 @@
     <link href="/css/styles.css" rel="stylesheet">
 </head>
 
-<body class="page-auth">
+<body class="page-auth page-admin">
 <main>
     <header th:replace="~{fragments/navbar :: navbar}"></header>
 
     <section class="auth-section section-padding">
         <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="auth-card">
-                        <h3 class="mb-3">Admin</h3>
-                        <p class="auth-subtitle">Momentan poti trimite notificari unui utilizator sau tuturor utilizatorilor.</p>
+            <div class="row g-4 admin-layout justify-content-center">
+                <div class="col-xl-4">
+                    <div class="auth-card admin-sidebar-card">
+                        <div class="admin-sidebar-head">
+                            <span class="admin-eyebrow">Control Center</span>
+                            <h3 class="mb-2">Admin JoinUs</h3>
+                            <p class="auth-subtitle mb-0">Toate operatiile importante intr-o singura pagina, organizate pe taburi.</p>
+                        </div>
 
+                        <div class="admin-kpi-grid">
+                            <div class="admin-kpi-card">
+                                <span>Total utilizatori</span>
+                                <strong th:text="${totalUsers}">0</strong>
+                            </div>
+                            <div class="admin-kpi-card">
+                                <span>Administratori</span>
+                                <strong th:text="${adminUsers}">0</strong>
+                            </div>
+                            <div class="admin-kpi-card admin-kpi-card--wide">
+                                <span>Membri standard</span>
+                                <strong th:text="${memberUsers}">0</strong>
+                            </div>
+                        </div>
+
+                        <div class="admin-shortcuts">
+                            <h6>Scurtaturi utile</h6>
+                            <div class="admin-shortcut-list">
+                                <a class="admin-shortcut-link" th:href="@{/activities}">
+                                    <i class="bi bi-calendar2-week"></i>
+                                    <span>Lista activitati</span>
+                                </a>
+                                <a class="admin-shortcut-link" th:href="@{/create-activity}">
+                                    <i class="bi bi-plus-circle"></i>
+                                    <span>Creeaza activitate</span>
+                                </a>
+                                <a class="admin-shortcut-link" th:href="@{/calendar}">
+                                    <i class="bi bi-calendar-event"></i>
+                                    <span>Calendar</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-8">
+                    <div class="auth-card admin-main-card">
                         <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
                         <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
 
-                        <form class="custom-form auth-form" th:action="@{/admin}" th:object="${adminRequest}" method="post" role="form">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <ul class="nav nav-pills admin-tabs" id="adminTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="dashboard-tab" data-bs-toggle="pill" data-bs-target="#dashboard-pane" type="button" role="tab" aria-controls="dashboard-pane" aria-selected="true">
+                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="notifications-tab" data-bs-toggle="pill" data-bs-target="#notifications-pane" type="button" role="tab" aria-controls="notifications-pane" aria-selected="false">
+                                    <i class="bi bi-bell"></i> Notificari
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="users-tab" data-bs-toggle="pill" data-bs-target="#users-pane" type="button" role="tab" aria-controls="users-pane" aria-selected="false">
+                                    <i class="bi bi-people"></i> Utilizatori
+                                </button>
+                            </li>
+                        </ul>
 
-                            <label class="form-label">Destinatar</label>
-                            <select class="form-control" th:field="*{targetType}" required>
-                                <option value="USER">Un utilizator</option>
-                                <option value="ALL">Toti utilizatorii</option>
-                            </select>
+                        <div class="tab-content admin-tab-content" id="adminTabsContent">
+                            <div class="tab-pane fade show active" id="dashboard-pane" role="tabpanel" aria-labelledby="dashboard-tab" tabindex="0">
+                                <div class="admin-surface">
+                                    <h5 class="mb-2">Vedere rapida</h5>
+                                    <p class="admin-muted mb-3">Foloseste taburile pentru operatiuni zilnice fara sa parasesti pagina de admin.</p>
 
-                            <label class="form-label mt-3">Utilizator</label>
-                            <select class="form-control" th:field="*{recipientUserId}">
-                                <option value="">Selecteaza utilizatorul</option>
-                                <option th:each="u : ${users}" th:value="${u.id}" th:text="${u.fullName + ' (' + u.email + ')'}"></option>
-                            </select>
+                                    <div class="admin-dashboard-grid">
+                                        <div class="admin-dashboard-card">
+                                            <h6>Flux recomandat</h6>
+                                            <ol class="admin-steps">
+                                                <li>Verifica tabul Utilizatori pentru profilul tinta.</li>
+                                                <li>Revino pe Notificari si alege destinatarul.</li>
+                                                <li>Trimite mesajul cu un link relevant.</li>
+                                            </ol>
+                                        </div>
+                                        <div class="admin-dashboard-card">
+                                            <h6>Sabloane rapide</h6>
+                                            <div class="admin-template-buttons">
+                                                <button type="button" class="btn admin-template-btn" data-admin-template="reminder">Reminder eveniment</button>
+                                                <button type="button" class="btn admin-template-btn" data-admin-template="welcome">Mesaj bun venit</button>
+                                                <button type="button" class="btn admin-template-btn" data-admin-template="policy">Actualizare reguli</button>
+                                            </div>
+                                            <small class="admin-muted">Cand apesi pe un sablon, completeaza automat tabul Notificari.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                            <label class="form-label mt-3">Titlu</label>
-                            <input type="text" class="form-control" th:field="*{title}" maxlength="160" required>
+                            <div class="tab-pane fade" id="notifications-pane" role="tabpanel" aria-labelledby="notifications-tab" tabindex="0">
+                                <div class="admin-surface">
+                                    <h5 class="mb-2">Trimite notificare</h5>
+                                    <p class="admin-muted mb-3">Alege un utilizator individual sau trimite catre toata comunitatea.</p>
 
-                            <label class="form-label mt-3">Mesaj</label>
-                            <textarea class="form-control" th:field="*{message}" rows="4" maxlength="500" required></textarea>
+                                    <form class="custom-form auth-form admin-form" th:action="@{/admin}" th:object="${adminRequest}" method="post" role="form">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 
-                            <label class="form-label mt-3">Link (optional)</label>
-                            <input type="text" class="form-control" th:field="*{link}" maxlength="255" placeholder="/activities sau /profile">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Destinatar</label>
+                                                <select class="form-control" th:field="*{targetType}" id="adminTargetType" required>
+                                                    <option value="USER">Un utilizator</option>
+                                                    <option value="ALL">Toti utilizatorii</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Utilizator</label>
+                                                <select class="form-control" th:field="*{recipientUserId}" id="adminRecipientUserId">
+                                                    <option value="">Selecteaza utilizatorul</option>
+                                                    <option th:each="u : ${users}" th:value="${u.id}" th:text="${u.fullName + ' (' + u.email + ')'}"></option>
+                                                </select>
+                                            </div>
+                                        </div>
 
-                            <button type="submit" class="form-control mt-4">Trimite notificare</button>
-                        </form>
+                                        <label class="form-label mt-3">Titlu</label>
+                                        <input type="text" class="form-control" th:field="*{title}" id="adminTitle" maxlength="160" required>
+
+                                        <label class="form-label mt-3">Mesaj</label>
+                                        <textarea class="form-control" th:field="*{message}" id="adminMessage" rows="4" maxlength="500" required></textarea>
+
+                                        <label class="form-label mt-3">Link (optional)</label>
+                                        <input type="text" class="form-control" th:field="*{link}" id="adminLink" maxlength="255" placeholder="/activities sau /profile">
+
+                                        <button type="submit" class="form-control mt-4">Trimite notificare</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="users-pane" role="tabpanel" aria-labelledby="users-tab" tabindex="0">
+                                <div class="admin-surface">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                                        <div>
+                                            <h5 class="mb-1">Utilizatori</h5>
+                                            <p class="admin-muted mb-0">Filtreaza rapid lista si deschide profilul public al utilizatorului.</p>
+                                        </div>
+                                        <span class="admin-count-badge" th:text="${'Total: ' + totalUsers}">Total: 0</span>
+                                    </div>
+
+                                    <div class="admin-user-search-wrap mb-3">
+                                        <i class="bi bi-search"></i>
+                                        <input type="text" class="form-control" id="adminUserSearch" placeholder="Cauta dupa nume sau email">
+                                    </div>
+
+                                    <div class="admin-user-table-wrap">
+                                        <table class="table admin-user-table align-middle mb-0">
+                                            <thead>
+                                            <tr>
+                                                <th>Nume</th>
+                                                <th>Email</th>
+                                                <th>Rol</th>
+                                                <th class="text-end">Actiuni</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody id="adminUsersTableBody">
+                                            <tr th:each="u : ${users}">
+                                                <td>
+                                                    <strong th:text="${u.fullName}">Nume utilizator</strong>
+                                                </td>
+                                                <td>
+                                                    <a th:href="${'mailto:' + u.email}" th:text="${u.email}">email@example.com</a>
+                                                </td>
+                                                <td>
+                                                    <span class="admin-role-badge" th:classappend="${u.role.name() == 'ADMIN'} ? ' is-admin' : ' is-user'" th:text="${u.role.name() == 'ADMIN' ? 'Admin' : 'User'}">User</span>
+                                                </td>
+                                                <td class="text-end">
+                                                    <a class="btn btn-sm admin-table-action" th:href="@{/users/{id}(id=${u.id})}">Profil</a>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -71,5 +216,121 @@
 <script src="/js/bootstrap.bundle.min.js"></script>
 <script src="/js/jquery.sticky.js"></script>
 <script src="/js/custom.js"></script>
+<script>
+    (function () {
+        const targetType = document.getElementById('adminTargetType');
+        const recipient = document.getElementById('adminRecipientUserId');
+        const userSearch = document.getElementById('adminUserSearch');
+        const usersBody = document.getElementById('adminUsersTableBody');
+        const tabs = document.querySelectorAll('[data-bs-toggle="pill"]');
+
+        const titleInput = document.getElementById('adminTitle');
+        const messageInput = document.getElementById('adminMessage');
+        const linkInput = document.getElementById('adminLink');
+
+        const templates = {
+            reminder: {
+                title: 'Reminder activitate in comunitate',
+                message: 'Buna! Te asteptam la activitatile noi din aceasta saptamana. Intra pe pagina de activitati si confirma participarea.',
+                link: '/activities'
+            },
+            welcome: {
+                title: 'Bine ai venit in JoinUs',
+                message: 'Ne bucuram ca esti aici. Completeaza-ti profilul si descopera activitatile comunitatii.',
+                link: '/profile'
+            },
+            policy: {
+                title: 'Actualizare regulament comunitate',
+                message: 'Am actualizat regulile de interactiune pentru a pastra un mediu placut si sigur. Te rugam sa le verifici.',
+                link: '/activities'
+            }
+        };
+
+        function toggleRecipientField() {
+            if (!targetType || !recipient) {
+                return;
+            }
+            const isAll = targetType.value === 'ALL';
+            recipient.disabled = isAll;
+            if (isAll) {
+                recipient.value = '';
+            }
+        }
+
+        function filterUsersTable(term) {
+            if (!usersBody) {
+                return;
+            }
+            const normalized = term.trim().toLowerCase();
+            const rows = usersBody.querySelectorAll('tr');
+            rows.forEach(function (row) {
+                const content = row.textContent.toLowerCase();
+                row.style.display = content.includes(normalized) ? '' : 'none';
+            });
+        }
+
+        function activateNotificationTab() {
+            const notificationsTab = document.getElementById('notifications-tab');
+            if (!notificationsTab) {
+                return;
+            }
+            const tab = bootstrap.Tab.getOrCreateInstance(notificationsTab);
+            tab.show();
+        }
+
+        document.querySelectorAll('[data-admin-template]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const template = templates[button.getAttribute('data-admin-template')];
+                if (!template) {
+                    return;
+                }
+
+                activateNotificationTab();
+                if (titleInput) {
+                    titleInput.value = template.title;
+                }
+                if (messageInput) {
+                    messageInput.value = template.message;
+                }
+                if (linkInput) {
+                    linkInput.value = template.link;
+                }
+                if (targetType) {
+                    targetType.value = 'ALL';
+                    toggleRecipientField();
+                }
+                titleInput?.focus();
+            });
+        });
+
+        tabs.forEach(function (tabButton) {
+            tabButton.addEventListener('shown.bs.tab', function (event) {
+                const target = event.target.getAttribute('data-bs-target');
+                if (target) {
+                    localStorage.setItem('adminActiveTab', target);
+                }
+            });
+        });
+
+        if (targetType) {
+            targetType.addEventListener('change', toggleRecipientField);
+            toggleRecipientField();
+        }
+
+        if (userSearch) {
+            userSearch.addEventListener('input', function () {
+                filterUsersTable(userSearch.value);
+            });
+        }
+
+        const savedTab = localStorage.getItem('adminActiveTab');
+        if (savedTab) {
+            const tabButton = document.querySelector('[data-bs-target="' + savedTab + '"]');
+            if (tabButton) {
+                bootstrap.Tab.getOrCreateInstance(tabButton).show();
+            }
+        }
+    })();
+</script>
 </body>
 </html>

@@ -2,6 +2,7 @@ package com.scutelnic.joinus.controller;
 
 import com.scutelnic.joinus.dto.chat.ChatMessageResponse;
 import com.scutelnic.joinus.dto.chat.ChatUnreadSummaryResponse;
+import com.scutelnic.joinus.dto.chat.AnnouncementResponse;
 import com.scutelnic.joinus.dto.chat.MessageSeenSummaryResponse;
 import com.scutelnic.joinus.dto.chat.PollResponse;
 import com.scutelnic.joinus.dto.chat.SeenUserResponse;
@@ -62,11 +63,25 @@ public class ActivityChatApiController {
         return activityChatService.getPolls(activityId, authentication.getName());
     }
 
+    @GetMapping("/activities/{activityId}/announcements")
+    public List<AnnouncementResponse> getAnnouncements(@PathVariable Long activityId,
+                                                       Authentication authentication) {
+        requireAuthenticated(authentication);
+        return activityChatService.getAnnouncements(activityId, authentication.getName());
+    }
+
     @PostMapping("/activities/{activityId}/messages/mark-all-seen")
     public void markAllMessagesSeen(@PathVariable Long activityId,
                                     Authentication authentication) {
         requireAuthenticated(authentication);
         activityChatService.markAllMessagesSeen(activityId, authentication.getName());
+    }
+
+    @PostMapping("/activities/{activityId}/announcements/mark-all-seen")
+    public void markAllAnnouncementsSeen(@PathVariable Long activityId,
+                                         Authentication authentication) {
+        requireAuthenticated(authentication);
+        activityChatService.markAllAnnouncementsSeen(activityId, authentication.getName());
     }
 
     @GetMapping("/chat/unread-summary")
@@ -76,10 +91,13 @@ public class ActivityChatApiController {
         var unreadCounts = activityUnreadService.getUnreadCountsByActivityForUser(email);
         var latestUnreadByActivity = activityUnreadService
                 .getLatestUnreadMessageByActivityForUser(email, unreadCounts.keySet());
+        var announcementUnreadCounts = activityUnreadService
+            .getUnreadAnnouncementCountsByActivityForUser(email, unreadCounts.keySet());
         return new ChatUnreadSummaryResponse(
                 unreadCounts.size(),
                 unreadCounts,
-                latestUnreadByActivity
+            latestUnreadByActivity,
+            announcementUnreadCounts
         );
     }
 

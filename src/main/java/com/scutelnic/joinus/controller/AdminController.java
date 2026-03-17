@@ -1,6 +1,7 @@
 package com.scutelnic.joinus.controller;
 
 import com.scutelnic.joinus.dto.AdminRequest;
+import com.scutelnic.joinus.entity.Role;
 import com.scutelnic.joinus.entity.User;
 import com.scutelnic.joinus.repository.UserRepository;
 import com.scutelnic.joinus.service.NotificationService;
@@ -36,12 +37,8 @@ public class AdminController {
 
     @GetMapping
     public String page(Model model) {
-        if (!model.containsAttribute("adminRequest")) {
-            AdminRequest request = new AdminRequest();
-            request.setTargetType(TARGET_USER);
-            model.addAttribute("adminRequest", request);
-        }
-        model.addAttribute("users", getUsers());
+        ensureRequestInModel(model);
+        populateDashboardModel(model);
         return "admin";
     }
 
@@ -50,7 +47,7 @@ public class AdminController {
                        BindingResult bindingResult,
                        Model model) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("users", getUsers());
+            populateDashboardModel(model);
             return "admin";
         }
 
@@ -64,7 +61,7 @@ public class AdminController {
             model.addAttribute("successMessage", "Notificarea a fost trimisa catre " + sentCount + " utilizatori.");
         } else if (TARGET_USER.equals(targetType)) {
             if (request.getRecipientUserId() == null) {
-                model.addAttribute("users", getUsers());
+                populateDashboardModel(model);
                 model.addAttribute("errorMessage", "Selecteaza un utilizator.");
                 return "admin";
             }
@@ -74,11 +71,31 @@ public class AdminController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid notification target");
         }
 
-        model.addAttribute("users", getUsers());
+        populateDashboardModel(model);
         AdminRequest reset = new AdminRequest();
         reset.setTargetType(TARGET_USER);
         model.addAttribute("adminRequest", reset);
         return "admin";
+    }
+
+    private void ensureRequestInModel(Model model) {
+        if (!model.containsAttribute("adminRequest")) {
+            AdminRequest request = new AdminRequest();
+            request.setTargetType(TARGET_USER);
+            model.addAttribute("adminRequest", request);
+        }
+    }
+
+    private void populateDashboardModel(Model model) {
+        List<User> users = getUsers();
+        long adminCount = users.stream()
+                .filter(user -> user.getRole() == Role.ADMIN)
+                .count();
+
+        model.addAttribute("users", users);
+        model.addAttribute("totalUsers", users.size());
+        model.addAttribute("adminUsers", adminCount);
+        model.addAttribute("memberUsers", users.size() - adminCount);
     }
 
     private List<User> getUsers() {
