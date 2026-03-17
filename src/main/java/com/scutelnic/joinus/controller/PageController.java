@@ -324,13 +324,23 @@ public class PageController {
                              Authentication authentication,
                              @RequestParam(defaultValue = "0") int page,
                              @RequestParam(defaultValue = "12") int size,
+                             @RequestParam(required = false) String q,
                              @RequestParam(defaultValue = "false") boolean openCreate) {
         int safePage = Math.max(page, 0);
         int safeSize = Math.max(1, Math.min(size, 30));
+        String normalizedQuery = normalizeActivityQuery(q);
+        boolean hasSearchQuery = !normalizedQuery.isBlank();
 
         Page<com.scutelnic.joinus.entity.Activity> activityPage;
         if (isAuthenticated(authentication)) {
             List<com.scutelnic.joinus.entity.Activity> allActivities = new ArrayList<>(activityService.getAll());
+
+            if (hasSearchQuery) {
+                allActivities = allActivities.stream()
+                        .filter(activity -> activityMatchesSearch(activity, normalizedQuery))
+                        .toList();
+            }
+
             List<Long> activityIds = allActivities.stream()
                     .map(com.scutelnic.joinus.entity.Activity::getId)
                     .toList();
@@ -374,14 +384,33 @@ public class PageController {
             activityPage = new PageImpl<>(currentSlice, PageRequest.of(effectivePage, safeSize), total);
             model.addAttribute("activityUnreadCounts", unreadCounts);
         } else {
-            activityPage = activityService.getPage(safePage, safeSize);
-            if (activityPage.getTotalPages() > 0 && safePage >= activityPage.getTotalPages()) {
-                int lastPage = activityPage.getTotalPages() - 1;
-                activityPage = activityService.getPage(lastPage, safeSize);
+            if (hasSearchQuery) {
+                List<com.scutelnic.joinus.entity.Activity> allActivities = new ArrayList<>(activityService.getAll());
+                allActivities = allActivities.stream()
+                        .filter(activity -> activityMatchesSearch(activity, normalizedQuery))
+                        .sorted((left, right) -> Comparator.<java.time.LocalDateTime>nullsLast(Comparator.reverseOrder())
+                                .compare(left.getCreatedAt(), right.getCreatedAt()))
+                        .toList();
+
+                int total = allActivities.size();
+                int totalPages = total == 0 ? 0 : (int) Math.ceil((double) total / safeSize);
+                int effectivePage = totalPages == 0 ? 0 : Math.min(safePage, totalPages - 1);
+
+                int fromIndex = Math.min(effectivePage * safeSize, total);
+                int toIndex = Math.min(fromIndex + safeSize, allActivities.size());
+                List<com.scutelnic.joinus.entity.Activity> currentSlice = allActivities.subList(fromIndex, toIndex);
+                activityPage = new PageImpl<>(currentSlice, PageRequest.of(effectivePage, safeSize), total);
+            } else {
+                activityPage = activityService.getPage(safePage, safeSize);
+                if (activityPage.getTotalPages() > 0 && safePage >= activityPage.getTotalPages()) {
+                    int lastPage = activityPage.getTotalPages() - 1;
+                    activityPage = activityService.getPage(lastPage, safeSize);
+                }
             }
         }
 
         model.addAttribute("activities", activityPage.getContent());
+        model.addAttribute("activitySearchQuery", q == null ? "" : q.trim());
         model.addAttribute("activityPage", activityPage);
         model.addAttribute("currentPage", activityPage.getNumber());
         model.addAttribute("pageSize", activityPage.getSize());
@@ -540,12 +569,37 @@ public class PageController {
                         return Comparator.<java.time.LocalDateTime>nullsLast(Comparator.reverseOrder())
                             .compare(left.getCreatedAt(), right.getCreatedAt());
                 })
-                .limit(6)
                 .toList();
     }
 
     private String approvedNoticeSessionKey(Long activityId) {
         return "approved_notice_seen_activity_" + activityId;
+    }
+
+    private String normalizeActivityQuery(String query) {
+        if (query == null) {
+            return "";
+        }
+        return query.trim().toLowerCase(java.util.Locale.ROOT);
+    }
+
+    private boolean activityMatchesSearch(com.scutelnic.joinus.entity.Activity activity, String normalizedQuery) {
+        if (activity == null || normalizedQuery == null || normalizedQuery.isBlank()) {
+            return true;
+        }
+
+        String haystack = String.join(" ",
+                safeText(activity.getTitle()),
+                safeText(activity.getCategory()),
+                safeText(activity.getLocation()),
+                safeText(activity.getDescription()))
+                .toLowerCase(java.util.Locale.ROOT);
+
+        return haystack.contains(normalizedQuery);
+    }
+
+    private String safeText(String value) {
+        return value == null ? "" : value;
     }
 
     private String resolveAvatarUrl(User user) {

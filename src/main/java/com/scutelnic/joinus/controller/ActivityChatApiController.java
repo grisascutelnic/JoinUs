@@ -7,6 +7,7 @@ import com.scutelnic.joinus.dto.chat.MessageSeenSummaryResponse;
 import com.scutelnic.joinus.dto.chat.PollResponse;
 import com.scutelnic.joinus.dto.chat.SeenUserResponse;
 import com.scutelnic.joinus.service.ActivityChatService;
+import com.scutelnic.joinus.service.ActivityParticipationService;
 import com.scutelnic.joinus.service.ActivityUnreadService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -19,6 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api")
@@ -26,11 +30,14 @@ public class ActivityChatApiController {
 
     private final ActivityChatService activityChatService;
     private final ActivityUnreadService activityUnreadService;
+    private final ActivityParticipationService participationService;
 
     public ActivityChatApiController(ActivityChatService activityChatService,
-                                     ActivityUnreadService activityUnreadService) {
+                                     ActivityUnreadService activityUnreadService,
+                                     ActivityParticipationService participationService) {
         this.activityChatService = activityChatService;
         this.activityUnreadService = activityUnreadService;
+        this.participationService = participationService;
     }
 
     @GetMapping("/activities/{activityId}/messages")
@@ -88,16 +95,39 @@ public class ActivityChatApiController {
     public ChatUnreadSummaryResponse getUnreadSummary(Authentication authentication) {
         requireAuthenticated(authentication);
         String email = authentication.getName();
+
         var unreadCounts = activityUnreadService.getUnreadCountsByActivityForUser(email);
+        var pendingParticipationCounts = participationService.getPendingRequestCountsForOrganizerActivities(email);
+
+        var combinedCounts = new LinkedHashMap<Long, Long>();
+        unreadCounts.forEach((activityId, count) -> {
+            if (activityId != null && count != null && count > 0) {
+                combinedCounts.put(activityId, count);
+            }
+        });
+        pendingParticipationCounts.forEach((activityId, count) -> {
+            if (activityId == null || count == null || count <= 0) {
+                return;
+            }
+            combinedCounts.put(activityId, combinedCounts.getOrDefault(activityId, 0L) + count);
+        });
+
+        Set<Long> activityIds = new LinkedHashSet<>(combinedCounts.keySet());
         var latestUnreadByActivity = activityUnreadService
-                .getLatestUnreadMessageByActivityForUser(email, unreadCounts.keySet());
+                .getLatestUnreadMessageByActivityForUser(email, activityIds);
         var announcementUnreadCounts = activityUnreadService
-            .getUnreadAnnouncementCountsByActivityForUser(email, unreadCounts.keySet());
+            .getUnreadAnnouncementCountsByActivityForUser(email, activityIds);
+
+        long unreadGroupsCount = combinedCounts.values().stream()
+                .filter(count -> count != null && count > 0)
+                .count();
+
         return new ChatUnreadSummaryResponse(
-                unreadCounts.size(),
-                unreadCounts,
+                unreadGroupsCount,
+                combinedCounts,
             latestUnreadByActivity,
-            announcementUnreadCounts
+            announcementUnreadCounts,
+            pendingParticipationCounts
         );
     }
 

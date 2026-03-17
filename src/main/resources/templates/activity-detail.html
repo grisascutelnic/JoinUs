@@ -1454,22 +1454,50 @@
 
             function syncChatPanelHeight() {
                 if (!activityChatEl) return;
+
+                const sidebarCardEl = document.querySelector('.activity-sidebar .activity-sidebar-card');
                 if (window.innerWidth <= 991) {
                     activityChatEl.style.height = '';
+                    if (sidebarCardEl) {
+                        sidebarCardEl.style.height = '';
+                    }
+                    return;
+                }
+
+                const tabsEl = activityChatEl.querySelector('.activity-tabs');
+                const infoPanel = document.getElementById('activity-info-panel');
+                if (!tabsEl || !infoPanel) {
+                    activityChatEl.style.height = '';
+                    if (sidebarCardEl) {
+                        sidebarCardEl.style.height = '';
+                    }
                     return;
                 }
 
                 const activePanel = document.querySelector('.activity-tab-panel.is-active');
-                if (!activePanel || activePanel.dataset.panel !== 'chat') {
-                    activityChatEl.style.height = '';
-                    return;
+                const switchedFromPanel = activePanel && activePanel !== infoPanel ? activePanel : null;
+
+                if (switchedFromPanel) {
+                    switchedFromPanel.classList.remove('is-active');
+                    infoPanel.classList.add('is-active');
                 }
 
-                const navbarEl = document.querySelector('.navbar');
-                const navbarHeight = navbarEl ? navbarEl.offsetHeight : 0;
-                const viewportTarget = window.innerHeight - navbarHeight - 110;
-                const targetHeight = Math.max(620, Math.min(900, viewportTarget));
+                const tabsHeight = Math.ceil(tabsEl.getBoundingClientRect().height);
+                const infoHeight = Math.ceil(infoPanel.scrollHeight);
+                const targetHeight = Math.max(700, tabsHeight + infoHeight);
+
+                if (switchedFromPanel) {
+                    infoPanel.classList.remove('is-active');
+                    switchedFromPanel.classList.add('is-active');
+                }
+
                 activityChatEl.style.height = `${targetHeight}px`;
+                if (sidebarCardEl) {
+                    window.requestAnimationFrame(() => {
+                        const measuredRightHeight = Math.ceil(activityChatEl.getBoundingClientRect().height);
+                        sidebarCardEl.style.height = `${Math.max(700, measuredRightHeight)}px`;
+                    });
+                }
             }
 
             function publishSeenForVisibleMessages() {

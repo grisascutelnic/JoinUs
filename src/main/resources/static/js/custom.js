@@ -524,6 +524,29 @@
         var input = searchBlock.querySelector('[data-activity-search-input]');
         if (!input) return;
 
+        var isActivitiesServerSearch =
+          document.body.classList.contains('page-activities') &&
+          input.id === 'allActivitiesSearch' &&
+          searchBlock.tagName === 'FORM';
+
+        if (isActivitiesServerSearch) {
+          var debounceTimer = null;
+          input.addEventListener('input', function () {
+            if (debounceTimer) {
+              window.clearTimeout(debounceTimer);
+            }
+
+            debounceTimer = window.setTimeout(function () {
+              if (typeof searchBlock.requestSubmit === 'function') {
+                searchBlock.requestSubmit();
+              } else {
+                searchBlock.submit();
+              }
+            }, 350);
+          });
+          return;
+        }
+
         var section = searchBlock.closest('section');
         if (!section) return;
 

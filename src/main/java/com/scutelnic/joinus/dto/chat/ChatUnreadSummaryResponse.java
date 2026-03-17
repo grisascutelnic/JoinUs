@@ -7,6 +7,7 @@ public record ChatUnreadSummaryResponse(
         long unreadChatGroupsCount,
         Map<Long, Long> activityUnreadCounts,
         Map<Long, LocalDateTime> latestUnreadByActivity,
-        Map<Long, Long> announcementUnreadCounts
+        Map<Long, Long> announcementUnreadCounts,
+        Map<Long, Long> pendingParticipationCounts
 ) {
 }

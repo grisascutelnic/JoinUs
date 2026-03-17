@@ -13,7 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -221,6 +223,31 @@ public class ActivityParticipationService {
                 .map(ActivityParticipation::getActivity)
                 .filter(Objects::nonNull)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, Long> getPendingRequestCountsForOrganizerActivities(String organizerEmail) {
+        if (organizerEmail == null || organizerEmail.isBlank()) {
+            return Map.of();
+        }
+
+        User organizer = requireUserByEmail(organizerEmail);
+        List<ActivityParticipation> pendingRequests = participationRepository
+                .findByActivityCreatorIdAndStatus(organizer.getId(), ParticipationStatus.PENDING);
+
+        if (pendingRequests.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, Long> countsByActivity = new LinkedHashMap<>();
+        for (ActivityParticipation request : pendingRequests) {
+            if (request == null || request.getActivity() == null || request.getActivity().getId() == null) {
+                continue;
+            }
+            Long activityId = request.getActivity().getId();
+            countsByActivity.put(activityId, countsByActivity.getOrDefault(activityId, 0L) + 1L);
+        }
+        return countsByActivity;
     }
 
     private ActivityParticipation updateExistingRequest(ActivityParticipation existing) {

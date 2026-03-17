@@ -146,6 +146,7 @@
                 });
 
                 preserveTabContextForSidebarActivities();
+                syncSidebarHeight();
             }
 
             tabButtons.forEach((button) => {
@@ -155,6 +156,24 @@
             const requestedTab = new URLSearchParams(window.location.search).get('tab');
             const validTabs = ['info', 'chat', 'announcements'];
             const initialTab = validTabs.includes(requestedTab) ? requestedTab : 'info';
+
+            function syncSidebarHeight() {
+                const activityChatEl = document.querySelector('.activity-chat');
+                const sidebarCardEl = document.querySelector('.activity-sidebar .activity-sidebar-card');
+                if (!activityChatEl || !sidebarCardEl) {
+                    return;
+                }
+
+                if (window.innerWidth <= 991) {
+                    sidebarCardEl.style.height = '';
+                    return;
+                }
+
+                window.requestAnimationFrame(() => {
+                    const measuredRightHeight = Math.ceil(activityChatEl.getBoundingClientRect().height);
+                    sidebarCardEl.style.height = `${Math.max(700, measuredRightHeight)}px`;
+                });
+            }
 
             function preserveTabContextForSidebarActivities() {
                 const activeTabButton = document.querySelector('.activity-tab-btn.is-active');
@@ -175,6 +194,9 @@
 
             preserveTabContextForSidebarActivities();
             activateTab(initialTab);
+            window.addEventListener('resize', syncSidebarHeight);
+            window.addEventListener('load', syncSidebarHeight);
+            setTimeout(syncSidebarHeight, 0);
         </script>
     </body>
 </html>

@@ -110,14 +110,15 @@
 
                         <div class="row">
                             <div class="col-lg-10 col-12 mx-auto">
-                                <div class="activity-search mb-4" data-activity-search>
+                                <form class="activity-search mb-4" data-activity-search th:action="@{/activities}" method="get">
                                     <label class="visually-hidden" for="allActivitiesSearch">Cauta activitati</label>
                                     <div class="activity-search-input-wrap">
                                         <i class="bi bi-search activity-search-icon" aria-hidden="true"></i>
-                                        <input id="allActivitiesSearch" type="search" class="form-control activity-search-input" data-activity-search-input placeholder="Cauta dupa titlu, categorie sau locatie..." autocomplete="off">
+                                        <input id="allActivitiesSearch" name="q" type="search" class="form-control activity-search-input" data-activity-search-input placeholder="Cauta dupa titlu, categorie sau locatie..." autocomplete="off" th:value="${activitySearchQuery}">
+                                        <input type="hidden" name="size" th:value="${pageSize}">
                                     </div>
                                     <p class="activity-search-empty mt-3 mb-0 d-none" data-activity-search-empty>Nu am gasit activitati care sa corespunda cautarii.</p>
-                                </div>
+                                </form>
 
                                 <div class="activity-list activity-list--section row g-4" data-unread-sort-list>
                                     <div class="col-12" th:if="${#lists.isEmpty(activities)}">
@@ -172,7 +173,7 @@
                                     <ul class="pagination justify-content-center activities-pagination">
                                         <li class="page-item" th:classappend="${!activityPage.hasPrevious()} ? 'disabled'">
                                             <a class="page-link page-link-arrow"
-                                               th:href="${activityPage.hasPrevious()} ? @{/activities(page=${currentPage - 1},size=${pageSize})} : '#'
+                                               th:href="${activityPage.hasPrevious()} ? @{/activities(page=${currentPage - 1},size=${pageSize},q=${activitySearchQuery})} : '#'
                                                "
                                                aria-label="Pagina anterioara">
                                                 <i class="bi bi-chevron-left" aria-hidden="true"></i>
@@ -183,13 +184,13 @@
                                             th:each="pageNumber : ${#numbers.sequence(0, visibleTotalPages - 1)}"
                                             th:classappend="${pageNumber == currentPage} ? 'active'">
                                             <a class="page-link"
-                                               th:href="@{/activities(page=${pageNumber},size=${pageSize})}"
+                                                 th:href="@{/activities(page=${pageNumber},size=${pageSize},q=${activitySearchQuery})}"
                                                th:text="${pageNumber + 1}">1</a>
                                         </li>
 
                                         <li class="page-item" th:classappend="${!activityPage.hasNext()} ? 'disabled'">
                                             <a class="page-link page-link-arrow"
-                                               th:href="${activityPage.hasNext()} ? @{/activities(page=${currentPage + 1},size=${pageSize})} : '#'
+                                               th:href="${activityPage.hasNext()} ? @{/activities(page=${currentPage + 1},size=${pageSize},q=${activitySearchQuery})} : '#'
                                                "
                                                aria-label="Pagina urmatoare">
                                                 <i class="bi bi-chevron-right" aria-hidden="true"></i>
@@ -325,6 +326,23 @@
                 if (openModalOnLoad) {
                     modal.show();
                 }
+
+                const clearOpenCreateFromUrl = () => {
+                    try {
+                        const url = new URL(window.location.href);
+                        if (!url.searchParams.has('openCreate')) {
+                            return;
+                        }
+                        url.searchParams.delete('openCreate');
+                        const cleanQuery = url.searchParams.toString();
+                        const cleanUrl = url.pathname + (cleanQuery ? `?${cleanQuery}` : '') + url.hash;
+                        window.history.replaceState({}, '', cleanUrl);
+                    } catch (error) {
+                        // Ignore URL rewrite errors to avoid blocking modal interactions.
+                    }
+                };
+
+                modalEl.addEventListener('hidden.bs.modal', clearOpenCreateFromUrl);
 
                 const fileInput = document.getElementById('cloudinaryFile');
                 const uploadBtn = document.getElementById('uploadImageBtn');

@@ -140,8 +140,42 @@
                                             </div>
                                         </div>
 
-                                        <div class="d-flex align-items-center ms-lg-auto">
+                                        <div class="d-flex align-items-center ms-lg-auto gap-2 calendar-actions-wrap">
                                             <a th:href="@{/activities/{id}(id=${activity.id})}" class="btn custom-btn">Detalii</a>
+                                            <div class="dropdown">
+                                                <button class="btn custom-border-btn dropdown-toggle"
+                                                        type="button"
+                                                        data-bs-toggle="dropdown"
+                                                        aria-expanded="false">
+                                                    Adauga in calendar
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li>
+                                                        <button class="dropdown-item js-add-to-google"
+                                                                type="button"
+                                                                th:attr="data-title=${activity.title},
+                                                                         data-description=${activity.description},
+                                                                         data-location=${activity.location},
+                                                                         data-date=${#temporals.format(activity.date, 'yyyy-MM-dd')},
+                                                                         data-time=${#temporals.format(activity.time, 'HH:mm')},
+                                                                         data-url=@{/activities/{id}(id=${activity.id})}">
+                                                            Google Calendar
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button class="dropdown-item js-download-ics"
+                                                                type="button"
+                                                                th:attr="data-title=${activity.title},
+                                                                         data-description=${activity.description},
+                                                                         data-location=${activity.location},
+                                                                         data-date=${#temporals.format(activity.date, 'yyyy-MM-dd')},
+                                                                         data-time=${#temporals.format(activity.time, 'HH:mm')},
+                                                                         data-url=@{/activities/{id}(id=${activity.id})}">
+                                                            Descarca fisier .ics
+                                                        </button>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -162,5 +196,118 @@
         <script src="/js/animated-headline.js"></script>
         <script src="/js/modernizr.js"></script>
         <script src="/js/custom.js"></script>
+        <script>
+            (function () {
+                function parseEventDateTime(dataset) {
+                    if (!dataset || !dataset.date || !dataset.time) {
+                        return null;
+                    }
+                    const start = new Date(dataset.date + 'T' + dataset.time + ':00');
+                    if (Number.isNaN(start.getTime())) {
+                        return null;
+                    }
+                    const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+                    return { start, end };
+                }
+
+                function toGoogleDate(date) {
+                    return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+                }
+
+                function toIcsDate(date) {
+                    return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+                }
+
+                function safeText(value) {
+                    return (value || '').trim();
+                }
+
+                function buildEventDetails(dataset) {
+                    const detailsParts = [];
+                    const description = safeText(dataset.description);
+                    const activityUrl = safeText(dataset.url);
+                    if (description) {
+                        detailsParts.push(description);
+                    }
+                    if (activityUrl) {
+                        detailsParts.push('Detalii: ' + window.location.origin + activityUrl);
+                    }
+                    return detailsParts.join('\n\n');
+                }
+
+                document.querySelectorAll('.js-add-to-google').forEach((button) => {
+                    button.addEventListener('click', function () {
+                        const range = parseEventDateTime(this.dataset);
+                        if (!range) {
+                            return;
+                        }
+
+                        const title = safeText(this.dataset.title) || 'Activitate JoinUs';
+                        const location = safeText(this.dataset.location);
+                        const details = buildEventDetails(this.dataset);
+                        const dates = toGoogleDate(range.start) + '/' + toGoogleDate(range.end);
+
+                        const url = new URL('https://calendar.google.com/calendar/render');
+                        url.searchParams.set('action', 'TEMPLATE');
+                        url.searchParams.set('text', title);
+                        url.searchParams.set('dates', dates);
+                        if (details) {
+                            url.searchParams.set('details', details);
+                        }
+                        if (location) {
+                            url.searchParams.set('location', location);
+                        }
+
+                        window.open(url.toString(), '_blank', 'noopener');
+                    });
+                });
+
+                document.querySelectorAll('.js-download-ics').forEach((button) => {
+                    button.addEventListener('click', function () {
+                        const range = parseEventDateTime(this.dataset);
+                        if (!range) {
+                            return;
+                        }
+
+                        const title = safeText(this.dataset.title) || 'Activitate JoinUs';
+                        const location = safeText(this.dataset.location);
+                        const details = buildEventDetails(this.dataset);
+                        const uid = 'joinus-' + Date.now() + '-' + Math.random().toString(36).slice(2) + '@joinus.local';
+                        const now = toIcsDate(new Date());
+                        const start = toIcsDate(range.start);
+                        const end = toIcsDate(range.end);
+                        const escapedTitle = title.replace(/[\\,;\n]/g, ' ');
+                        const escapedLocation = location.replace(/[\\,;\n]/g, ' ');
+                        const escapedDescription = details.replace(/\r?\n/g, '\\n').replace(/[\\,;]/g, ' ');
+
+                        const ics = [
+                            'BEGIN:VCALENDAR',
+                            'VERSION:2.0',
+                            'PRODID:-//JoinUs//Calendar//RO',
+                            'CALSCALE:GREGORIAN',
+                            'BEGIN:VEVENT',
+                            'UID:' + uid,
+                            'DTSTAMP:' + now,
+                            'DTSTART:' + start,
+                            'DTEND:' + end,
+                            'SUMMARY:' + escapedTitle,
+                            escapedDescription ? 'DESCRIPTION:' + escapedDescription : '',
+                            escapedLocation ? 'LOCATION:' + escapedLocation : '',
+                            'END:VEVENT',
+                            'END:VCALENDAR'
+                        ].filter(Boolean).join('\r\n');
+
+                        const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = (title || 'activitate').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.ics';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(link.href);
+                    });
+                });
+            })();
+        </script>
     </body>
 </html>
