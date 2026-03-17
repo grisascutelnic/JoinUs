@@ -264,7 +264,7 @@
                             <div class="activity-card activity-card-right">
                                 <div class="image-actions-split">
                                     <section class="image-action-pane image-action-pane--upload">
-                                        <button type="button" class="btn image-action-tile" id="uploadImageBtn">Incarca imagine</button>
+                                        <button type="button" class="btn image-action-tile" id="uploadImageBtn">Încarcă imagine</button>
                                         <input type="file" id="cloudinaryFile" name="imageFile" accept="image/*" class="d-none">
                                         <input type="hidden" th:field="*{imageUrl}" id="cloudinaryUrl">
                                         <input type="hidden" th:field="*{imageChoice}" id="generatedImageUrl">
@@ -273,7 +273,7 @@
                                     <div class="image-actions-or" aria-hidden="true">sau</div>
 
                                     <section class="image-action-pane image-action-pane--ai">
-                                        <button type="button" class="btn image-action-tile" id="generateAiImageBtn">Genereaza imagine AI</button>
+                                        <button type="button" class="btn image-action-tile" id="generateAiImageBtn">Generează imagine AI</button>
                                     </section>
                                 </div>
 
@@ -376,12 +376,15 @@
                 const setUploading = (loading) => {
                     if (uploadBtn) {
                         uploadBtn.disabled = loading;
-                        uploadBtn.textContent = loading ? 'Se incarca imaginea...' : 'Incarca imagine';
+                        uploadBtn.textContent = loading ? 'Se încarcă imaginea...' : 'Încarcă imagine';
                     }
                 };
 
                 if (uploadBtn) {
-                    uploadBtn.addEventListener('click', () => fileInput.click());
+                    uploadBtn.addEventListener('click', () => {
+                        showGenerateError('');
+                        fileInput.click();
+                    });
                 }
 
                 fileInput.addEventListener('change', async () => {
@@ -390,6 +393,7 @@
                         return;
                     }
                     showUploadError('');
+                    showGenerateError('');
                     renderGeneratedPreview(URL.createObjectURL(file));
 
                     if (urlInput) {
@@ -485,6 +489,7 @@
                 if (generateBtn) {
                     generateBtn.addEventListener('click', async () => {
                         showGenerateError('');
+                        showUploadError('');
                         generateBtn.disabled = true;
                         if (aiLoadingIndicator) {
                             aiLoadingIndicator.classList.remove('d-none');
@@ -518,14 +523,23 @@
                     form.addEventListener('submit', (event) => {
                         if (isUploading) {
                             event.preventDefault();
-                            showUploadError('Asteapta finalizarea upload-ului.');
+                            showUploadError('Așteaptă finalizarea upload-ului.');
                             return;
                         }
 
+                        const hasUploadedUrl = Boolean(urlInput && urlInput.value && urlInput.value.trim() !== '');
+                        const hasGeneratedImage = Boolean(generatedInput && generatedInput.value && generatedInput.value.trim() !== '');
                         const hasFile = fileInput.files && fileInput.files.length > 0;
+
+                        if (!hasUploadedUrl && !hasGeneratedImage && !hasFile) {
+                            event.preventDefault();
+                            showGenerateError('Imaginea este obligatorie. Încarcă una sau generează cu AI.');
+                            return;
+                        }
+
                         if (canClientUpload && hasFile && (!urlInput.value || urlInput.value.trim() === '')) {
                             event.preventDefault();
-                            showUploadError('Imaginea nu s-a incarcat inca. Reincearca.');
+                            showUploadError('Imaginea nu s-a încărcat încă. Reîncearcă.');
                         }
                     });
                 }

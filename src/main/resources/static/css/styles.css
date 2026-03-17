@@ -2450,7 +2450,7 @@ https://templatemo.com/tm-587-tiya-golf-club
 }
 
 .create-activity-modal .modal-dialog {
-  max-width: 1080px;
+  max-width: 940px;
 }
 
 .create-activity-modal .modal-content {
@@ -2506,6 +2506,25 @@ https://templatemo.com/tm-587-tiya-golf-club
   align-self: stretch;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+}
+
+.create-activity-modal .activity-card-right .image-actions-split {
+  margin-top: 6px;
+}
+
+.create-activity-modal .activity-card-right .image-preview-stage {
+  margin-top: 4px;
+}
+
+body.page-activities .landing-theme {
+  will-change: filter;
+  transform: translateZ(0);
+}
+
+body.page-activities.modal-open .landing-theme {
+  filter: blur(3px);
 }
 
 .create-activity-modal .activity-form-actions {
@@ -2535,6 +2554,18 @@ https://templatemo.com/tm-587-tiya-golf-club
 @media (max-width: 575px) {
   .create-activity-modal .activity-split-fields {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 992px) {
+  .create-activity-modal .activity-form-grid {
+    grid-template-columns: minmax(0, 1.22fr) minmax(280px, 0.78fr);
+    align-items: stretch;
+  }
+
+  .create-activity-modal .activity-card-right {
+    max-width: 360px;
+    justify-self: end;
   }
 }
 
