@@ -5291,6 +5291,11 @@ strong {
     height: 70svh;
   }
 
+  .page-activity-detail .activity-chat[data-active-tab="info"] {
+    height: auto;
+    overflow: visible;
+  }
+
   .page-activity-detail .activity-meta {
     gap: 10px 14px;
   }
@@ -5878,13 +5883,19 @@ strong {
   top: 12px;
   right: 12px;
   background: #fff;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
+  max-width: calc(100% - 24px);
+  border-radius: 999px;
+  padding: 4px 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 12px;
+  line-height: 1;
+  color: #1f2a44;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 

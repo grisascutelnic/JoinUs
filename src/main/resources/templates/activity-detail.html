@@ -388,6 +388,10 @@
                     panel.classList.toggle('is-active', panel.dataset.panel === target);
                 });
 
+                if (activityChatEl) {
+                    activityChatEl.setAttribute('data-active-tab', target);
+                }
+
                 if (target === 'chat') {
                     setTimeout(scrollChatToBottom, 0);
                     markCurrentActivityChatAsSeen();

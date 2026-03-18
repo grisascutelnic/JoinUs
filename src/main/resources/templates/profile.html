@@ -124,10 +124,9 @@
                         <div class="card-image"
                              th:style="|background-image: url('${activity.imageUrl}');|">
                             <div class="heart-icon"
-                                 th:text="${activity.category != null and !#strings.isEmpty(activity.category) ? #strings.substring(activity.category, 0, 1) : 'A'}">
-                                A
+                                 th:text="${activity.category != null and !#strings.isEmpty(activity.category) ? activity.category : 'Categorie'}">
+                                Categorie
                             </div>
-                            <div class="discount-badge" th:text="${activity.capacity}">10</div>
                         </div>
                         <div class="card-info">
                             <h3 th:text="${activity.title}">Titlu activitate</h3>
