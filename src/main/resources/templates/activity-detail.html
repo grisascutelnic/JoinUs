@@ -121,45 +121,51 @@
                                         </button>
                                     </div>
 
-                                    <div class="dropdown activity-tabs-actions" th:if="${canAccessChat}">
-                                        <button class="activity-tabs-menu-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actiuni chat">
-                                            <i class="bi bi-three-dots"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end activity-actions-menu">
-                                            <li th:if="${isActivityCreator}"><button class="dropdown-item" id="togglePollComposerBtn" type="button">Creeaza un poll</button></li>
-                                            <li th:if="${isActivityCreator}"><a class="dropdown-item" th:href="@{/activities/{id}/edit(id=${activity.id})}">Editeaza activitatea</a></li>
-                                            <li th:if="${isActivityCreator}">
-                                                <form method="post" th:action="@{/activities/{id}/delete(id=${activity.id})}" onsubmit="return confirm('Sigur vrei sa stergi aceasta activitate?');">
-                                                    <button class="dropdown-item text-danger" type="submit">Sterge activitatea</button>
+                                    <div class="activity-tabs-right"
+                                         th:if="${(participationMessage != null and !isActivityCreator) or (#authorization.expression('isAuthenticated()') and !isActivityCreator and canRequestParticipation) or canAccessChat}">
+                                        <div class="activity-tabs-status"
+                                             th:if="${(participationMessage != null and !isActivityCreator) or (#authorization.expression('isAuthenticated()') and !isActivityCreator and canRequestParticipation)}">
+                                            <div class="alert mb-0"
+                                                 th:if="${participationMessage != null and !isActivityCreator}"
+                                                 th:classappend="${participationMessageType != null ? ' alert-' + participationMessageType : ' alert-info'}">
+                                                <span th:text="${participationMessage}">Status participare</span>
+                                            </div>
+
+                                            <div class="activity-request-inline"
+                                                 th:if="${#authorization.expression('isAuthenticated()') and !isActivityCreator and canRequestParticipation}">
+                                                <form method="post"
+                                                      th:action="@{/activities/{id}/participation-request(id=${activity.id})}">
+                                                    <button class="btn custom-btn btn-sm" type="submit"
+                                                            th:text="${participationStatus == T(com.scutelnic.joinus.entity.ParticipationStatus).REJECTED or participationStatus == T(com.scutelnic.joinus.entity.ParticipationStatus).EXCLUDED ? 'Trimite din nou cererea' : 'Cerere de participare'}">
+                                                        Cerere de participare
+                                                    </button>
                                                 </form>
-                                            </li>
-                                            <li th:if="${!isActivityCreator and participationStatus == T(com.scutelnic.joinus.entity.ParticipationStatus).APPROVED}">
-                                                <form method="post" th:action="@{/activities/{id}/leave(id=${activity.id})}" onsubmit="return confirm('Sigur vrei sa parasesti aceasta activitate?');">
-                                                    <button class="dropdown-item text-danger" type="submit">Paraseste activitatea</button>
-                                                </form>
-                                            </li>
-                                        </ul>
+                                            </div>
+                                        </div>
+
+                                        <div class="dropdown activity-tabs-actions" th:if="${canAccessChat}">
+                                            <button class="activity-tabs-menu-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actiuni chat">
+                                                <i class="bi bi-three-dots"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end activity-actions-menu">
+                                                <li th:if="${isActivityCreator}"><button class="dropdown-item" id="togglePollComposerBtn" type="button">Creeaza un poll</button></li>
+                                                <li th:if="${isActivityCreator}"><a class="dropdown-item" th:href="@{/activities/{id}/edit(id=${activity.id})}">Editeaza activitatea</a></li>
+                                                <li th:if="${isActivityCreator}">
+                                                    <form method="post" th:action="@{/activities/{id}/delete(id=${activity.id})}" onsubmit="return confirm('Sigur vrei sa stergi aceasta activitate?');">
+                                                        <button class="dropdown-item text-danger" type="submit">Sterge activitatea</button>
+                                                    </form>
+                                                </li>
+                                                <li th:if="${!isActivityCreator and participationStatus == T(com.scutelnic.joinus.entity.ParticipationStatus).APPROVED}">
+                                                    <form method="post" th:action="@{/activities/{id}/leave(id=${activity.id})}" onsubmit="return confirm('Sigur vrei sa parasesti aceasta activitate?');">
+                                                        <button class="dropdown-item text-danger" type="submit">Paraseste activitatea</button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </div>
                                 </div>
 
                                 <div class="activity-tab-panel" id="activity-info-panel" role="tabpanel" data-panel="info">
-                                    <div class="alert mb-3"
-                                         th:if="${participationMessage != null and !isActivityCreator}"
-                                         th:classappend="${participationMessageType != null ? ' alert-' + participationMessageType : ' alert-info'}">
-                                        <span th:text="${participationMessage}">Status participare</span>
-                                    </div>
-
-                                    <div class="mb-3"
-                                         th:if="${#authorization.expression('isAuthenticated()') and !isActivityCreator and canRequestParticipation}">
-                                        <form method="post"
-                                              th:action="@{/activities/{id}/participation-request(id=${activity.id})}">
-                                            <button class="btn custom-btn btn-sm" type="submit"
-                                                    th:text="${participationStatus == T(com.scutelnic.joinus.entity.ParticipationStatus).REJECTED or participationStatus == T(com.scutelnic.joinus.entity.ParticipationStatus).EXCLUDED ? 'Trimite din nou cererea' : 'Cerere de participare'}">
-                                                Cerere de participare
-                                            </button>
-                                        </form>
-                                    </div>
-
                                     <div class="activity-info-section">
                                         <div class="activity-cover" th:style="'background-image: url(' + ${activity.imageUrl} + ');'">
                                             <span class="activity-capacity" th:text="${activity.capacity + ' locuri'}">12/20 locuri</span>

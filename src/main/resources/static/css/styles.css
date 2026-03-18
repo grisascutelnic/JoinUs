@@ -1479,6 +1479,60 @@ https://templatemo.com/tm-587-tiya-golf-club
   margin-left: 12px;
 }
 
+.activity-tabs-right {
+  flex: 1;
+  margin-left: auto;
+  margin-left: 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 10px;
+  min-width: 0;
+}
+
+.activity-tabs-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.activity-tabs-status .alert {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: var(--menu-font-size);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.2;
+  min-height: 40px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: clamp(260px, 42vw, 460px);
+  box-shadow: 0 4px 10px rgba(31, 42, 68, 0.08);
+}
+
+.activity-request-inline .btn {
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: var(--menu-font-size);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.2;
+  min-height: 40px;
+  box-shadow: 0 4px 10px rgba(31, 42, 68, 0.08);
+}
+
+.activity-request-inline form {
+  margin: 0;
+}
+
+.activity-tabs-right .activity-tabs-actions {
+  margin-left: 0;
+  justify-self: end;
+}
+
 .activity-tabs-menu-toggle {
   width: 34px;
   height: 34px;
@@ -2349,7 +2403,7 @@ https://templatemo.com/tm-587-tiya-golf-club
 @media (max-width: 600px) {
   .activity-tabs {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: 1fr;
     align-items: start;
     gap: 10px;
     padding: 14px 14px 10px;
@@ -2359,9 +2413,28 @@ https://templatemo.com/tm-587-tiya-golf-club
     gap: 8px;
   }
 
+  .activity-tabs-right {
+    width: 100%;
+    margin-left: 0;
+    justify-content: space-between;
+    gap: 8px;
+    display: flex;
+  }
+
+  .activity-tabs-status {
+    flex: 1;
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+
+  .activity-tabs-status .alert {
+    max-width: 100%;
+  }
+
   .activity-tabs-actions {
     margin-left: 0;
     justify-self: end;
+    flex-shrink: 0;
   }
 
   .activity-tab-btn {
