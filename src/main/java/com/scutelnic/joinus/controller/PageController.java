@@ -341,38 +341,8 @@ public class PageController {
                         .toList();
             }
 
-            List<Long> activityIds = allActivities.stream()
-                    .map(com.scutelnic.joinus.entity.Activity::getId)
-                    .toList();
-
-            Map<Long, Long> unreadCounts = activityUnreadService
-                    .getUnreadCountsByActivityForUser(authentication.getName(), activityIds);
-            Map<Long, java.time.LocalDateTime> latestUnreadByActivity = activityUnreadService
-                    .getLatestUnreadMessageByActivityForUser(authentication.getName(), activityIds);
-
-            allActivities.sort((left, right) -> {
-                long leftUnread = unreadCounts.getOrDefault(left.getId(), 0L);
-                long rightUnread = unreadCounts.getOrDefault(right.getId(), 0L);
-
-                boolean leftHasUnread = leftUnread > 0;
-                boolean rightHasUnread = rightUnread > 0;
-                if (leftHasUnread != rightHasUnread) {
-                    return leftHasUnread ? -1 : 1;
-                }
-
-                if (leftHasUnread) {
-                    java.time.LocalDateTime leftLatest = latestUnreadByActivity.get(left.getId());
-                    java.time.LocalDateTime rightLatest = latestUnreadByActivity.get(right.getId());
-                        int compareLatest = Comparator.<java.time.LocalDateTime>nullsLast(Comparator.reverseOrder())
-                            .compare(leftLatest, rightLatest);
-                    if (compareLatest != 0) {
-                        return compareLatest;
-                    }
-                }
-
-                return Comparator.<java.time.LocalDateTime>nullsLast(Comparator.reverseOrder())
-                    .compare(left.getCreatedAt(), right.getCreatedAt());
-            });
+            allActivities.sort((left, right) -> Comparator.<java.time.LocalDateTime>nullsLast(Comparator.reverseOrder())
+                    .compare(left.getCreatedAt(), right.getCreatedAt()));
 
             int total = allActivities.size();
             int totalPages = total == 0 ? 0 : (int) Math.ceil((double) total / safeSize);
@@ -382,7 +352,6 @@ public class PageController {
             int toIndex = Math.min(fromIndex + safeSize, allActivities.size());
             List<com.scutelnic.joinus.entity.Activity> currentSlice = allActivities.subList(fromIndex, toIndex);
             activityPage = new PageImpl<>(currentSlice, PageRequest.of(effectivePage, safeSize), total);
-            model.addAttribute("activityUnreadCounts", unreadCounts);
         } else {
             if (hasSearchQuery) {
                 List<com.scutelnic.joinus.entity.Activity> allActivities = new ArrayList<>(activityService.getAll());

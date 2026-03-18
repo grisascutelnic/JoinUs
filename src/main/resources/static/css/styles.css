@@ -212,6 +212,10 @@ https://templatemo.com/tm-587-tiya-golf-club
   margin-left: auto;
 }
 
+.page-activities .activity-card .activity-unread-badge {
+  display: none !important;
+}
+
 .page-index .activity-card .activity-image-badge,
 .page-activities .activity-card .activity-image-badge {
   position: absolute;

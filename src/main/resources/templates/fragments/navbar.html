@@ -209,6 +209,7 @@
 
             const chatBadgeEls = Array.from(document.querySelectorAll('[data-chat-unread-badge="true"]'));
             const POLL_INTERVAL_MS = 4000;
+            const isActivitiesPage = document.body.classList.contains('page-activities');
             let baseOrderInitialized = false;
 
             function setNavbarChatBadge(count) {
@@ -229,6 +230,9 @@
                 }
 
                 const isMiniCard = card.classList.contains('activity-mini-card');
+                if (isActivitiesPage && !isMiniCard) {
+                    return null;
+                }
                 badge = document.createElement('span');
                 badge.dataset.unreadBadge = 'true';
                 badge.className = isMiniCard ? 'activity-mini-unread-badge' : 'activity-unread-badge';
