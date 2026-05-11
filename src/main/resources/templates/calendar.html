@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="ro" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <meta name="description" content="Calendar JoinUs. Planifica-ti saptamana cu activitatile de interes.">
+        <meta name="description" content="Calendrier JoinUs. Planifiez votre semaine avec les activités qui vous intéressent.">
         <meta name="author" content="">
 
-        <title>Calendar - JoinUs</title>
+        <title>Calendrier - JoinUs</title>
 
         <!-- CSS FILES -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,38 +26,38 @@
 
                 <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="notificationsPanel" aria-labelledby="notificationsPanelLabel">
                     <div class="offcanvas-header">
-                        <h5 class="offcanvas-title text-white" id="notificationsPanelLabel">Notificari</h5>
+                        <h5 class="offcanvas-title text-white" id="notificationsPanelLabel">Notifications</h5>
 
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
                     </div>
 
                     <div class="offcanvas-body d-flex flex-column">
                         <div class="notification-item">
-                            <strong class="text-white">Alergare in parc</strong>
-                            <p class="mb-1">Activitatea ta a fost aprobata si publicata.</p>
-                            <small>Acum 5 minute</small>
+                            <strong class="text-white">Course au parc</strong>
+                            <p class="mb-1">Votre activité a été approuvée et publiée.</p>
+                            <small>Il y a 5 minutes</small>
                         </div>
 
                         <div class="notification-item">
-                            <strong class="text-white">Yoga la apus</strong>
-                            <p class="mb-1">S-au inscris inca 3 persoane.</p>
-                            <small>Acum 24 de minute</small>
+                            <strong class="text-white">Yoga au coucher du soleil</strong>
+                            <p class="mb-1">3 personnes se sont inscrites.</p>
+                            <small>Il y a 24 minutes</small>
                         </div>
 
                         <div class="notification-item">
-                            <strong class="text-white">Tur ciclist premium</strong>
-                            <p class="mb-1">Locurile sunt aproape epuizate.</p>
-                            <small>Astazi</small>
+                            <strong class="text-white">Tour cycliste premium</strong>
+                            <p class="mb-1">Les places sont presque épuisées.</p>
+                            <small>Aujourd'hui</small>
                         </div>
 
                         <div class="notification-item">
                             <strong class="text-white">Forum</strong>
-                            <p class="mb-1">Ai un raspuns nou la discutia despre trasee montane.</p>
-                            <small>Ieri</small>
+                            <p class="mb-1">Vous avez une nouvelle réponse à la discussion sur les sentiers de montagne.</p>
+                            <small>Hier</small>
                         </div>
 
                         <div class="mt-auto">
-                            <a href="/notifications" class="btn custom-btn custom-border-btn w-100">Vezi toate notificarile</a>
+                            <a href="/notifications" class="btn custom-btn custom-border-btn w-100">Voir toutes les notifications</a>
                         </div>
                     </div>
                 </div>
@@ -66,8 +66,8 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-lg-8 col-12 mx-auto text-center hero-content">
-                            <h2 class="text-white">Calendar</h2>
-                            <h1 class="text-white mb-0">Planifica-ti saptamana</h1>
+                            <h2 class="text-white">Calendrier</h2>
+                            <h1 class="text-white mb-0">Planifiez votre semaine</h1>
                         </div>
                     </div>
                 </div>
@@ -85,19 +85,19 @@
 
             <div class="profile-container">
                 <div class="content-section calendar-content-section" id="section_calendar">
-                    <h2 class="section-title text-center mb-3">Calendar</h2>
-                    <p class="text-center mb-5">Aici apar doar activitatile la care participi.</p>
+                            <h2 class="section-title text-center mb-3">Calendrier</h2>
+                            <p class="text-center mb-5">Ici apparaissent uniquement les activités auxquelles vous participez.</p>
 
                     <div class="row">
                         <div class="col-12" th:if="${!isAuthenticatedUser}">
                             <div class="alert alert-info text-center">
-                                Autentifica-te pentru a vedea calendarul activitatilor la care participi.
+                                Connectez-vous pour voir le calendrier des activités auxquelles vous participez.
                             </div>
                         </div>
 
                         <div class="col-12" th:if="${isAuthenticatedUser and #lists.isEmpty(calendarActivities)}">
-                            <div class="alert alert-light text-center">
-                                Nu ai activitati aprobate in calendar momentan.
+                                <div class="alert alert-light text-center">
+                                Vous n'avez pas encore d'activités approuvées dans le calendrier.
                             </div>
                         </div>
 
@@ -124,24 +124,24 @@
 
                             <div class="col-lg-6 col-12 order-3 order-lg-0">
                                 <div class="custom-block-info mt-2 mt-lg-0">
-                                    <a th:href="@{/activities/{id}(id=${activity.id})}" class="events-title mb-3" th:text="${activity.title}">Activitate</a>
-                                    <p class="mb-0" th:text="${activity.description}">Descriere activitate</p>
+                                    <a th:href="@{/activities/{id}(id=${activity.id})}" class="events-title mb-3" th:text="${activity.title}">Activité</a>
+                                    <p class="mb-0" th:text="${activity.description}">Description de l'activité</p>
 
                                     <div class="d-flex flex-wrap border-top mt-4 pt-3">
                                         <div class="mb-4 mb-lg-0">
                                             <div class="d-flex flex-wrap align-items-center mb-1">
-                                                <span class="custom-block-span">Locatie:</span>
-                                                <p class="mb-0" th:text="${activity.location}">Locatie</p>
+                                                <span class="custom-block-span">Lieu :</span>
+                                                <p class="mb-0" th:text="${activity.location}">Lieu</p>
                                             </div>
 
                                             <div class="d-flex flex-wrap align-items-center">
-                                                <span class="custom-block-span">Ora:</span>
+                                                <span class="custom-block-span">Heure :</span>
                                                 <p class="mb-0" th:text="${#temporals.format(activity.time, 'HH:mm')}">18:00</p>
                                             </div>
                                         </div>
 
                                         <div class="d-flex align-items-center ms-lg-auto gap-2 calendar-actions-wrap">
-                                            <a th:href="@{/activities/{id}(id=${activity.id})}" class="btn custom-btn">Detalii</a>
+                                            <a th:href="@{/activities/{id}(id=${activity.id})}" class="btn custom-btn">Détails</a>
                                             <button class="btn calendar-add-btn js-add-to-calendar"
                                                     type="button"
                                                     th:attr="data-title=${activity.title},
@@ -150,7 +150,7 @@
                                                              data-date=${#temporals.format(activity.date, 'yyyy-MM-dd')},
                                                              data-time=${#temporals.format(activity.time, 'HH:mm')},
                                                              data-url=@{/activities/{id}(id=${activity.id})}">
-                                                Adauga in calendar
+                                                Ajouter au calendrier
                                             </button>
                                         </div>
                                     </div>
@@ -202,7 +202,7 @@
                         detailsParts.push(description);
                     }
                     if (activityUrl) {
-                        detailsParts.push('Detalii: ' + window.location.origin + activityUrl);
+                        detailsParts.push('Détails : ' + window.location.origin + activityUrl);
                     }
                     return detailsParts.join('\n\n');
                 }
@@ -214,7 +214,7 @@
                             return;
                         }
 
-                        const title = safeText(this.dataset.title) || 'Activitate JoinUs';
+                        const title = safeText(this.dataset.title) || 'Activité JoinUs';
                         const location = safeText(this.dataset.location);
                         const details = buildEventDetails(this.dataset);
                         const dates = toGoogleDate(range.start) + '/' + toGoogleDate(range.end);

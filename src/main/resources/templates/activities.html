@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="ro" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <meta name="description" content="Toate activitatile JoinUs. Descopera evenimentele disponibile si inscrie-te usor.">
+        <meta name="description" content="Toutes les activités JoinUs. Découvrez les événements disponibles et inscrivez-vous facilement.">
         <meta name="author" content="">
 
-        <title>Activitati - JoinUs</title>
+        <title>Activités - JoinUs</title>
 
         <!-- CSS FILES -->                
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,43 +25,43 @@
 
                 <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="notificationsPanel" aria-labelledby="notificationsPanelLabel">
                     <div class="offcanvas-header">
-                        <h5 class="offcanvas-title text-white" id="notificationsPanelLabel">Notificari</h5>
+                        <h5 class="offcanvas-title text-white" id="notificationsPanelLabel">Notifications</h5>
 
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
                     </div>
 
                     <div class="offcanvas-body d-flex flex-column">
                         <div class="notification-item">
-                            <strong class="text-white">Alergare in parc</strong>
-                            <p class="mb-1">Activitatea ta a fost aprobata si publicata.</p>
-                            <small>Acum 5 minute</small>
+                            <strong class="text-white">Course au parc</strong>
+                            <p class="mb-1">Votre activité a été approuvée et publiée.</p>
+                            <small>Il y a 5 minutes</small>
                         </div>
 
                         <div class="notification-item">
-                            <strong class="text-white">Yoga la apus</strong>
-                            <p class="mb-1">S-au inscris inca 3 persoane.</p>
-                            <small>Acum 24 de minute</small>
+                            <strong class="text-white">Yoga au coucher du soleil</strong>
+                            <p class="mb-1">3 personnes se sont inscrites.</p>
+                            <small>Il y a 24 minutes</small>
                         </div>
 
                         <div class="notification-item">
-                            <strong class="text-white">Tur ciclist premium</strong>
-                            <p class="mb-1">Locurile sunt aproape epuizate.</p>
-                            <small>Astazi</small>
+                            <strong class="text-white">Tour cycliste premium</strong>
+                            <p class="mb-1">Les places sont presque épuisées.</p>
+                            <small>Aujourd'hui</small>
                         </div>
 
                         <div class="notification-item">
                             <strong class="text-white">Forum</strong>
-                            <p class="mb-1">Ai un raspuns nou la discutia despre trasee montane.</p>
-                            <small>Ieri</small>
+                            <p class="mb-1">Vous avez une nouvelle réponse à la discussion sur les sentiers de montagne.</p>
+                            <small>Hier</small>
                         </div>
 
                         <div class="mt-auto">
-                            <a href="#" class="btn custom-btn custom-border-btn w-100" data-bs-dismiss="offcanvas">Inchide</a>
+                            <a href="#" class="btn custom-btn custom-border-btn w-100" data-bs-dismiss="offcanvas">Fermer</a>
                         </div>
                     </div>
                 </div>
 
-                <section class="hero-section d-flex justify-content-center align-items-center" id="section_home" style="background-image: url('images/anna-rosar-ew-olGvgCCs-unsplash.jpg');">
+                <section class="hero-section d-flex justify-content-center align-items-center" id="section_home" style="background-image: url('/images/anna-rosar-ew-olGvgCCs-unsplash.jpg');">
                     <div class="section-overlay"></div>
 
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
@@ -71,9 +71,9 @@
                     <div class="container">
                         <div class="row">
                             <div class="col-lg-8 col-12 mb-5 mb-lg-0 mx-auto text-center hero-content">
-                                <h2 class="text-white">Descopera toate activitatile</h2>
+                                <h2 class="text-white">Découvrez toutes les activités</h2>
                                 <h1 class="cd-headline rotate-1 text-white mb-4 pb-2">
-                                    <span>Activitati</span>
+                                    <span>Activités</span>
                                     <span class="cd-words-wrapper">
                                         <b class="is-visible">sportive</b>
                                         <b>sociale</b>
@@ -103,26 +103,26 @@
                     <div class="container">
                         <div class="row">
                             <div class="col-lg-12 col-12 text-center mb-5">
-                                <h2 class="mb-3">Toate activitatile</h2>
-                                <p>Vezi toate activitatile disponibile in comunitate.</p>
+                                        <h2 class="mb-3">Toutes les activités</h2>
+                                        <p>Découvrez toutes les activités disponibles dans la communauté.</p>
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-lg-10 col-12 mx-auto">
                                 <form class="activity-search mb-4" data-activity-search th:action="@{/activities}" method="get">
-                                    <label class="visually-hidden" for="allActivitiesSearch">Cauta activitati</label>
+                                        <label class="visually-hidden" for="allActivitiesSearch">Rechercher des activités</label>
                                     <div class="activity-search-input-wrap">
                                         <i class="bi bi-search activity-search-icon" aria-hidden="true"></i>
-                                        <input id="allActivitiesSearch" name="q" type="search" class="form-control activity-search-input" data-activity-search-input placeholder="Cauta dupa titlu, categorie sau locatie..." autocomplete="off" th:value="${activitySearchQuery}">
+                                        <input id="allActivitiesSearch" name="q" type="search" class="form-control activity-search-input" data-activity-search-input placeholder="Rechercher par titre, catégorie ou lieu..." autocomplete="off" th:value="${activitySearchQuery}">
                                         <input type="hidden" name="size" th:value="${pageSize}">
                                     </div>
-                                    <p class="activity-search-empty mt-3 mb-0 d-none" data-activity-search-empty>Nu am gasit activitati care sa corespunda cautarii.</p>
+                                    <p class="activity-search-empty mt-3 mb-0 d-none" data-activity-search-empty>Aucune activité ne correspond à votre recherche.</p>
                                 </form>
 
                                 <div class="activity-list activity-list--section row g-4">
                                     <div class="col-12" th:if="${#lists.isEmpty(activities)}">
-                                        <div class="alert alert-light text-center">Nu exista activitati inca.</div>
+                                        <div class="alert alert-light text-center">Il n'y a pas encore d'activités.</div>
                                     </div>
 
                                      <div class="col-lg-4 col-md-6 col-12"
@@ -134,28 +134,28 @@
                                                     <div class="col-4 col-md-3">
                                                         <div class="custom-block-image-wrap">
                                                             <img th:src="${activity.imageUrl}" class="custom-block-image img-fluid" th:alt="${activity.title}">
-                                                            <span class="activity-badge activity-image-badge" th:text="${activity.category}">Categorie</span>
+                                                            <span class="activity-badge activity-image-badge" th:text="${activity.category}">Catégorie</span>
                                                         </div>
                                                     </div>
                                                     <div class="col-8 col-md-9">
                                                         <div class="d-flex align-items-center mb-2">
-                                                            <span class="events-title" th:text="${activity.title}">Activitate</span>
+                                                            <span class="events-title" th:text="${activity.title}">Activité</span>
                                                         </div>
                                                         <div class="d-flex flex-wrap">
-                                                            <span class="custom-block-span">Data:</span>
+                                                            <span class="custom-block-span">Date :</span>
                                                             <p class="mb-0" th:text="${#temporals.format(activity.date, 'dd MMM yyyy')}">12 Feb 2026</p>
                                                         </div>
                                                         <div class="d-flex flex-wrap">
-                                                            <span class="custom-block-span">Ora:</span>
+                                                            <span class="custom-block-span">Heure :</span>
                                                             <p class="mb-0" th:text="${#temporals.format(activity.time, 'HH:mm')}">19:00</p>
                                                         </div>
                                                         <div class="d-flex flex-wrap">
-                                                            <span class="custom-block-span">Locatie:</span>
-                                                            <p class="mb-0" th:text="${activity.location}">Locatie</p>
+                                                            <span class="custom-block-span">Lieu :</span>
+                                                            <p class="mb-0" th:text="${activity.location}">Lieu</p>
                                                         </div>
                                                         <div class="d-flex flex-wrap">
-                                                            <span class="custom-block-span">Locuri:</span>
-                                                            <p class="mb-0" th:text="${activity.capacity + ' persoane'}">10 persoane</p>
+                                                            <span class="custom-block-span">Places :</span>
+                                                            <p class="mb-0" th:text="${activity.capacity + ' personnes'}">10 personnes</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -164,13 +164,15 @@
                                     </div>
                                 </div>
 
-                                <nav class="mt-4 activities-pagination-wrap" aria-label="Paginare activitati">
+                                    <nav class="mt-4 activities-pagination-wrap" aria-label="Pagination des activités">
                                     <ul class="pagination justify-content-center activities-pagination">
                                         <li class="page-item" th:classappend="${!activityPage.hasPrevious()} ? 'disabled'">
-                                            <a class="page-link page-link-arrow"
-                                               th:href="${activityPage.hasPrevious()} ? @{/activities(page=${currentPage - 1},size=${pageSize},q=${activitySearchQuery})} : '#'
-                                               "
-                                               aria-label="Pagina anterioara">
+                                            <a class="page-link page-link-arrow" th:if="${activityPage.hasPrevious()}"
+                                               th:href="@{/activities(page=${currentPage - 1},size=${pageSize},q=${activitySearchQuery})}"
+                                               aria-label="Page précédente">
+                                                <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                                            </a>
+                                            <a class="page-link page-link-arrow" th:unless="${activityPage.hasPrevious()}" href="#" aria-label="Page précédente">
                                                 <i class="bi bi-chevron-left" aria-hidden="true"></i>
                                             </a>
                                         </li>
@@ -184,10 +186,12 @@
                                         </li>
 
                                         <li class="page-item" th:classappend="${!activityPage.hasNext()} ? 'disabled'">
-                                            <a class="page-link page-link-arrow"
-                                               th:href="${activityPage.hasNext()} ? @{/activities(page=${currentPage + 1},size=${pageSize},q=${activitySearchQuery})} : '#'
-                                               "
-                                               aria-label="Pagina urmatoare">
+                                            <a class="page-link page-link-arrow" th:if="${activityPage.hasNext()}"
+                                               th:href="@{/activities(page=${currentPage + 1},size=${pageSize},q=${activitySearchQuery})}"
+                                               aria-label="Page suivante">
+                                                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                                            </a>
+                                            <a class="page-link page-link-arrow" th:unless="${activityPage.hasNext()}" href="#" aria-label="Page suivante">
                                                 <i class="bi bi-chevron-right" aria-hidden="true"></i>
                                             </a>
                                         </li>
@@ -200,15 +204,15 @@
             </div>
         </main>
 
-        <a href="/activities?openCreate=true" class="btn custom-btn create-activity-btn" th:if="${#authorization.expression('isAuthenticated()')}">Creeaza activitate</a>
-        <a href="#" class="btn custom-btn create-activity-btn js-auth-link" data-auth-trigger="login" th:if="${#authorization.expression('isAnonymous()')}">Creeaza activitate</a>
+        <a href="/activities?openCreate=true" class="btn custom-btn create-activity-btn" th:if="${#authorization.expression('isAuthenticated()')}">Créer une activité</a>
+        <a href="#" class="btn custom-btn create-activity-btn js-auth-link" data-auth-trigger="login" th:if="${#authorization.expression('isAnonymous()')}">Créer une activité</a>
 
         <div class="modal fade create-activity-modal" id="createActivityModal" tabindex="-1" aria-labelledby="createActivityModalLabel" aria-hidden="true" th:if="${#authorization.expression('isAuthenticated()')}">
             <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="createActivityModalLabel">Formular activitate</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <h5 class="modal-title" id="createActivityModalLabel">Formulaire d'activité</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                     </div>
                     <div class="modal-body">
                         <form class="custom-form auth-form activity-form-grid" th:attr="action=${formAction != null ? formAction : '/activities'}" th:object="${activityForm}" method="post" role="form" enctype="multipart/form-data">
@@ -216,41 +220,44 @@
 
                             <div class="activity-card activity-card-left">
                                 <div class="activity-card-header">
-                                    <h4>Obligatoriu</h4>
-                                    <p>Completeaza datele esentiale pentru activitate.</p>
+                                    <h4>Obligatoire</h4>
+                                    <p>Renseignez les informations essentielles de l'activité.</p>
                                 </div>
 
-                                <input type="text" th:field="*{title}" class="form-control" placeholder="Titlu activitate" required>
-                                <textarea th:field="*{description}" class="form-control" rows="3" placeholder="Descriere scurta" required></textarea>
+                                <input type="text" th:field="*{title}" class="form-control" placeholder="Titre de l'activité" required>
+                                <textarea th:field="*{description}" class="form-control" rows="3" placeholder="Brève description" required></textarea>
 
                                 <div class="activity-split-fields">
                                     <div>
-                                        <input type="date" id="date" name="date" class="form-control"
+                                        <label class="visually-hidden" for="date">Date</label>
+                                        <input type="date" id="date" name="date" class="form-control" aria-label="Date"
                                                th:value="${activityForm.date != null ? #temporals.format(activityForm.date, 'yyyy-MM-dd') : ''}"
-                                               th:min="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}" required>
+                                                th:min="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}" required>
                                     </div>
                                     <div>
-                                        <input type="time" id="time" name="time" class="form-control"
+                                        <label class="visually-hidden" for="time">Heure</label>
+                                        <input type="time" id="time" name="time" class="form-control" aria-label="Heure"
                                                th:value="${activityForm.time != null ? #temporals.format(activityForm.time, 'HH:mm') : ''}" required>
                                     </div>
                                 </div>
 
-                                <input type="text" th:field="*{location}" class="form-control" placeholder="Locatie (oras/raion/sat)" required>
-                                <input type="text" th:field="*{address}" class="form-control" placeholder="Adresa completa" required>
+                                <input type="text" th:field="*{location}" class="form-control" placeholder="Lieu (ville/quartier/village)" required>
+                                <input type="text" th:field="*{address}" class="form-control" placeholder="Adresse complète" required>
 
                                 <div class="activity-split-fields">
                                     <div>
-                                        <input type="number" th:field="*{capacity}" class="form-control" min="1" max="200" placeholder="Numar persoane" required>
+                                        <input type="number" th:field="*{capacity}" class="form-control" min="1" max="200" placeholder="Nombre de personnes" required>
                                     </div>
                                     <div>
-                                        <select th:field="*{category}" class="form-control">
-                                            <option value="Comunitate">Comunitate</option>
+                                        <label class="visually-hidden" for="category">Catégorie</label>
+                                        <select id="category" th:field="*{category}" class="form-control" aria-label="Catégorie">
+                                            <option value="Comunitate">Communauté</option>
                                             <option value="Sport">Sport</option>
-                                            <option value="Wellness">Wellness</option>
-                                            <option value="Outdoor">Outdoor</option>
-                                            <option value="Cultura">Cultura</option>
+                                            <option value="Wellness">Bien-être</option>
+                                            <option value="Outdoor">Plein air</option>
+                                            <option value="Cultura">Culture</option>
                                             <option value="Social">Social</option>
-                                            <option value="Educatie">Educatie</option>
+                                            <option value="Educatie">Éducation</option>
                                             <option value="Tech">Tech</option>
                                         </select>
                                     </div>
@@ -260,16 +267,16 @@
                             <div class="activity-card activity-card-right">
                                 <div class="image-actions-split">
                                     <section class="image-action-pane image-action-pane--upload">
-                                        <button type="button" class="btn image-action-tile" id="uploadImageBtn">Încarcă imagine</button>
+                                        <button type="button" class="btn image-action-tile" id="uploadImageBtn">Importer une image</button>
                                         <input type="file" id="cloudinaryFile" name="imageFile" accept="image/*" class="d-none">
                                         <input type="hidden" th:field="*{imageUrl}" id="cloudinaryUrl">
                                         <input type="hidden" th:field="*{imageChoice}" id="generatedImageUrl">
                                     </section>
 
-                                    <div class="image-actions-or" aria-hidden="true">sau</div>
+                                    <div class="image-actions-or" aria-hidden="true">ou</div>
 
                                     <section class="image-action-pane image-action-pane--ai">
-                                        <button type="button" class="btn image-action-tile" id="generateAiImageBtn">Generează imagine AI</button>
+                                        <button type="button" class="btn image-action-tile" id="generateAiImageBtn">Générer une image avec l'IA</button>
                                     </section>
                                 </div>
 
@@ -280,7 +287,7 @@
                                     <div class="image-inline-error d-none" id="cloudinaryError"></div>
                                     <div class="image-inline-error d-none" id="generatedImageError"></div>
                                     <div class="image-preview-wrap d-none" id="generatedPreviewWrap">
-                                        <img id="generatedPreviewImage" class="image-preview-image" alt="Preview imagine activitate">
+                                        <img id="generatedPreviewImage" class="image-preview-image" alt="Aperçu de l'image de l'activité">
                                     </div>
                                     <div class="image-preview-placeholder" id="imagePreviewPlaceholder" aria-hidden="true">
                                         <i class="bi bi-image image-preview-icon"></i>
@@ -289,7 +296,7 @@
                             </div>
 
                             <div class="activity-form-actions">
-                                <button type="submit" class="form-control" id="submitActivity" th:text="${submitLabel != null ? submitLabel : 'Creeaza activitate'}">Creeaza activitate</button>
+                                <button type="submit" class="form-control" id="submitActivity" th:text="${submitLabel != null ? submitLabel : 'Créer une activité'}">Créer une activité</button>
                             </div>
                         </form>
                     </div>

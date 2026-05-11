@@ -8,6 +8,7 @@ import com.scutelnic.joinus.entity.User;
 import com.scutelnic.joinus.entity.ParticipationStatus;
 import com.scutelnic.joinus.service.ActivityService;
 import com.scutelnic.joinus.service.ActivityChatService;
+import com.scutelnic.joinus.service.ActivityMemoryService;
 import com.scutelnic.joinus.service.ActivityUnreadService;
 import com.scutelnic.joinus.service.ActivityParticipationService;
 import com.scutelnic.joinus.service.CloudinaryService;
@@ -45,6 +46,7 @@ public class PageController {
     private final ActivityService activityService;
     private final ActivityChatService activityChatService;
     private final ActivityUnreadService activityUnreadService;
+    private final ActivityMemoryService activityMemoryService;
     private final ActivityParticipationService participationService;
     private final UserRepository userRepository;
     private final UserService userService;
@@ -54,6 +56,7 @@ public class PageController {
     public PageController(ActivityService activityService,
                           ActivityChatService activityChatService,
                           ActivityUnreadService activityUnreadService,
+                          ActivityMemoryService activityMemoryService,
                           ActivityParticipationService participationService,
                           UserRepository userRepository,
                           UserService userService,
@@ -62,6 +65,7 @@ public class PageController {
         this.activityService = activityService;
         this.activityChatService = activityChatService;
         this.activityUnreadService = activityUnreadService;
+        this.activityMemoryService = activityMemoryService;
         this.participationService = participationService;
         this.userRepository = userRepository;
         this.userService = userService;
@@ -319,6 +323,29 @@ public class PageController {
         return "forum";
     }
 
+    @GetMapping("/memories")
+    public String memories(@RequestParam(value = "activity", required = false) Long activityId,
+                           Model model) {
+        var publicBooks = activityMemoryService.getPublicBooks();
+        model.addAttribute("publicMemoryBooks", publicBooks);
+        Map<Long, List<com.scutelnic.joinus.entity.ActivityMemoryEntry>> entriesByActivity = new LinkedHashMap<>();
+
+        for (var book : publicBooks) {
+            if (book == null || book.getActivity() == null || book.getActivity().getId() == null) {
+                continue;
+            }
+            Long bookActivityId = book.getActivity().getId();
+            entriesByActivity.put(bookActivityId, activityMemoryService.getActivityEntries(bookActivityId, true));
+        }
+        model.addAttribute("publicMemoryEntriesByActivity", entriesByActivity);
+
+        if (publicBooks.isEmpty()) {
+            return "memories";
+        }
+        model.addAttribute("requestedMemoryActivityId", activityId);
+        return "memories";
+    }
+
     @GetMapping("/activities")
     public String activities(Model model,
                              Authentication authentication,
@@ -418,6 +445,9 @@ public class PageController {
                     model.addAttribute("participationStatus", null);
                     model.addAttribute("pendingParticipationRequests", java.util.List.of());
                     model.addAttribute("approvedParticipationRequests", java.util.List.of());
+                    model.addAttribute("canManageMemories", false);
+                    model.addAttribute("activityMemories", java.util.List.of());
+                    model.addAttribute("memoryBook", activityMemoryService.findBookForActivity(id).orElse(null));
                     String participationMessage = null;
                     String participationMessageType = null;
                     if (authentication != null && authentication.isAuthenticated()) {
@@ -434,6 +464,11 @@ public class PageController {
                         model.addAttribute("participationStatus", participationStatus);
                         model.addAttribute("pendingParticipationRequests", participationService.getPendingRequestsForOrganizer(id, email));
                         model.addAttribute("approvedParticipationRequests", participationService.getApprovedParticipantsForViewer(id, email));
+                        boolean canManageMemories = activityMemoryService.canManageMemories(id, email);
+                        model.addAttribute("canManageMemories", canManageMemories);
+                        if (canManageMemories) {
+                            model.addAttribute("activityMemories", activityMemoryService.getActivityEntries(id, false));
+                        }
                         if (!isCreator) {
                             if (participationStatus == ParticipationStatus.PENDING) {
                                 participationMessage = "Cerere trimisa. Status: in asteptare.";

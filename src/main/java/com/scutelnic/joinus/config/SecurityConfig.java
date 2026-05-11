@@ -82,6 +82,7 @@ public class SecurityConfig {
                                 "/index",
                                 "/activities",
                                 "/activities/**",
+                                "/memories",
                                 "/login",
                                 "/register",
                                 "/auth/google",

@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="ro" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <meta name="description" content="Detalii activitate JoinUs. Selecteaza o activitate pentru chat.">
+        <meta name="description" content="Détails d'activité JoinUs. Sélectionnez une activité pour la discussion.">
         <meta name="author" content="">
 
-        <title>Detalii activitate - JoinUs</title>
+        <title>Détails de l'activité - JoinUs</title>
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,7 +34,7 @@
                             <div class="col-12 hero-content">
                                 <div class="activity-detail-hero-layout">
                                     <div class="activity-detail-hero-left">
-                                        <h1 class="activity-detail-hero-title">Chat activitati</h1>
+                                        <h1 class="activity-detail-hero-title">Discussion des activités</h1>
                                     </div>
                                 </div>
                             </div>
@@ -55,27 +55,27 @@
                             <div class="activity-detail-grid">
                                 <aside class="activity-sidebar">
                                     <div class="activity-sidebar-card">
-                                        <h5>Activitatile tale</h5>
+                                        <h5>Vos activités</h5>
                                         <div class="activity-mini-list" data-unread-sort-list th:if="${otherActivities != null and !#lists.isEmpty(otherActivities)}">
                                             <a class="activity-mini-card"
                                                th:each="item : ${otherActivities}"
                                                               th:href="@{/activities/{id}(id=${item.id})}"
                                                th:attr="data-unread-activity-id=${item.id}">
-                                                <img th:src="${item.imageUrl}" alt="Activitate" class="activity-mini-thumb">
+                                                        <img th:src="${item.imageUrl}" alt="Activité" class="activity-mini-thumb">
                                                 <div class="activity-mini-info">
                                                     <div class="activity-mini-title-row">
-                                                        <h6 class="mb-1" th:text="${item.title}">Tur ciclist cu ghid</h6>
+                                                        <h6 class="mb-1" th:text="${item.title}">Tour cycliste guidé</h6>
                                                         <span class="activity-mini-unread-badge"
                                                               data-unread-badge
                                                               th:classappend="${activityUnreadCounts == null or activityUnreadCounts[item.id] == null or activityUnreadCounts[item.id] <= 0} ? ' d-none'"
                                                               th:text="${activityUnreadCounts != null and activityUnreadCounts[item.id] != null ? activityUnreadCounts[item.id] : 0}">0</span>
                                                     </div>
-                                                    <small th:text="${#temporals.format(item.date, 'dd MMM') + ', ' + #temporals.format(item.time, 'HH:mm')}">Astazi, 18:30</small>
+                                                    <small th:text="${#temporals.format(item.date, 'dd MMM') + ', ' + #temporals.format(item.time, 'HH:mm')}">Aujourd'hui, 18:30</small>
                                                 </div>
                                             </a>
                                         </div>
                                         <p class="text-muted mb-0" th:if="${otherActivities == null or #lists.isEmpty(otherActivities)}">
-                                            Nu ai activitati disponibile momentan.
+                                            Vous n'avez aucune activité disponible pour le moment.
                                         </p>
                                     </div>
                                 </aside>
@@ -84,27 +84,27 @@
                                     <section class="activity-chat" aria-live="polite">
                                         <div class="activity-tabs" role="tablist">
                                             <div class="activity-tabs-left">
-                                                <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" data-tab="info">Info</button>
-                                                <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" data-tab="chat">Chat</button>
-                                                <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" data-tab="announcements">Anunturi</button>
+                                                <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" data-tab="info">Infos</button>
+                                                <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" data-tab="chat">Discussion</button>
+                                                <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" data-tab="announcements">Annonces</button>
                                             </div>
                                         </div>
 
                                         <div class="activity-tab-panel" role="tabpanel" data-panel="info">
                                             <div class="d-flex align-items-center justify-content-center text-center" style="min-height: 420px;">
-                                                <p class="mb-0 text-muted">Selecteaza o activitate pentru a vedea informatiile.</p>
+                                                <p class="mb-0 text-muted">Sélectionnez une activité pour voir les informations.</p>
                                             </div>
                                         </div>
 
                                         <div class="activity-tab-panel" role="tabpanel" data-panel="chat">
                                             <div class="d-flex align-items-center justify-content-center text-center" style="min-height: 420px;">
-                                                <p class="mb-0 text-muted">Selecteaza o activitate pentru a intra in chat.</p>
+                                                <p class="mb-0 text-muted">Sélectionnez une activité pour entrer dans la discussion.</p>
                                             </div>
                                         </div>
 
                                         <div class="activity-tab-panel" role="tabpanel" data-panel="announcements">
                                             <div class="d-flex align-items-center justify-content-center text-center" style="min-height: 420px;">
-                                                <p class="mb-0 text-muted">Selecteaza o activitate pentru a vedea anunturile.</p>
+                                                <p class="mb-0 text-muted">Sélectionnez une activité pour voir les annonces.</p>
                                             </div>
                                         </div>
                                     </section>

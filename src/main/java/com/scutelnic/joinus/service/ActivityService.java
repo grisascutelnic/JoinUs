@@ -7,6 +7,9 @@ import com.scutelnic.joinus.repository.ActivityMessageDeliveredRepository;
 import com.scutelnic.joinus.repository.ActivityMessageReactionRepository;
 import com.scutelnic.joinus.repository.ActivityMessageRepository;
 import com.scutelnic.joinus.repository.ActivityMessageSeenRepository;
+import com.scutelnic.joinus.repository.ActivityMemoryBookRepository;
+import com.scutelnic.joinus.repository.ActivityMemoryEntryRepository;
+import com.scutelnic.joinus.repository.ActivityMemoryPhotoRepository;
 import com.scutelnic.joinus.repository.ActivityParticipationRepository;
 import com.scutelnic.joinus.repository.ActivityPollOptionRepository;
 import com.scutelnic.joinus.repository.ActivityPollRepository;
@@ -33,6 +36,9 @@ public class ActivityService {
     private final ActivityMessageSeenRepository activityMessageSeenRepository;
     private final ActivityMessageDeliveredRepository activityMessageDeliveredRepository;
     private final ActivityMessageReactionRepository activityMessageReactionRepository;
+    private final ActivityMemoryBookRepository activityMemoryBookRepository;
+    private final ActivityMemoryEntryRepository activityMemoryEntryRepository;
+    private final ActivityMemoryPhotoRepository activityMemoryPhotoRepository;
     private final ActivityPollRepository activityPollRepository;
     private final ActivityPollOptionRepository activityPollOptionRepository;
     private final ActivityPollVoteRepository activityPollVoteRepository;
@@ -43,6 +49,9 @@ public class ActivityService {
                            ActivityMessageSeenRepository activityMessageSeenRepository,
                            ActivityMessageDeliveredRepository activityMessageDeliveredRepository,
                            ActivityMessageReactionRepository activityMessageReactionRepository,
+                           ActivityMemoryBookRepository activityMemoryBookRepository,
+                           ActivityMemoryEntryRepository activityMemoryEntryRepository,
+                           ActivityMemoryPhotoRepository activityMemoryPhotoRepository,
                            ActivityPollRepository activityPollRepository,
                            ActivityPollOptionRepository activityPollOptionRepository,
                            ActivityPollVoteRepository activityPollVoteRepository) {
@@ -52,6 +61,9 @@ public class ActivityService {
         this.activityMessageSeenRepository = activityMessageSeenRepository;
         this.activityMessageDeliveredRepository = activityMessageDeliveredRepository;
         this.activityMessageReactionRepository = activityMessageReactionRepository;
+        this.activityMemoryBookRepository = activityMemoryBookRepository;
+        this.activityMemoryEntryRepository = activityMemoryEntryRepository;
+        this.activityMemoryPhotoRepository = activityMemoryPhotoRepository;
         this.activityPollRepository = activityPollRepository;
         this.activityPollOptionRepository = activityPollOptionRepository;
         this.activityPollVoteRepository = activityPollVoteRepository;
@@ -118,6 +130,9 @@ public class ActivityService {
         activityMessageDeliveredRepository.deleteByMessageActivityId(activityId);
         activityMessageReactionRepository.deleteByMessageActivityId(activityId);
         activityMessageRepository.deleteByActivityId(activityId);
+        activityMemoryPhotoRepository.deleteByEntryActivityId(activityId);
+        activityMemoryEntryRepository.deleteByActivityId(activityId);
+        activityMemoryBookRepository.deleteByActivityId(activityId);
         activityParticipationRepository.deleteByActivityId(activityId);
         activityPollVoteRepository.deleteByPollActivityId(activityId);
         activityPollOptionRepository.deleteByPollActivityId(activityId);

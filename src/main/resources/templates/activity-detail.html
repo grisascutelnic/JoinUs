@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="ro" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <meta name="description" content="Detalii activitate JoinUs. Discuta in chat si vezi toate informatiile intr-un singur loc.">
+        <meta name="description" content="Détails d'activité JoinUs. Discutez dans le chat et retrouvez toutes les informations au même endroit.">
         <meta name="author" content="">
 
-        <title th:text="${activity.title + ' - JoinUs'}">Detalii activitate - JoinUs</title>
+        <title th:text="${activity.title + ' - JoinUs'}">Détails de l'activité - JoinUs</title>
 
         <!-- CSS FILES -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,25 +25,25 @@
 
                 <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="notificationsPanel" aria-labelledby="notificationsPanelLabel">
                     <div class="offcanvas-header">
-                        <h5 class="offcanvas-title text-white" id="notificationsPanelLabel">Notificari</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                        <h5 class="offcanvas-title text-white" id="notificationsPanelLabel">Notifications</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
                     </div>
 
                     <div class="offcanvas-body d-flex flex-column">
                         <div class="notification-item">
-                            <strong class="text-white">Alergare in parc</strong>
-                            <p class="mb-1">Activitatea ta a fost aprobata si publicata.</p>
-                            <small>Acum 5 minute</small>
+                            <strong class="text-white">Course au parc</strong>
+                            <p class="mb-1">Votre activité a été approuvée et publiée.</p>
+                            <small>Il y a 5 minutes</small>
                         </div>
 
                         <div class="notification-item">
-                            <strong class="text-white">Yoga la apus</strong>
-                            <p class="mb-1">S-au inscris inca 3 persoane.</p>
-                            <small>Acum 24 de minute</small>
+                            <strong class="text-white">Yoga au coucher du soleil</strong>
+                            <p class="mb-1">3 personnes se sont inscrites.</p>
+                            <small>Il y a 24 minutes</small>
                         </div>
 
                         <div class="mt-auto">
-                            <a href="#" class="btn custom-btn custom-border-btn w-100" data-bs-dismiss="offcanvas">Inchide</a>
+                            <a href="#" class="btn custom-btn custom-border-btn w-100" data-bs-dismiss="offcanvas">Fermer</a>
                         </div>
                     </div>
                 </div>
@@ -106,15 +106,16 @@
                             <section class="activity-chat" aria-live="polite">
                                 <div class="activity-tabs" role="tablist">
                                     <div class="activity-tabs-left">
-                                        <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-info-panel" data-tab="info">Info</button>
-                                        <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-chat-panel" data-tab="chat" th:if="${canAccessChat}">Chat</button>
+                                        <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-info-panel" data-tab="info">Infos</button>
+                                        <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-chat-panel" data-tab="chat" th:if="${canAccessChat}">Discussion</button>
                                         <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-announcements-panel" data-tab="announcements" th:if="${canAccessChat}">
-                                            Anunturi
+                                            Annonces
                                             <span id="activityAnnouncementsBadge" class="activity-tab-unread-badge d-none">0</span>
                                         </button>
-                                        <button class="activity-tab-btn activity-tab-btn--icon" type="button" role="tab" aria-selected="false" aria-controls="activity-participants-panel" data-tab="participants" th:if="${isActivityCreator or canAccessChat}" aria-label="Participanti" title="Participanti">
+                                        <button class="activity-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="activity-memories-panel" data-tab="memories" th:if="${isActivityCreator or canAccessChat}">Souvenirs</button>
+                                        <button class="activity-tab-btn activity-tab-btn--icon" type="button" role="tab" aria-selected="false" aria-controls="activity-participants-panel" data-tab="participants" th:if="${isActivityCreator or canAccessChat}" aria-label="Participants" title="Participants">
                                             <i class="bi bi-people-fill" aria-hidden="true"></i>
-                                            <span class="visually-hidden">Participanti</span>
+                                            <span class="visually-hidden">Participants</span>
                                             <span class="activity-tab-unread-badge"
                                                   th:if="${isActivityCreator and pendingParticipationRequests != null and !#lists.isEmpty(pendingParticipationRequests)}"
                                                   th:text="${#lists.size(pendingParticipationRequests)}">0</span>
@@ -128,7 +129,7 @@
                                             <div class="alert mb-0"
                                                  th:if="${participationMessage != null and !isActivityCreator}"
                                                  th:classappend="${participationMessageType != null ? ' alert-' + participationMessageType : ' alert-info'}">
-                                                <span th:text="${participationMessage}">Status participare</span>
+                                                <span th:text="${participationMessage}">Statut de participation</span>
                                             </div>
 
                                             <div class="activity-request-inline"
@@ -136,28 +137,28 @@
                                                 <form method="post"
                                                       th:action="@{/activities/{id}/participation-request(id=${activity.id})}">
                                                     <button class="btn custom-btn btn-sm" type="submit"
-                                                            th:text="${participationStatus == T(com.scutelnic.joinus.entity.ParticipationStatus).REJECTED or participationStatus == T(com.scutelnic.joinus.entity.ParticipationStatus).EXCLUDED ? 'Trimite din nou cererea' : 'Cerere de participare'}">
-                                                        Cerere de participare
+                                                            th:text="${participationStatus == T(com.scutelnic.joinus.entity.ParticipationStatus).REJECTED or participationStatus == T(com.scutelnic.joinus.entity.ParticipationStatus).EXCLUDED ? 'Renvoyer la demande' : 'Demande de participation'}">
+                                                        Demande de participation
                                                     </button>
                                                 </form>
                                             </div>
                                         </div>
 
                                         <div class="dropdown activity-tabs-actions" th:if="${canAccessChat}">
-                                            <button class="activity-tabs-menu-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actiuni chat">
+                                            <button class="activity-tabs-menu-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions de discussion">
                                                 <i class="bi bi-three-dots"></i>
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end activity-actions-menu">
-                                                <li th:if="${isActivityCreator}"><button class="dropdown-item" id="togglePollComposerBtn" type="button">Creeaza un poll</button></li>
-                                                <li th:if="${isActivityCreator}"><a class="dropdown-item" th:href="@{/activities/{id}/edit(id=${activity.id})}">Editeaza activitatea</a></li>
+                                                <li th:if="${isActivityCreator}"><button class="dropdown-item" id="togglePollComposerBtn" type="button">Créer un sondage</button></li>
+                                                <li th:if="${isActivityCreator}"><a class="dropdown-item" th:href="@{/activities/{id}/edit(id=${activity.id})}">Modifier l'activité</a></li>
                                                 <li th:if="${isActivityCreator}">
                                                     <form method="post" th:action="@{/activities/{id}/delete(id=${activity.id})}" onsubmit="return confirm('Sigur vrei sa stergi aceasta activitate?');">
-                                                        <button class="dropdown-item text-danger" type="submit">Sterge activitatea</button>
+                                                        <button class="dropdown-item text-danger" type="submit">Supprimer l'activité</button>
                                                     </form>
                                                 </li>
                                                 <li th:if="${!isActivityCreator and participationStatus == T(com.scutelnic.joinus.entity.ParticipationStatus).APPROVED}">
                                                     <form method="post" th:action="@{/activities/{id}/leave(id=${activity.id})}" onsubmit="return confirm('Sigur vrei sa parasesti aceasta activitate?');">
-                                                        <button class="dropdown-item text-danger" type="submit">Paraseste activitatea</button>
+                                                        <button class="dropdown-item text-danger" type="submit">Quitter l'activité</button>
                                                     </form>
                                                 </li>
                                             </ul>
@@ -170,7 +171,7 @@
                                         <div class="activity-cover" th:style="'background-image: url(' + ${activity.imageUrl} + ');'">
                                             <span class="activity-capacity" th:text="${activity.capacity + ' locuri'}">12/20 locuri</span>
                                         </div>
-                                        <h5 class="mb-3">Detalii rapide</h5>
+                                        <h5 class="mb-3">Détails rapides</h5>
                                         <div class="activity-meta activity-meta-card mb-3">
                                             <div class="activity-meta-item">
                                                 <i class="bi bi-calendar-event"></i>
@@ -195,19 +196,19 @@
                                         </p>
                                         <div class="activity-info-list">
                                             <div class="activity-info-item">
-                                                <span>Adresa</span>
+                                                <span>Adresse</span>
                                                 <strong th:text="${activity.address}">Parcul Kiseleff</strong>
                                             </div>
                                             <div class="activity-info-item">
-                                                <span>Categorie</span>
+                                                <span>Catégorie</span>
                                                 <strong th:text="${activity.category}">Social</strong>
                                             </div>
                                             <div class="activity-info-item">
-                                                <span>Taguri</span>
+                                                <span>Tags</span>
                                                 <strong th:text="${activity.tags}">urban, foto</strong>
                                             </div>
                                             <div class="activity-info-item">
-                                                <span>Creat la</span>
+                                                <span>Créé le</span>
                                                 <strong th:text="${#temporals.format(activity.createdAt, 'dd MMM yyyy, HH:mm')}">12 Feb 2026, 10:00</strong>
                                             </div>
                                         </div>
@@ -217,10 +218,10 @@
                                         <div class="profile-header">
                                             <a class="creator-profile-link"
                                                th:href="@{/users/{id}(id=${activity.creator.id})}"
-                                               th:title="${'Vezi profilul lui ' + activity.creator.fullName}">
+                                                th:title="${'Voir le profil de ' + activity.creator.fullName}">
                                                 <img th:src="${activity.creator.avatarUrl != null and !#strings.isEmpty(activity.creator.avatarUrl) ? activity.creator.avatarUrl : '/images/members/portrait-young-handsome-businessman-wearing-suit-standing-with-crossed-arms-with-isolated-studio-white-background.jpg'}"
                                                      onerror="this.onerror=null;this.src='/images/members/portrait-young-handsome-businessman-wearing-suit-standing-with-crossed-arms-with-isolated-studio-white-background.jpg';"
-                                                     alt="Profil organizator" class="profile-avatar">
+                                                     alt="Profil de l'organisateur" class="profile-avatar">
                                             </a>
                                             <div>
                                                 <h5 class="mb-1">
@@ -228,14 +229,14 @@
                                                        th:href="@{/users/{id}(id=${activity.creator.id})}"
                                                        th:text="${activity.creator.fullName}">Radu Ionescu</a>
                                                 </h5>
-                                                <p class="mb-0 profile-subtitle">Organizator</p>
+                                                <p class="mb-0 profile-subtitle">Organisateur</p>
                                             </div>
                                         </div>
-                                        <p class="profile-description" th:text="${activity.creator.bio}">Iubesc activitatile in aer liber si imi place sa aduc oamenii impreuna.</p>
+                                         <p class="profile-description" th:text="${activity.creator.bio}">J'aime les activités de plein air et rassembler les gens.</p>
                                         <div class="profile-info-list">
                                             <div class="profile-info-item" th:if="${activity.creator.birthDate != null}">
-                                                <span>Varsta</span>
-                                                <strong th:text="${T(java.time.Period).between(activity.creator.birthDate, T(java.time.LocalDate).now()).getYears() + ' ani'}">29 ani</strong>
+                                                <span>Âge</span>
+                                                <strong th:text="${T(java.time.Period).between(activity.creator.birthDate, T(java.time.LocalDate).now()).getYears() + ' ans'}">29 ans</strong>
                                             </div>
                                             <div class="profile-info-item">
                                                 <span>Email</span>
@@ -250,31 +251,106 @@
                                     <div class="chat-stream" id="chatStream"></div>
 
                                     <div class="chat-input">
-                                        <input class="form-control" id="chatInput" type="text" placeholder="Scrie un mesaj..." th:disabled="${#authorization.expression('isAnonymous()')}">
-                                        <button class="btn custom-btn" id="chatSendBtn" type="button" th:disabled="${#authorization.expression('isAnonymous()')}" aria-label="Trimite mesaj"><i class="bi bi-send"></i></button>
+                                        <label class="visually-hidden" for="chatInput">Message</label>
+                                        <input class="form-control" id="chatInput" type="text" placeholder="Écrivez un message..." th:disabled="${#authorization.expression('isAnonymous()')}">
+                                        <button class="btn custom-btn" id="chatSendBtn" type="button" th:disabled="${#authorization.expression('isAnonymous()')}" aria-label="Envoyer le message"><i class="bi bi-send"></i></button>
                                     </div>
-                                    <small class="text-muted mt-2" th:if="${#authorization.expression('isAnonymous()')}">Autentifica-te ca sa participi la chat.</small>
+                                    <small class="text-muted mt-2" th:if="${#authorization.expression('isAnonymous()')}">Connectez-vous pour participer à la discussion.</small>
                                 </div>
 
                                 <div class="activity-tab-panel" id="activity-announcements-panel" role="tabpanel" data-panel="announcements" th:if="${canAccessChat}">
                                     <div class="announcement-composer" th:if="${isActivityCreator}">
                                         <form id="announcementForm" class="announcement-form">
-                                            <textarea class="form-control" id="announcementInput" rows="3" maxlength="1000" placeholder="Scrie un anunt pentru participanti..."></textarea>
+                                            <label class="visually-hidden" for="announcementInput">Annonce</label>
+                                            <textarea class="form-control" id="announcementInput" rows="3" maxlength="1000" placeholder="Rédigez une annonce pour les participants..."></textarea>
                                             <div class="announcement-form-actions">
-                                                <button type="submit" class="btn custom-btn btn-sm">Publica anunt</button>
+                                                <button type="submit" class="btn custom-btn btn-sm">Publier l'annonce</button>
                                             </div>
                                         </form>
                                     </div>
 
                                     <div class="announcement-list" id="announcementList">
-                                        <p class="text-muted text-center my-3" id="announcementEmptyState">Nu exista anunturi inca.</p>
+                                        <p class="text-muted text-center my-3" id="announcementEmptyState">Il n'y a pas encore d'annonces.</p>
+                                    </div>
+                                </div>
+
+                                <div class="activity-tab-panel" id="activity-memories-panel" role="tabpanel" data-panel="memories" th:if="${isActivityCreator or canAccessChat}">
+                                    <div class="memory-panel-wrap">
+                                        <div class="memory-panel-header">
+                                            <h5 class="mb-1">Livre de souvenirs</h5>
+                                            <p class="mb-0 text-muted">Ajoutez vos moments, puis mettez à jour le livre public.</p>
+                                        </div>
+
+                                        <div class="alert mb-3"
+                                             th:if="${memoryMessage != null}"
+                                             th:classappend="${memoryMessageType != null ? ' alert-' + memoryMessageType : ' alert-info'}"
+                                              th:text="${memoryMessage}">Message</div>
+
+                                        <div class="memory-actions-row" th:if="${canManageMemories}">
+                                            <a class="btn custom-border-btn btn-sm" th:href="@{/memories(activity=${activity.id})}">
+                                                Voir le livre
+                                            </a>
+                                            <form method="post" th:action="@{/activities/{id}/memories/publish(id=${activity.id})}">
+                                                <button class="btn custom-btn btn-sm" type="submit">Mettre à jour le livre public</button>
+                                            </form>
+                                            <small class="text-muted"
+                                                   th:if="${memoryBook != null and memoryBook.publicUpdatedAt != null}"
+                                                    th:text="${'Publié le ' + #temporals.format(memoryBook.publicUpdatedAt, 'dd MMM yyyy, HH:mm')}">Publié le</small>
+                                        </div>
+
+                                        <div class="memory-add-card" th:if="${canManageMemories}">
+                                            <h6 class="mb-2">Ajouter un souvenir</h6>
+                                            <form method="post"
+                                                  enctype="multipart/form-data"
+                                                  th:action="@{/activities/{id}/memories(id=${activity.id})}"
+                                                  class="memory-entry-form"
+                                                  id="memoryEntryForm">
+                                                <label class="visually-hidden" for="memoryContent">Contenu du souvenir</label>
+                                                <textarea class="form-control"
+                                                          id="memoryContent"
+                                                          name="content"
+                                                          rows="4"
+                                                          maxlength="1200"
+                                                          placeholder="Rédigez un commentaire sur ce moment..."></textarea>
+
+                                                <label class="memory-upload-label" for="memoryFilesInput">Choisissez des photos (max 12)</label>
+                                                <input class="form-control" id="memoryFilesInput" type="file" name="memoryFiles" accept="image/*" multiple>
+
+                                                <div id="memoryCaptionFields" class="memory-caption-fields"></div>
+
+                                                <div class="memory-entry-actions">
+                                                    <button class="btn custom-btn" type="submit">Enregistrer le souvenir</button>
+                                                </div>
+                                            </form>
+                                        </div>
+
+                                        <div class="memory-list-wrap" th:if="${!#lists.isEmpty(activityMemories)}">
+                                            <div class="memory-entry-card" th:each="entry : ${activityMemories}">
+                                                <div class="memory-entry-meta">
+                                                    <strong th:text="${entry.author != null ? entry.author.fullName : 'Participant'}">Participant</strong>
+                                                    <small th:text="${#temporals.format(entry.createdAt, 'dd MMM yyyy, HH:mm')}">12 Feb 2026</small>
+                                                </div>
+
+                                                <p class="memory-entry-text" th:text="${entry.content}">Description du souvenir</p>
+
+                                                <div class="memory-photo-grid" th:if="${entry.photos != null and !#lists.isEmpty(entry.photos)}">
+                                                    <figure class="memory-photo-card" th:each="photo : ${entry.photos}">
+                                                        <img th:src="${photo.imageUrl}" alt="Photo du souvenir">
+                                                        <figcaption th:if="${photo.caption != null and !#strings.isEmpty(photo.caption)}"
+                                                                     th:text="${photo.caption}">Légende</figcaption>
+                                                    </figure>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                            <p class="text-muted mb-0" th:if="${#lists.isEmpty(activityMemories)}">Il n'y a pas encore de souvenirs.</p>
                                     </div>
                                 </div>
 
                                 <div class="activity-tab-panel" id="activity-participants-panel" role="tabpanel" data-panel="participants" th:if="${isActivityCreator or canAccessChat}">
                                     <div class="participants-container">
-                                        <p class="text-muted mb-0" th:if="${#lists.isEmpty(approvedParticipationRequests) and (!isActivityCreator or #lists.isEmpty(pendingParticipationRequests))}">
-                                            Nu exista participanti sau cereri in asteptare.
+                                            <p class="text-muted mb-0" th:if="${#lists.isEmpty(approvedParticipationRequests) and (!isActivityCreator or #lists.isEmpty(pendingParticipationRequests))}">
+                                             Il n'y a ni participants ni demandes en attente.
                                         </p>
 
                                         <div class="participation-request-card" th:if="${isActivityCreator}" th:each="request : ${pendingParticipationRequests}">
@@ -287,13 +363,13 @@
                                             <div class="participation-request-actions">
                                                 <form method="post"
                                                       th:action="@{/activities/{id}/participation-requests/{requestId}/approve(id=${activity.id}, requestId=${request.id})}">
-                                                    <button class="btn participation-action-btn is-accept" type="submit" title="Accepta">
+                                                        <button class="btn participation-action-btn is-accept" type="submit" title="Accepter">
                                                         <i class="bi bi-check-lg"></i>
                                                     </button>
                                                 </form>
                                                 <form method="post"
                                                       th:action="@{/activities/{id}/participation-requests/{requestId}/reject(id=${activity.id}, requestId=${request.id})}">
-                                                    <button class="btn participation-action-btn is-reject" type="submit" title="Respinge">
+                                                        <button class="btn participation-action-btn is-reject" type="submit" title="Refuser">
                                                         <i class="bi bi-x-lg"></i>
                                                     </button>
                                                 </form>
@@ -306,13 +382,13 @@
                                                 <small class="d-block text-muted" th:text="${request.user.email}">email@example.com</small>
                                             </a>
                                             <div class="dropdown" th:if="${isActivityCreator}">
-                                                <button class="btn participation-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Actiuni">
+                                                    <button class="btn participation-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
                                                     <i class="bi bi-list"></i>
                                                 </button>
                                                 <div class="dropdown-menu dropdown-menu-end participant-dropdown-menu">
                                                     <form method="post"
                                                           th:action="@{/activities/{id}/participation-requests/{requestId}/exclude(id=${activity.id}, requestId=${request.id})}">
-                                                        <button class="dropdown-item text-danger" type="submit">Exclude participant</button>
+                                                        <button class="dropdown-item text-danger" type="submit">Exclure le participant</button>
                                                     </form>
                                                 </div>
                                             </div>
@@ -336,25 +412,28 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="pollComposerModalLabel">Creeaza un poll</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <h5 class="modal-title" id="pollComposerModalLabel">Créer un sondage</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                     </div>
                     <div class="modal-body">
                         <form class="chat-poll-composer" id="chatPollComposer">
-                            <input class="form-control mb-2" id="pollQuestionInput" type="text" maxlength="280" placeholder="Intrebare poll">
+                                    <label class="visually-hidden" for="pollQuestionInput">Question du sondage</label>
+                                    <input class="form-control mb-2" id="pollQuestionInput" type="text" maxlength="280" placeholder="Question du sondage">
                             <div id="pollOptionsContainer" class="poll-options-container">
                                 <div class="poll-option-input-row mb-2">
-                                    <input class="form-control poll-option-input" type="text" maxlength="160" placeholder="Optiunea 1">
-                                    <button class="poll-option-remove-btn" type="button" aria-label="Sterge optiunea">x</button>
+                                            <label class="visually-hidden" for="pollOption1">Option 1</label>
+                                            <input class="form-control poll-option-input" id="pollOption1" type="text" maxlength="160" placeholder="Option 1">
+                                            <button class="poll-option-remove-btn" type="button" aria-label="Supprimer l'option">x</button>
                                 </div>
                                 <div class="poll-option-input-row mb-2">
-                                    <input class="form-control poll-option-input" type="text" maxlength="160" placeholder="Optiunea 2">
-                                    <button class="poll-option-remove-btn" type="button" aria-label="Sterge optiunea">x</button>
+                                            <label class="visually-hidden" for="pollOption2">Option 2</label>
+                                            <input class="form-control poll-option-input" id="pollOption2" type="text" maxlength="160" placeholder="Option 2">
+                                            <button class="poll-option-remove-btn" type="button" aria-label="Supprimer l'option">x</button>
                                 </div>
                             </div>
                             <div class="chat-poll-composer-actions">
-                                <button class="btn btn-sm custom-border-btn me-2" id="addPollOptionInputBtn" type="button">Adauga inca o optiune</button>
-                                <button class="btn custom-btn" id="createPollBtn" type="submit">Publica poll</button>
+                                        <button class="btn btn-sm custom-border-btn me-2" id="addPollOptionInputBtn" type="button">Ajouter une autre option</button>
+                                        <button class="btn custom-btn" id="createPollBtn" type="submit">Publier le sondage</button>
                             </div>
                         </form>
                     </div>
@@ -416,8 +495,46 @@
             });
 
             const requestedTab = new URLSearchParams(window.location.search).get('tab');
-            const validTabs = ['info', 'chat', 'announcements', 'participants'];
+            const validTabs = ['info', 'chat', 'announcements', 'memories', 'participants'];
             const initialTab = validTabs.includes(requestedTab) ? requestedTab : 'info';
+
+            const memoryFilesInputEl = document.getElementById('memoryFilesInput');
+            const memoryCaptionFieldsEl = document.getElementById('memoryCaptionFields');
+
+            function escapeAttr(value) {
+                return String(value == null ? '' : value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+            }
+
+            function renderMemoryCaptionFields() {
+                if (!memoryFilesInputEl || !memoryCaptionFieldsEl) {
+                    return;
+                }
+
+                const files = Array.from(memoryFilesInputEl.files || []);
+                memoryCaptionFieldsEl.innerHTML = '';
+
+                if (!files.length) {
+                    return;
+                }
+
+                files.forEach((file, index) => {
+                    const row = document.createElement('div');
+                    row.className = 'memory-caption-row';
+                    row.innerHTML = `
+                        <label for="memoryCaption_${index}">Comentariu foto ${index + 1} (${escapeHtml(file.name)})</label>
+                        <input id="memoryCaption_${index}" class="form-control" type="text" name="photoCaptions" maxlength="240" placeholder="Ex: Momentul cand am ajuns la locatie">
+                    `;
+                    memoryCaptionFieldsEl.appendChild(row);
+                });
+            }
+
+            if (memoryFilesInputEl) {
+                memoryFilesInputEl.addEventListener('change', renderMemoryCaptionFields);
+            }
 
             function preserveTabContextForSidebarActivities() {
                 const activeTabButton = document.querySelector('.activity-tab-btn.is-active');

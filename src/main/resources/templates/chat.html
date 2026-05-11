@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="ro" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <meta name="description" content="Chat JoinUs. Conversatii active din activitatile tale.">
+        <meta name="description" content="Chat JoinUs. Conversations actives autour de vos activités.">
         <meta name="author" content="">
 
-        <title>Chat - JoinUs</title>
+        <title>Discussion - JoinUs</title>
 
         <!-- CSS FILES -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -97,38 +97,38 @@
 
                 <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="notificationsPanel" aria-labelledby="notificationsPanelLabel">
                     <div class="offcanvas-header">
-                        <h5 class="offcanvas-title text-white" id="notificationsPanelLabel">Notificari</h5>
+                        <h5 class="offcanvas-title text-white" id="notificationsPanelLabel">Notifications</h5>
 
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
                     </div>
 
                     <div class="offcanvas-body d-flex flex-column">
                         <div class="notification-item">
-                            <strong class="text-white">Alergare in parc</strong>
-                            <p class="mb-1">Activitatea ta a fost aprobata si publicata.</p>
-                            <small>Acum 5 minute</small>
+                            <strong class="text-white">Course au parc</strong>
+                            <p class="mb-1">Votre activité a été approuvée et publiée.</p>
+                            <small>Il y a 5 minutes</small>
                         </div>
 
                         <div class="notification-item">
-                            <strong class="text-white">Yoga la apus</strong>
-                            <p class="mb-1">S-au inscris inca 3 persoane.</p>
-                            <small>Acum 24 de minute</small>
+                            <strong class="text-white">Yoga au coucher du soleil</strong>
+                            <p class="mb-1">3 personnes se sont inscrites.</p>
+                            <small>Il y a 24 minutes</small>
                         </div>
 
                         <div class="notification-item">
-                            <strong class="text-white">Tur ciclist premium</strong>
-                            <p class="mb-1">Locurile sunt aproape epuizate.</p>
-                            <small>Astazi</small>
+                            <strong class="text-white">Tour cycliste premium</strong>
+                            <p class="mb-1">Les places sont presque épuisées.</p>
+                            <small>Aujourd'hui</small>
                         </div>
 
                         <div class="notification-item">
                             <strong class="text-white">Forum</strong>
-                            <p class="mb-1">Ai un raspuns nou la discutia despre trasee montane.</p>
-                            <small>Ieri</small>
+                            <p class="mb-1">Vous avez une nouvelle réponse à la discussion sur les sentiers de montagne.</p>
+                            <small>Hier</small>
                         </div>
 
                         <div class="mt-auto">
-                            <a href="/notifications" class="btn custom-btn custom-border-btn w-100">Vezi toate notificarile</a>
+                            <a href="/notifications" class="btn custom-btn custom-border-btn w-100">Voir toutes les notifications</a>
                         </div>
                     </div>
                 </div>
@@ -140,8 +140,8 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-lg-8 col-12 mx-auto text-center hero-content">
-                            <h2 class="text-white">Chat</h2>
-                            <h1 class="text-white mb-0">Conversatii active</h1>
+                            <h2 class="text-white">Discussion</h2>
+                            <h1 class="text-white mb-0">Conversations actives</h1>
                         </div>
                     </div>
                 </div>
@@ -152,21 +152,21 @@
                     <div class="activity-detail-grid">
                         <aside class="activity-sidebar-column">
                             <section class="activity-sidebar-card">
-                                <h5 class="activity-sidebar-title mb-3">Activitatile tale</h5>
+                                <h5 class="activity-sidebar-title mb-3">Vos activités</h5>
 
                                 <div class="activity-sidebar-list" th:if="${chatActivities != null and !#lists.isEmpty(chatActivities)}">
                                     <a class="activity-sidebar-item"
                                        th:each="activity : ${chatActivities}"
                                        th:href="@{/activities/{id}(id=${activity.id}, tab='chat')}">
-                                        <strong th:text="${activity.title}">Activitate</strong>
-                                        <span th:text="${activity.location}">Locatie</span>
+                                        <strong th:text="${activity.title}">Activité</strong>
+                                        <span th:text="${activity.location}">Lieu</span>
                                         <small th:text="${#temporals.format(activity.date, 'dd MMM yyyy')}">12 Feb 2026</small>
                                     </a>
                                 </div>
 
-                                <div class="alert alert-secondary mb-0"
-                                     th:if="${chatActivities == null or #lists.isEmpty(chatActivities)}">
-                                    Nu ai activitati in care poti intra in chat momentan.
+                                        <div class="alert alert-secondary mb-0"
+                                      th:if="${chatActivities == null or #lists.isEmpty(chatActivities)}">
+                                    Vous n'avez pour l'instant aucune activité dans laquelle vous pouvez discuter.
                                 </div>
                             </section>
                         </aside>
@@ -176,8 +176,8 @@
                                 <div class="activity-tab-panel is-active" role="tabpanel" data-panel="empty-chat">
                                     <div class="d-flex flex-column align-items-center justify-content-center text-center py-5">
                                         <i class="bi bi-chat-dots fs-1 mb-3 text-secondary"></i>
-                                        <h5 class="mb-2">Alege o activitate pentru a intra in chat</h5>
-                                        <p class="text-muted mb-0">Selecteaza o activitate din stanga si vei intra direct in tab-ul Chat.</p>
+                                        <h5 class="mb-2">Choisissez une activité pour entrer dans la discussion</h5>
+                                        <p class="text-muted mb-0">Sélectionnez une activité à gauche et vous accéderez directement à l'onglet Discussion.</p>
                                     </div>
                                 </div>
                             </section>

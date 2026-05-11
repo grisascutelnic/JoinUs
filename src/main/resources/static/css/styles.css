@@ -5452,6 +5452,472 @@ strong {
   }
 }
 
+/* Memories (activity tab + global page) */
+.memory-panel-wrap {
+  display: grid;
+  gap: 16px;
+}
+
+.memory-panel-header h5 {
+  color: #1f2a44;
+}
+
+.memory-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.memory-add-card {
+  background: #f9f6ed;
+  border: 1px solid rgba(31, 42, 68, 0.12);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.memory-entry-form {
+  display: grid;
+  gap: 12px;
+}
+
+.memory-upload-label {
+  font-weight: 600;
+  color: #1f2a44;
+}
+
+.memory-caption-fields {
+  display: grid;
+  gap: 8px;
+}
+
+.memory-caption-row label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #3d405b;
+}
+
+.memory-entry-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.memory-list-wrap {
+  display: grid;
+  gap: 14px;
+}
+
+.memory-entry-card {
+  border: 1px solid rgba(31, 42, 68, 0.12);
+  border-radius: 14px;
+  background: #fff;
+  padding: 14px;
+}
+
+.memory-entry-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.memory-entry-text {
+  margin-bottom: 12px;
+}
+
+.memory-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.memory-photo-card {
+  margin: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff9ec;
+  border: 1px solid rgba(31, 42, 68, 0.1);
+}
+
+.memory-photo-card img {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+  display: block;
+}
+
+.memory-photo-card figcaption {
+  padding: 8px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: #3d405b;
+}
+
+.memories-section {
+  position: relative;
+}
+
+.memory-shelf {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 280px));
+  justify-content: start;
+  gap: 22px;
+}
+
+.memory-shelf-book {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  width: 280px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.memory-shelf-book:hover,
+.memory-shelf-book:focus-visible {
+  transform: translateY(-4px);
+}
+
+.memory-shelf-book:focus-visible {
+  outline: 2px solid rgba(95, 61, 36, 0.5);
+  outline-offset: 4px;
+}
+
+.memory-card-cover {
+  display: block;
+  height: 380px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #8f5e34 0%, #5f3d24 100%);
+  border: 1px solid rgba(255, 226, 188, 0.35);
+  padding: 14px;
+  box-shadow: 0 16px 26px rgba(42, 23, 8, 0.25);
+}
+
+.memory-card-cover-inner {
+  height: 100%;
+  border: 1px solid rgba(255, 226, 188, 0.45);
+  border-radius: 10px;
+  padding: 10px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+  gap: 6px;
+  color: #fff2e0;
+}
+
+.memory-card-cover-kicker {
+  margin: 0;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.memory-card-cover-inner h5 {
+  margin: 8px 0;
+  color: #fff2e0;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 34px;
+  line-height: 1;
+}
+
+.memory-card-cover-meta {
+  display: block;
+  color: rgba(255, 235, 209, 0.96);
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.memory-card-cover-meta--date {
+  font-size: 15px;
+  opacity: 0.92;
+}
+
+.memory-open-btn--preferred .memory-card-cover {
+  box-shadow: 0 0 0 2px rgba(95, 61, 36, 0.32), 0 16px 26px rgba(42, 23, 8, 0.25);
+}
+
+.memory-book-modal .modal-dialog {
+  max-width: 980px;
+}
+
+.memory-book-modal-content {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.memory-book-modal .modal-body {
+  position: relative;
+  padding: 28px 12px 12px;
+}
+
+.memories-stage-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.memory-book-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.memory-book-controls--modal {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  background: rgba(245, 245, 245, 0.92);
+  border: 1px solid rgba(61, 64, 91, 0.18);
+  border-radius: 999px;
+  padding: 6px 10px;
+}
+
+.memory-modal-close {
+  position: absolute;
+  top: 2px;
+  right: 6px;
+  z-index: 5;
+  filter: invert(1);
+  opacity: 0.9;
+}
+
+.memory-modal-close:hover {
+  opacity: 1;
+}
+
+.memory-book-frame {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: 4px;
+}
+
+.memory-book {
+  width: min(560px, 100%);
+  height: 380px;
+  position: relative;
+  perspective: 2600px;
+}
+
+.memory-book-end-cover {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: 100%;
+  border-radius: 0 12px 12px 0;
+  background: linear-gradient(145deg, #8f5e34 0%, #5f3d24 100%);
+  border: 1px solid rgba(255, 226, 188, 0.35);
+  box-shadow: 0 14px 25px rgba(22, 14, 8, 0.14);
+  z-index: 0;
+}
+
+.memory-book-end-cover::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 226, 188, 0.45);
+}
+
+.memory-book::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  bottom: 12px;
+  width: 16px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, #8f5e34 0%, #5d3b20 45%, #8f5e34 100%);
+  border-radius: 8px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+.memory-book-page {
+  width: 50%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  transition: transform 0.95s cubic-bezier(0.22, 0.61, 0.36, 1);
+  z-index: 2;
+}
+
+.memory-book-page.is-flipped {
+  transform: rotateY(-180deg);
+}
+
+.memory-book-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 0 12px 12px 0;
+  border: 1px solid rgba(47, 36, 27, 0.17);
+  background: linear-gradient(180deg, #fffdf9 0%, #f8ecd6 100%);
+  box-shadow: 0 14px 25px rgba(22, 14, 8, 0.14);
+  padding: 14px;
+  overflow: auto;
+}
+
+.memory-book-face-back {
+  transform: rotateY(180deg);
+  background: linear-gradient(180deg, #f2dfc2 0%, #eed6b5 100%);
+  border-radius: 12px 0 0 12px;
+}
+
+.memory-book-cover .memory-book-face-front {
+  background: linear-gradient(145deg, #8f5e34 0%, #5f3d24 100%);
+  color: #fff2e0;
+  border: 1px solid rgba(255, 226, 188, 0.35);
+}
+
+.memory-cover-content {
+  border: 1px solid rgba(255, 226, 188, 0.45);
+  border-radius: 10px;
+  height: 100%;
+  padding: 14px;
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.memory-cover-kicker {
+  margin: 0;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.memory-cover-content h3 {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 28px;
+  line-height: 1.05;
+  margin: 0;
+}
+
+.memory-page-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.memory-page-text {
+  margin-bottom: 12px;
+  color: #2f241b;
+}
+
+.memory-page-photos {
+  display: grid;
+  gap: 10px;
+}
+
+.memory-page-photos figure {
+  margin: 0;
+  border: 1px solid rgba(47, 36, 27, 0.15);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.memory-page-photos img {
+  display: block;
+  width: 100%;
+  max-height: 160px;
+  object-fit: cover;
+}
+
+.memory-page-photos figcaption {
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.memory-page-number {
+  position: absolute;
+  right: 16px;
+  bottom: 10px;
+  color: rgba(47, 36, 27, 0.7);
+  font-size: 13px;
+}
+
+@media (max-width: 991px) {
+  .memory-shelf {
+    grid-template-columns: repeat(2, minmax(0, 260px));
+    justify-content: start;
+    gap: 18px;
+  }
+
+  .memory-shelf-book {
+    width: 260px;
+  }
+
+  .memory-book {
+    width: min(520px, 100%);
+    height: 360px;
+  }
+}
+
+@media (max-width: 767px) {
+  .memory-shelf {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .memory-shelf-book {
+    width: min(100%, 300px);
+  }
+
+  .memory-card-cover {
+    height: 360px;
+  }
+
+  .memory-card-cover-inner h5 {
+    font-size: 28px;
+  }
+
+  .memory-card-cover-meta {
+    font-size: 15px;
+  }
+
+  .memory-card-cover-meta--date {
+    font-size: 13px;
+  }
+
+  .memory-book {
+    width: min(420px, 100%);
+    height: 300px;
+  }
+
+  .memory-book-face {
+    padding: 10px;
+  }
+
+  .memory-cover-content h3 {
+    font-size: 22px;
+  }
+
+  .memory-page-photos img {
+    max-height: 120px;
+  }
+}
+
 /*---------------------------------------
   PROFILE (profile.html)
 -----------------------------------------*/
