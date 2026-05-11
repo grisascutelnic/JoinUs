@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -59,7 +60,7 @@ public class ActivityController {
 
     @PostMapping("/activities")
     public String createActivity(
-            @Valid @ModelAttribute("activityForm") ActivityDto form,
+            @Validated(com.scutelnic.joinus.dto.CreateActivityChecks.class) @ModelAttribute("activityForm") ActivityDto form,
             BindingResult bindingResult,
             Model model,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,

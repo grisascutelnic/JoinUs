@@ -79,7 +79,7 @@
                         <div class="activity-detail-grid">
                             <aside class="activity-sidebar">
                                 <div class="activity-sidebar-card">
-                                    <h5>Alte activitati</h5>
+                                    <h5>Autres activités</h5>
                                      <div class="activity-mini-list" data-unread-sort-list>
                                         <a class="activity-mini-card"
                                            th:each="item : ${otherActivities}"
@@ -152,12 +152,12 @@
                                                 <li th:if="${isActivityCreator}"><button class="dropdown-item" id="togglePollComposerBtn" type="button">Créer un sondage</button></li>
                                                 <li th:if="${isActivityCreator}"><a class="dropdown-item" th:href="@{/activities/{id}/edit(id=${activity.id})}">Modifier l'activité</a></li>
                                                 <li th:if="${isActivityCreator}">
-                                                    <form method="post" th:action="@{/activities/{id}/delete(id=${activity.id})}" onsubmit="return confirm('Sigur vrei sa stergi aceasta activitate?');">
+                                                    <form method="post" th:action="@{/activities/{id}/delete(id=${activity.id})}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette activité ?');">
                                                         <button class="dropdown-item text-danger" type="submit">Supprimer l'activité</button>
                                                     </form>
                                                 </li>
                                                 <li th:if="${!isActivityCreator and participationStatus == T(com.scutelnic.joinus.entity.ParticipationStatus).APPROVED}">
-                                                    <form method="post" th:action="@{/activities/{id}/leave(id=${activity.id})}" onsubmit="return confirm('Sigur vrei sa parasesti aceasta activitate?');">
+                                                    <form method="post" th:action="@{/activities/{id}/leave(id=${activity.id})}" onsubmit="return confirm('Êtes-vous sûr de vouloir quitter cette activité ?');">
                                                         <button class="dropdown-item text-danger" type="submit">Quitter l'activité</button>
                                                     </form>
                                                 </li>
@@ -187,7 +187,7 @@
                                             </div>
                                             <div class="activity-meta-item">
                                                 <i class="bi bi-people"></i>
-                                                <span th:text="${activity.capacity + ' participanti'}">12 participanti</span>
+                                                <span th:text="${activity.capacity + ' participants'}">12 participants</span>
                                             </div>
                                         </div>
 
@@ -525,8 +525,8 @@
                     const row = document.createElement('div');
                     row.className = 'memory-caption-row';
                     row.innerHTML = `
-                        <label for="memoryCaption_${index}">Comentariu foto ${index + 1} (${escapeHtml(file.name)})</label>
-                        <input id="memoryCaption_${index}" class="form-control" type="text" name="photoCaptions" maxlength="240" placeholder="Ex: Momentul cand am ajuns la locatie">
+                        <label for="memoryCaption_${index}">Légende photo ${index + 1} (${escapeHtml(file.name)})</label>
+                        <input id="memoryCaption_${index}" class="form-control" type="text" name="photoCaptions" maxlength="240" placeholder="Ex : Le moment où nous sommes arrivés sur place">
                     `;
                     memoryCaptionFieldsEl.appendChild(row);
                 });
@@ -597,12 +597,12 @@
 
             function formatTime(isoDate) {
                 const date = new Date(isoDate);
-                return date.toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' });
+                return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
             }
 
             function formatDateTime(isoDate) {
                 const date = new Date(isoDate);
-                return date.toLocaleString('ro-RO', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                return date.toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
             }
 
             function escapeHtml(value) {
@@ -653,7 +653,7 @@
                 }
 
                 card.innerHTML = `
-                    <strong>${escapeHtml(announcement.senderName || 'Organizator')}</strong>
+                    <strong>${escapeHtml(announcement.senderName || 'Organisateur')}</strong>
                     <p class="mb-2">${escapeHtml(announcement.content || '')}</p>
                     <small>${escapeHtml(formatDateTime(announcement.createdAt))}</small>
                 `;
@@ -669,8 +669,8 @@
                 const announcements = response.ok ? await response.json() : [];
                 announcementListEl.innerHTML = '';
                 announcementElements.clear();
-                if (!Array.isArray(announcements) || announcements.length === 0) {
-                    announcementListEl.innerHTML = '<p class="text-muted text-center my-3" id="announcementEmptyState">Nu exista anunturi inca.</p>';
+                    if (!Array.isArray(announcements) || announcements.length === 0) {
+                    announcementListEl.innerHTML = '<p class="text-muted text-center my-3" id="announcementEmptyState">Il n\'y a pas encore d\'annonces.</p>';
                     return;
                 }
                 announcements.forEach((announcement) => {
@@ -727,7 +727,7 @@
                     id: Number(poll.id),
                     activityId: Number(poll.activityId),
                     creatorId: Number(poll.creatorId),
-                    creatorName: poll.creatorName || 'Utilizator',
+                    creatorName: poll.creatorName || 'Utilisateur',
                     question: poll.question || '',
                     createdAt: poll.createdAt,
                     currentUserOptionId: poll.currentUserOptionId ? Number(poll.currentUserOptionId) : null,
@@ -750,7 +750,7 @@
                 if (!listEl) return;
                 const isHidden = listEl.classList.contains('d-none');
                 listEl.classList.toggle('d-none', !isHidden);
-                toggleBtn.textContent = isHidden ? 'Ascunde votanti' : 'Vezi votanti';
+                toggleBtn.textContent = isHidden ? 'Masquer les votants' : 'Voir les votants';
             }
 
             function renderPollContent(container, poll) {
@@ -799,7 +799,7 @@
                         menuEditButton.className = 'dropdown-item';
                         menuEditButton.dataset.pollAction = isEditing ? 'cancel-edit' : 'start-edit';
                         menuEditButton.dataset.pollId = String(poll.id);
-                        menuEditButton.textContent = isEditing ? 'Renunta la editare' : 'Editeaza';
+                        menuEditButton.textContent = isEditing ? 'Annuler l\'édition' : 'Modifier';
                         menuEditItem.appendChild(menuEditButton);
 
                         const menuDeleteItem = document.createElement('li');
@@ -808,7 +808,7 @@
                         menuDeleteButton.className = 'dropdown-item text-danger';
                         menuDeleteButton.dataset.pollAction = 'delete';
                         menuDeleteButton.dataset.pollId = String(poll.id);
-                        menuDeleteButton.textContent = 'Sterge';
+                        menuDeleteButton.textContent = 'Supprimer';
                         menuDeleteItem.appendChild(menuDeleteButton);
 
                         menu.appendChild(menuEditItem);
@@ -820,7 +820,7 @@
                         menuAddOptionButton.className = 'dropdown-item';
                         menuAddOptionButton.dataset.pollAction = 'add-option';
                         menuAddOptionButton.dataset.pollId = String(poll.id);
-                        menuAddOptionButton.textContent = 'Adauga optiune';
+                        menuAddOptionButton.textContent = 'Ajouter une option';
                         menuAddOptionItem.appendChild(menuAddOptionButton);
                         menu.appendChild(menuAddOptionItem);
                     }
@@ -874,7 +874,7 @@
                         deleteOptionBtn.dataset.pollAction = 'delete-option';
                         deleteOptionBtn.dataset.pollId = String(poll.id);
                         deleteOptionBtn.dataset.optionId = String(option.optionId);
-                        deleteOptionBtn.setAttribute('aria-label', 'Sterge optiunea');
+                        deleteOptionBtn.setAttribute('aria-label', 'Supprimer l\'option');
                         deleteOptionBtn.textContent = 'x';
                         optionRow.appendChild(deleteOptionBtn);
                     }
@@ -887,7 +887,7 @@
                         votersToggle.className = 'chat-poll-voters-toggle';
                         votersToggle.dataset.pollAction = 'toggle-voters';
                         votersToggle.dataset.target = `poll-${poll.id}-option-${option.optionId}-voters`;
-                        votersToggle.textContent = 'Vezi votanti';
+                        votersToggle.textContent = 'Voir les votants';
                         if (option.voteCount === 0) {
                             votersToggle.disabled = true;
                         }
@@ -914,7 +914,7 @@
                     newOptionInput.type = 'text';
                     newOptionInput.maxLength = 160;
                     newOptionInput.className = 'form-control';
-                    newOptionInput.placeholder = 'Optiune noua';
+                    newOptionInput.placeholder = 'Nouvelle option';
                     newOptionInput.dataset.pollEditField = 'new-option';
 
                     addOptionRow.appendChild(newOptionInput);
@@ -927,14 +927,14 @@
                     saveBtn.className = 'btn btn-sm custom-btn';
                     saveBtn.dataset.pollAction = 'save-edit';
                     saveBtn.dataset.pollId = String(poll.id);
-                    saveBtn.textContent = 'Salveaza';
+                    saveBtn.textContent = 'Enregistrer';
 
                     const cancelBtn = document.createElement('button');
                     cancelBtn.type = 'button';
                     cancelBtn.className = 'btn btn-sm custom-border-btn';
                     cancelBtn.dataset.pollAction = 'cancel-edit';
                     cancelBtn.dataset.pollId = String(poll.id);
-                    cancelBtn.textContent = 'Anuleaza';
+                    cancelBtn.textContent = 'Annuler';
 
                     footer.appendChild(cancelBtn);
                     footer.appendChild(saveBtn);
@@ -1054,7 +1054,7 @@
                     rows.forEach((row, index) => {
                         const input = row.querySelector('.poll-option-input');
                         if (input) {
-                            input.placeholder = `Optiunea ${index + 1}`;
+                            input.placeholder = `Option ${index + 1}`;
                         }
                         const removeBtn = row.querySelector('.poll-option-remove-btn');
                         if (removeBtn) {
@@ -1080,12 +1080,12 @@
                         input.type = 'text';
                         input.maxLength = 160;
                         input.className = 'form-control poll-option-input';
-                        input.placeholder = `Optiunea ${pollOptionInputCount}`;
+                        input.placeholder = `Option ${pollOptionInputCount}`;
 
                         const removeBtn = document.createElement('button');
                         removeBtn.type = 'button';
                         removeBtn.className = 'poll-option-remove-btn';
-                        removeBtn.setAttribute('aria-label', 'Sterge optiunea');
+                        removeBtn.setAttribute('aria-label', 'Supprimer l\'option');
                         removeBtn.textContent = 'x';
 
                         row.appendChild(input);
@@ -1107,12 +1107,12 @@
                     input.type = 'text';
                     input.maxLength = 160;
                     input.className = 'form-control poll-option-input';
-                    input.placeholder = `Optiunea ${pollOptionInputCount}`;
+                    input.placeholder = `Option ${pollOptionInputCount}`;
 
                     const removeBtn = document.createElement('button');
                     removeBtn.type = 'button';
                     removeBtn.className = 'poll-option-remove-btn';
-                    removeBtn.setAttribute('aria-label', 'Sterge optiunea');
+                     removeBtn.setAttribute('aria-label', 'Supprimer l\'option');
                     removeBtn.textContent = 'x';
 
                     row.appendChild(input);
@@ -1265,21 +1265,21 @@
                         if (!optionId) {
                             return;
                         }
-                        if (window.confirm('Sigur vrei sa stergi aceasta optiune?')) {
+                        if (window.confirm('Êtes-vous sûr de vouloir supprimer cette option ?')) {
                             publishPollDeleteOption(pollId, optionId);
                         }
                         return;
                     }
 
                     if (action === 'delete') {
-                        if (window.confirm('Sigur vrei sa stergi acest poll?')) {
+                        if (window.confirm('Êtes-vous sûr de vouloir supprimer ce sondage ?')) {
                             publishPollDelete(pollId);
                         }
                         return;
                     }
 
                     if (action === 'add-option') {
-                        const nextOption = window.prompt('Adauga optiune noua in poll:');
+                        const nextOption = window.prompt('Ajouter une nouvelle option au sondage :');
                         if (nextOption && nextOption.trim()) {
                             publishPollAddOption(pollId, nextOption.trim());
                         }
@@ -1703,7 +1703,7 @@
                 });
 
                 if (timeline.length === 0 && chatStreamEl) {
-                    chatStreamEl.innerHTML = '<p id="chatEmptyState" class="text-muted text-center my-3">Nu exista mesaje inca. Fii primul care scrie in chat.</p>';
+                    chatStreamEl.innerHTML = '<p id="chatEmptyState" class="text-muted text-center my-3">Il n\'y a pas encore de messages. Soyez le premier à écrire dans le chat.</p>';
                 }
 
                 scrollChatToBottom();

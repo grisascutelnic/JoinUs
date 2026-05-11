@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="ro" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Editeaza profilul JoinUs">
-    <title>Editeaza profilul</title>
+    <meta name="description" content="Modifier le profil JoinUs">
+    <title>Modifier le profil</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,17 +21,17 @@
 
         <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="notificationsPanel" aria-labelledby="notificationsPanelLabel">
             <div class="offcanvas-header">
-                <h5 class="offcanvas-title text-white" id="notificationsPanelLabel">Notificari</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                <h5 class="offcanvas-title text-white" id="notificationsPanelLabel">Notifications</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
             </div>
             <div class="offcanvas-body d-flex flex-column">
                 <div class="notification-item">
                     <strong class="text-white">Profil</strong>
-                    <p class="mb-1">Editezi datele contului tau.</p>
-                    <small>Acum</small>
+                    <p class="mb-1">Vous modifiez les informations de votre compte.</p>
+                    <small>Maintenant</small>
                 </div>
                 <div class="mt-auto">
-                    <a href="#" class="btn custom-btn custom-border-btn w-100" data-bs-dismiss="offcanvas">Inchide</a>
+                    <a href="#" class="btn custom-btn custom-border-btn w-100" data-bs-dismiss="offcanvas">Fermer</a>
                 </div>
             </div>
         </div>
@@ -40,8 +40,8 @@
             <div class="container">
                 <div class="row">
                     <div class="col-lg-8 col-12 mx-auto text-center hero-content">
-                        <h2 class="text-white">Editeaza profilul</h2>
-                        <h1 class="text-white mb-0" th:text="${displayUser.fullName}">Nume utilizator</h1>
+                        <h2 class="text-white">Modifier le profil</h2>
+                        <h1 class="text-white mb-0" th:text="${displayUser.fullName}">Nom de l'utilisateur</h1>
                     </div>
                 </div>
             </div>
@@ -63,39 +63,39 @@
                 <div class="profile-edit-avatar-shell" th:classappend="${displayAvatar == null} ? ' is-fallback' : ''">
                     <img th:if="${displayAvatar != null}"
                          th:src="${displayAvatar}"
-                         alt="Avatar utilizator"
+                         alt="Avatar de l'utilisateur"
                          class="profile-edit-avatar"
                          onerror="this.closest('.profile-edit-avatar-shell').classList.add('is-fallback'); this.remove();">
                     <i class="bi bi-person-circle profile-edit-avatar-icon" aria-hidden="true"></i>
                 </div>
-                <h3 class="mb-1" th:text="${displayUser.fullName}">Nume utilizator</h3>
+                <h3 class="mb-1" th:text="${displayUser.fullName}">Nom de l'utilisateur</h3>
                 <p class="profile-edit-muted mb-3" th:text="${displayUser.email}">email@example.com</p>
                 <div class="profile-edit-divider"></div>
                 <div class="profile-edit-inline" th:if="${displayUser.birthDate != null}">
-                    <span>Data nasterii</span>
+                    <span>Date de naissance</span>
                     <strong th:text="${#temporals.format(displayUser.birthDate, 'dd MMM yyyy')}">13 Feb 2003</strong>
                 </div>
                 <div class="profile-edit-inline" th:if="${displayUser.birthDate == null}">
-                    <span>Data nasterii</span>
-                    <strong>Nu este completata</strong>
+                    <span>Date de naissance</span>
+                    <strong>Non renseignée</strong>
                 </div>
             </aside>
 
             <section class="profile-edit-form-card">
-                <h3 class="mb-2">Date profil</h3>
-                <p class="profile-edit-muted mb-4">Actualizeaza informatiile contului tau. Modificarile se salveaza imediat dupa submit.</p>
+                <h3 class="mb-2">Données du profil</h3>
+                <p class="profile-edit-muted mb-4">Mettez à jour les informations de votre compte. Les modifications sont enregistrées immédiatement après l'envoi.</p>
 
                 <div class="alert alert-success" th:if="${param.updated}">
-                    Profilul a fost actualizat cu succes.
+                    Le profil a été mis à jour avec succès.
                 </div>
                 <div class="alert alert-danger" th:if="${param.error}">
-                    Nu am putut salva modificarile. Verifica datele si incearca din nou.
+                    Impossible d'enregistrer les modifications. Vérifiez les données et réessayez.
                 </div>
                 <div class="alert alert-danger" th:if="${birthDateRequired}">
-                    Data nasterii este obligatorie pentru a continua.
+                    La date de naissance est obligatoire pour continuer.
                 </div>
                 <div class="alert alert-danger" th:if="${profileImageError}" th:text="${profileImageError}">
-                    Nu am putut incarca avatarul.
+                    Impossible de charger l'avatar.
                 </div>
 
                 <form class="profile-edit-form"
@@ -114,7 +114,7 @@
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label" for="fullName">Nume complet</label>
+                            <label class="form-label" for="fullName">Nom complet</label>
                             <input id="fullName"
                                    type="text"
                                    class="form-control"
@@ -124,52 +124,52 @@
                             <small class="text-danger" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></small>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" for="emailReadonly">Email</label>
+                            <label class="form-label" for="emailReadonly">E-mail</label>
                             <input id="emailReadonly" type="email" class="form-control" th:value="${displayUser.email}" readonly>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Data nasterii</label>
+                            <label class="form-label">Date de naissance</label>
                             <div class="birthdate-manual-grid">
                                 <select id="birthDay" class="form-control" th:attr="required=${birthDateRequired}">
-                                    <option value="">Zi</option>
+                                    <option value="">Jour</option>
                                     <option th:each="d : ${#numbers.sequence(1,31)}" th:value="${d}" th:text="${d}"></option>
                                 </select>
                                 <select id="birthMonth" class="form-control" th:attr="required=${birthDateRequired}">
-                                    <option value="">Luna</option>
+                                    <option value="">Mois</option>
                                     <option th:each="m : ${#numbers.sequence(1,12)}" th:value="${m}" th:text="${m}"></option>
                                 </select>
                                 <select id="birthYear" class="form-control" th:attr="required=${birthDateRequired}">
-                                    <option value="">An</option>
+                                    <option value="">Année</option>
                                     <option th:each="y : ${#numbers.sequence(1900, currentYear)}" th:value="${y}" th:text="${y}"></option>
                                 </select>
                             </div>
                             <div class="birthdate-manual-hints">
-                                <small class="profile-edit-muted">Ziua</small>
-                                <small class="profile-edit-muted">Luna</small>
-                                <small class="profile-edit-muted">Anul</small>
+                                <small class="profile-edit-muted">Jour</small>
+                                <small class="profile-edit-muted">Mois</small>
+                                <small class="profile-edit-muted">Année</small>
                             </div>
                             <small class="text-danger" th:if="${#fields.hasErrors('birthDate')}" th:errors="*{birthDate}"></small>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" for="imageFile">Incarca avatar nou</label>
+                            <label class="form-label" for="imageFile">Télécharger un nouvel avatar</label>
                             <input id="imageFile" type="file" name="imageFile" accept="image/*" class="form-control">
-                            <small class="profile-edit-muted">Imaginea va fi urcata in Cloudinary.</small>
+                            <small class="profile-edit-muted">L'image sera envoyée sur Cloudinary.</small>
                         </div>
                         <div class="col-12">
-                            <label class="form-label" for="bio">Descriere</label>
+                            <label class="form-label" for="bio">Description</label>
                             <textarea id="bio"
                                       class="form-control"
                                       th:field="*{bio}"
                                       rows="5"
                                       maxlength="300"
-                                      placeholder="Spune cateva cuvinte despre tine..."></textarea>
+                                      placeholder="Dites quelques mots sur vous..."></textarea>
                             <small class="text-danger" th:if="${#fields.hasErrors('bio')}" th:errors="*{bio}"></small>
                         </div>
                     </div>
 
                     <div class="profile-edit-actions">
-                        <a class="btn custom-btn custom-border-btn" th:href="@{/profile}">Inapoi la profil</a>
-                        <button type="submit" class="btn custom-btn">Salveaza modificarile</button>
+                        <a class="btn custom-btn custom-border-btn" th:href="@{/profile}">Retour au profil</a>
+                        <button type="submit" class="btn custom-btn">Enregistrer les modifications</button>
                     </div>
                 </form>
             </section>

@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ro" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Profil utilizator JoinUs">
+    <meta name="description" content="Profil utilisateur JoinUs">
     <title>Profil</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,17 +25,17 @@
 
         <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="notificationsPanel" aria-labelledby="notificationsPanelLabel">
             <div class="offcanvas-header">
-                <h5 class="offcanvas-title text-white" id="notificationsPanelLabel">Notificari</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                <h5 class="offcanvas-title text-white" id="notificationsPanelLabel">Notifications</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
             </div>
             <div class="offcanvas-body d-flex flex-column">
                 <div class="notification-item">
                     <strong class="text-white">Profil</strong>
-                    <p class="mb-1">Vizualizezi profilul utilizatorului.</p>
-                    <small>Acum</small>
+                    <p class="mb-1">Vous consultez le profil de cet utilisateur.</p>
+                    <small>Maintenant</small>
                 </div>
                 <div class="mt-auto">
-                    <a href="#" class="btn custom-btn custom-border-btn w-100" data-bs-dismiss="offcanvas">Inchide</a>
+                    <a href="#" class="btn custom-btn custom-border-btn w-100" data-bs-dismiss="offcanvas">Fermer</a>
                 </div>
             </div>
         </div>
@@ -45,7 +45,7 @@
                 <div class="row">
                     <div class="col-lg-8 col-12 mx-auto text-center hero-content">
                         <h2 class="text-white">Profil JoinUs</h2>
-                        <h1 class="text-white mb-0" th:text="${displayUser.fullName}">Nume utilizator</h1>
+                        <h1 class="text-white mb-0" th:text="${displayUser.fullName}">Nom de l'utilisateur</h1>
                     </div>
                 </div>
             </div>
@@ -70,19 +70,19 @@
             </div>
             <div class="user-details">
                 <div class="name-row">
-                    <h1 th:text="${displayUser.fullName}">Nume utilizator</h1>
+                    <h1 th:text="${displayUser.fullName}">Nom de l'utilisateur</h1>
                     <div class="more-options dropdown">
                         <button class="more-options-btn"
                                 type="button"
                                 data-bs-toggle="dropdown"
                                 aria-expanded="false"
-                                aria-label="Actiuni profil">
+                                aria-label="Actions du profil">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end profile-more-menu">
                             <li th:if="${isOwnProfileView}">
                                 <a class="dropdown-item" th:href="@{/profile/edit}">
-                                    <i class="bi bi-pencil-square me-2"></i>Editeaza profilul
+                                    <i class="bi bi-pencil-square me-2"></i>Modifier le profil
                                 </a>
                             </li>
                             <li th:unless="${isOwnProfileView}">
@@ -90,7 +90,7 @@
                                         type="button"
                                         data-bs-toggle="modal"
                                         data-bs-target="#reportProfileModal">
-                                    <i class="bi bi-flag me-2"></i>Raporteaza
+                                    <i class="bi bi-flag me-2"></i>Signaler
                                 </button>
                             </li>
                         </ul>
@@ -103,8 +103,8 @@
                 <div class="points-row">
                     <span class="medal-icon">★</span>
                     <span class="points-text"
-                          th:text="${reviewCount > 0 ? #numbers.formatDecimal(avgRating, 1, 1) + ' rating' : 'Fara rating'}">
-                        Fara rating
+                          th:text="${reviewCount > 0 ? #numbers.formatDecimal(avgRating, 1, 1) + ' note' : 'Aucune note'}">
+                        Aucune note
                     </span>
                     <svg class="info-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                 </div>
@@ -112,10 +112,10 @@
         </div>
 
         <div class="content-section">
-            <h2 class="section-title text-center" th:text="${'Activitatile create (' + activitiesCount + ')'}">Activitatile create</h2>
+            <h2 class="section-title text-center" th:text="${'Activités créées (' + activitiesCount + ')'}">Activités créées</h2>
 
             <div class="empty-state" th:if="${#lists.isEmpty(createdActivities)}">
-                Utilizatorul nu a creat inca activitati.
+                L'utilisateur n'a pas encore créé d'activités.
             </div>
 
             <div class="favorites-grid" th:if="${!#lists.isEmpty(createdActivities)}">
@@ -124,20 +124,20 @@
                         <div class="card-image"
                              th:style="|background-image: url('${activity.imageUrl}');|">
                             <div class="heart-icon"
-                                 th:text="${activity.category != null and !#strings.isEmpty(activity.category) ? activity.category : 'Categorie'}">
-                                Categorie
+                                  th:text="${activity.category != null and !#strings.isEmpty(activity.category) ? activity.category : 'Catégorie'}">
+                                Catégorie
                             </div>
                         </div>
                         <div class="card-info">
-                            <h3 th:text="${activity.title}">Titlu activitate</h3>
+                            <h3 th:text="${activity.title}">Titre de l'activité</h3>
                             <div class="card-meta">
                                 <span class="rating">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                    <span th:text="${#temporals.format(activity.date, 'dd MMM yyyy') + ' · ' + #temporals.format(activity.time, 'HH:mm')}">22 Feb 2026 · 18:00</span>
+                                    <span th:text="${#temporals.format(activity.date, 'dd MMM yyyy') + ' · ' + #temporals.format(activity.time, 'HH:mm')}">22 févr. 2026 · 18:00</span>
                                 </span>
                                 <span class="location">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                                    <span th:text="${activity.location}">Locatie</span>
+                                    <span th:text="${activity.location}">Lieu</span>
                                 </span>
                             </div>
                         </div>
@@ -145,29 +145,29 @@
                 </a>
             </div>
 
-            <h2 class="section-title mb-3 text-center mt-5" th:text="${'Feedback (' + reviewCount + ')'}">Feedback</h2>
+            <h2 class="section-title mb-3 text-center mt-5" th:text="${'Avis (' + reviewCount + ')'}">Avis</h2>
 
             <div class="profile-reviews-content" id="section_user_reviews">
 
                 <div class="alert alert-success" th:if="${reviewSuccess}" th:text="${reviewSuccess}">
-                    Rating-ul si feedback-ul au fost salvate.
+                    La note et l'avis ont été enregistrés.
                 </div>
                 <div class="alert alert-danger" th:if="${reviewError}" th:text="${reviewError}">
-                    Nu am putut salva feedback-ul.
+                    Impossible d'enregistrer l'avis.
                 </div>
 
                 <div class="alert alert-info" th:if="${!isOwnProfileView and !isAuthenticatedUser}">
-                    Autentifica-te pentru a lasa rating si feedback.
+                    Connectez-vous pour laisser une note et un avis.
                 </div>
 
                 <div class="alert alert-secondary" th:if="${alreadyReviewed}">
-                    Ai lasat deja rating si feedback acestui utilizator.
+                    Vous avez déjà laissé une note et un avis à cet utilisateur.
                 </div>
 
                 <div class="feedback-list mb-4" th:if="${!#lists.isEmpty(userReviews)}">
                     <article class="feedback-item" th:each="review : ${userReviews}">
                         <div class="feedback-item-header">
-                            <strong th:text="${review.reviewer.fullName}">Utilizator</strong>
+                            <strong th:text="${review.reviewer.fullName}">Utilisateur</strong>
                             <small th:text="${#temporals.format(review.createdAt, 'dd MMM yyyy, HH:mm')}">12 Feb 2026, 20:10</small>
                         </div>
                         <div class="public-rating-stars mb-2">
@@ -175,12 +175,12 @@
                                class="bi"
                                th:classappend="${i <= review.rating} ? ' bi-star-fill' : ' bi-star'"></i>
                         </div>
-                        <p class="mb-0" th:text="${review.feedback}">Feedback utilizator.</p>
+                        <p class="mb-0" th:text="${review.feedback}">Avis de l'utilisateur.</p>
                     </article>
                 </div>
 
                 <div class="alert alert-light" th:if="${#lists.isEmpty(userReviews)}">
-                    Nu exista feedback inca pentru acest profil.
+                    Il n'y a pas encore d'avis pour ce profil.
                 </div>
 
                 <form class="custom-form profile-form"
@@ -193,35 +193,35 @@
 
                     <div class="row g-3">
                         <div class="col-12">
-                            <label class="form-label d-block mb-2">Rating</label>
-                            <div class="rating-input" role="radiogroup" aria-label="Alege rating intre 1 si 5 stele">
+                            <label class="form-label d-block mb-2">Note</label>
+                            <div class="rating-input" role="radiogroup" aria-label="Choisissez une note entre 1 et 5 étoiles">
                                 <input id="reviewRating5" type="radio" name="rating" value="5" th:checked="${reviewForm.rating == 5}">
-                                <label for="reviewRating5" title="5 stele">&#9733;</label>
+                                <label for="reviewRating5" title="5 étoiles">&#9733;</label>
                                 <input id="reviewRating4" type="radio" name="rating" value="4" th:checked="${reviewForm.rating == 4}">
-                                <label for="reviewRating4" title="4 stele">&#9733;</label>
+                                <label for="reviewRating4" title="4 étoiles">&#9733;</label>
                                 <input id="reviewRating3" type="radio" name="rating" value="3" th:checked="${reviewForm.rating == 3}">
-                                <label for="reviewRating3" title="3 stele">&#9733;</label>
+                                <label for="reviewRating3" title="3 étoiles">&#9733;</label>
                                 <input id="reviewRating2" type="radio" name="rating" value="2" th:checked="${reviewForm.rating == 2}">
-                                <label for="reviewRating2" title="2 stele">&#9733;</label>
+                                <label for="reviewRating2" title="2 étoiles">&#9733;</label>
                                 <input id="reviewRating1" type="radio" name="rating" value="1" th:checked="${reviewForm.rating == 1}">
-                                <label for="reviewRating1" title="1 stea">&#9733;</label>
+                                <label for="reviewRating1" title="1 étoile">&#9733;</label>
                             </div>
                             <small class="text-danger d-block mt-1" th:if="${#fields.hasErrors('rating')}" th:errors="*{rating}"></small>
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label" for="reviewFeedback">Feedback</label>
+                            <label class="form-label" for="reviewFeedback">Avis</label>
                             <textarea id="reviewFeedback"
                                       class="form-control"
                                       th:field="*{feedback}"
                                       rows="4"
                                       maxlength="1000"
-                                      placeholder="Scrie feedback-ul tau aici..."></textarea>
+                                      placeholder="Écrivez votre avis ici..."></textarea>
                             <small class="text-danger" th:if="${#fields.hasErrors('feedback')}" th:errors="*{feedback}"></small>
                         </div>
                     </div>
 
-                    <button type="submit" class="form-control mt-4">Trimite feedback</button>
+                    <button type="submit" class="form-control mt-4">Envoyer l'avis</button>
                 </form>
             </div>
         </div>
@@ -231,14 +231,14 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="reportProfileModalLabel">Raporteaza utilizator</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Inchide"></button>
+                    <h5 class="modal-title" id="reportProfileModalLabel">Signaler l'utilisateur</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                 </div>
                 <div class="modal-body">
-                    Raportarea este pregatita in interfata. Trimiterea efectiva va fi activata in urmatorul pas.
+                    Le signalement est prêt dans l'interface. L'envoi effectif sera activé à l'étape suivante.
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn custom-btn" data-bs-dismiss="modal">Am inteles</button>
+                    <button type="button" class="btn custom-btn" data-bs-dismiss="modal">J'ai compris</button>
                 </div>
             </div>
         </div>

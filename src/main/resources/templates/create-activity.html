@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="ro" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <meta name="description" content="Creeaza sau editeaza o activitate in comunitatea JoinUs.">
+        <meta name="description" content="Créer ou modifier une activité dans la communauté JoinUs.">
         <meta name="author" content="">
 
-        <title th:text="${formTitle != null ? formTitle + ' - JoinUs' : 'Creare activitate - JoinUs'}">Creare activitate - JoinUs</title>
+        <title th:text="${formTitle != null ? formTitle + ' - JoinUs' : 'Créer une activité - JoinUs'}">Créer une activité - JoinUs</title>
 
         <!-- CSS FILES -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,8 +26,9 @@
                 <div class="container">
                     <div class="row justify-content-center">
                         <div class="col-lg-11 col-xl-10 text-center">
-                            <h3 class="mb-3" th:text="${formTitle != null ? formTitle : 'Formular activitate'}">Formular activitate</h3>
-                            <p class="auth-subtitle" th:text="${formSubtitle != null ? formSubtitle : 'Completeaza detaliile si alege o imagine.'}">Completeaza detaliile si alege o imagine.</p>
+                            <h3 class="mb-3" th:if="${formTitle != null}" th:text="${formTitle}">Formulaire d'activité</h3>
+                            <h3 class="mb-3" th:unless="${formTitle != null}">Formulaire d’activité</h3>
+                            <p class="auth-subtitle" th:text="${formSubtitle != null ? formSubtitle : 'Complétez les détails et choisissez une image.'}">Complétez les détails et choisissez une image.</p>
 
                             <form class="custom-form auth-form activity-form-grid" th:attr="action=${formAction != null ? formAction : '/activities'}" th:object="${activityForm}" method="post" role="form" enctype="multipart/form-data">
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
@@ -35,15 +36,15 @@
                                 <div class="activity-card activity-card-left">
                                     <div class="activity-alert" th:if="${#fields.hasErrors('*')}">
                                         <div class="alert alert-danger mb-0">
-                                            Completează toate câmpurile obligatorii corect.
+                                            Remplissez correctement tous les champs obligatoires.
                                         </div>
                                     </div>
                                     <div class="activity-card-header">
-                                        <h4>Obligatoriu</h4>
-                                        <p>Completează datele esențiale pentru activitate.</p>
+                                        <h4>Obligatoire</h4>
+                                        <p>Complétez les informations essentielles de l'activité.</p>
                                     </div>
-                                    <input type="text" th:field="*{title}" class="form-control" placeholder="Titlu activitate" required>
-                                    <textarea th:field="*{description}" class="form-control" rows="3" placeholder="Descriere scurtă" required></textarea>
+                                    <input type="text" th:field="*{title}" class="form-control" placeholder="Titre de l'activité" required>
+                                    <textarea th:field="*{description}" class="form-control" rows="3" placeholder="Brève description" required></textarea>
 
                                     <div class="row g-3">
                                         <div class="col-md-6">
@@ -57,22 +58,22 @@
                                         </div>
                                     </div>
 
-                                    <input type="text" th:field="*{location}" class="form-control" placeholder="Locație (oraș/raion/sat)" required>
-                                    <input type="text" th:field="*{address}" class="form-control" placeholder="Adresă completă" required>
+                                    <input type="text" th:field="*{location}" class="form-control" placeholder="Lieu (ville/quartier/village)" required>
+                                    <input type="text" th:field="*{address}" class="form-control" placeholder="Adresse complète" required>
 
                                     <div class="row g-3">
                                         <div class="col-md-6">
-                                            <input type="number" th:field="*{capacity}" class="form-control" min="1" max="200" placeholder="Număr persoane" required>
+                                            <input type="number" th:field="*{capacity}" class="form-control" min="1" max="200" placeholder="Nombre de personnes" required>
                                         </div>
                                         <div class="col-md-6">
                                             <select th:field="*{category}" class="form-control">
-                                                <option value="Comunitate">Comunitate</option>
+                                                <option value="Comunitate">Communauté</option>
                                                 <option value="Sport">Sport</option>
-                                                <option value="Wellness">Wellness</option>
-                                                <option value="Outdoor">Outdoor</option>
-                                                <option value="Cultura">Cultura</option>
+                                                <option value="Wellness">Bien-être</option>
+                                                <option value="Outdoor">Plein air</option>
+                                                <option value="Cultura">Culture</option>
                                                 <option value="Social">Social</option>
-                                                <option value="Educatie">Educatie</option>
+                                                <option value="Educatie">Éducation</option>
                                                 <option value="Tech">Tech</option>
                                             </select>
                                         </div>
@@ -82,16 +83,16 @@
                                 <div class="activity-card activity-card-right">
                                     <div class="image-actions-split">
                                         <section class="image-action-pane image-action-pane--upload">
-                                            <button type="button" class="btn image-action-tile" id="uploadImageBtn">Incarca imagine</button>
+                                            <button type="button" class="btn image-action-tile" id="uploadImageBtn">Télécharger une image</button>
                                             <input type="file" id="cloudinaryFile" name="imageFile" accept="image/*" class="d-none">
                                             <input type="hidden" th:field="*{imageUrl}" id="cloudinaryUrl">
                                             <input type="hidden" th:field="*{imageChoice}" id="generatedImageUrl">
                                         </section>
 
-                                        <div class="image-actions-or" aria-hidden="true">sau</div>
+                                        <div class="image-actions-or" aria-hidden="true">ou</div>
 
                                         <section class="image-action-pane image-action-pane--ai">
-                                            <button type="button" class="btn image-action-tile" id="generateAiImageBtn">Genereaza imagine AI</button>
+                                            <button type="button" class="btn image-action-tile" id="generateAiImageBtn">Générer une image avec l'IA</button>
                                         </section>
                                     </div>
 
@@ -102,7 +103,7 @@
                                         <div class="image-inline-error d-none" id="cloudinaryError"></div>
                                         <div class="image-inline-error d-none" id="generatedImageError"></div>
                                         <div class="image-preview-wrap d-none" id="generatedPreviewWrap">
-                                            <img id="generatedPreviewImage" class="image-preview-image" alt="Preview imagine activitate">
+                                            <img id="generatedPreviewImage" class="image-preview-image" alt="Aperçu de l'image de l'activité">
                                         </div>
                                         <div class="image-preview-placeholder" id="imagePreviewPlaceholder" aria-hidden="true">
                                             <i class="bi bi-image image-preview-icon"></i>
@@ -111,7 +112,7 @@
                                 </div>
 
                                 <div class="activity-form-actions">
-                                    <button type="submit" class="form-control" id="submitActivity" th:text="${submitLabel != null ? submitLabel : 'Creeaza activitate'}">Creeaza activitate</button>
+                                    <button type="submit" class="form-control" id="submitActivity" th:text="${submitLabel != null ? submitLabel : 'Créer une activité'}">Créer une activité</button>
                                 </div>
                             </form>
                         </div>
@@ -181,7 +182,7 @@
                 const setUploading = (loading) => {
                     if (uploadBtn) {
                         uploadBtn.disabled = loading;
-                        uploadBtn.textContent = loading ? 'Se incarca imaginea...' : 'Incarca imagine';
+                        uploadBtn.textContent = loading ? 'Téléchargement de l\'image...' : 'Télécharger une image';
                     }
                 };
 
@@ -230,7 +231,7 @@
                         fileInput.value = '';
                     } catch (error) {
                         urlInput.value = '';
-                        showUploadError('Upload esuat. Incearca din nou.');
+                        showUploadError('Échec du téléchargement. Réessayez.');
                     } finally {
                         isUploading = false;
                         setUploading(false);
@@ -301,7 +302,7 @@
                             }
                             renderGeneratedPreview(imageUrl);
                         } catch (error) {
-                            showGenerateError('Generarea AI a esuat momentan. Incearca din nou.');
+                            showGenerateError("La génération par IA a échoué pour le moment. Réessayez.");
                         } finally {
                             generateBtn.disabled = false;
                             if (aiLoadingIndicator) {
@@ -328,7 +329,7 @@
                     form.addEventListener('submit', (event) => {
                         if (isUploading) {
                             event.preventDefault();
-                            showUploadError('Asteapta finalizarea upload-ului.');
+                            showUploadError("Veuillez attendre la fin du téléchargement.");
                             return;
                         }
                         if (canClientUpload && urlInput && urlInput.value && fileInput) {
@@ -337,7 +338,7 @@
                         const hasFile = fileInput.files && fileInput.files.length > 0;
                         if (canClientUpload && hasFile && (!urlInput.value || urlInput.value.trim() === '')) {
                             event.preventDefault();
-                            showUploadError('Imaginea nu s-a incarcat inca. Reincearca.');
+                            showUploadError("L'image n'a pas encore été téléchargée. Réessayez.");
                         }
                     });
                 }

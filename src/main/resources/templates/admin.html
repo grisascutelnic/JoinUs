@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="ro" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <meta name="description" content="Administrare JoinUs">
+    <meta name="description" content="Administration JoinUs">
     <meta name="author" content="">
 
-    <title>JoinUs - Admin</title>
+    <title>JoinUs - Administration</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,40 +27,40 @@
                 <div class="col-xl-4">
                     <div class="auth-card admin-sidebar-card">
                         <div class="admin-sidebar-head">
-                            <span class="admin-eyebrow">Control Center</span>
-                            <h3 class="mb-2">Admin JoinUs</h3>
-                            <p class="auth-subtitle mb-0">Toate operatiile importante intr-o singura pagina, organizate pe taburi.</p>
+                            <span class="admin-eyebrow">Centre de contrôle</span>
+                            <h3 class="mb-2">Administration JoinUs</h3>
+                            <p class="auth-subtitle mb-0">Toutes les opérations importantes sur une seule page, organisées par onglets.</p>
                         </div>
 
                         <div class="admin-kpi-grid">
-                            <div class="admin-kpi-card">
-                                <span>Total utilizatori</span>
-                                <strong th:text="${totalUsers}">0</strong>
-                            </div>
-                            <div class="admin-kpi-card">
-                                <span>Administratori</span>
-                                <strong th:text="${adminUsers}">0</strong>
-                            </div>
-                            <div class="admin-kpi-card admin-kpi-card--wide">
-                                <span>Membri standard</span>
-                                <strong th:text="${memberUsers}">0</strong>
-                            </div>
+                                <div class="admin-kpi-card">
+                                    <span>Utilisateurs totaux</span>
+                                    <strong th:text="${totalUsers}">0</strong>
+                                </div>
+                                <div class="admin-kpi-card">
+                                    <span>Administrateurs</span>
+                                    <strong th:text="${adminUsers}">0</strong>
+                                </div>
+                                <div class="admin-kpi-card admin-kpi-card--wide">
+                                    <span>Membres standard</span>
+                                    <strong th:text="${memberUsers}">0</strong>
+                                </div>
                         </div>
 
                         <div class="admin-shortcuts">
-                            <h6>Scurtaturi utile</h6>
+                            <h6>Raccourcis utiles</h6>
                             <div class="admin-shortcut-list">
                                 <a class="admin-shortcut-link" th:href="@{/activities}">
                                     <i class="bi bi-calendar2-week"></i>
-                                    <span>Lista activitati</span>
+                                    <span>Liste des activités</span>
                                 </a>
                                 <a class="admin-shortcut-link" th:href="@{/create-activity}">
                                     <i class="bi bi-plus-circle"></i>
-                                    <span>Creeaza activitate</span>
+                                    <span>Créer une activité</span>
                                 </a>
                                 <a class="admin-shortcut-link" th:href="@{/calendar}">
                                     <i class="bi bi-calendar-event"></i>
-                                    <span>Calendar</span>
+                                    <span>Calendrier</span>
                                 </a>
                             </div>
                         </div>
@@ -68,7 +68,7 @@
                 </div>
 
                 <div class="col-xl-8">
-                    <div class="auth-card admin-main-card">
+                        <div class="auth-card admin-main-card">
                         <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
                         <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
 
@@ -93,26 +93,26 @@
                         <div class="tab-content admin-tab-content" id="adminTabsContent">
                             <div class="tab-pane fade show active" id="dashboard-pane" role="tabpanel" aria-labelledby="dashboard-tab" tabindex="0">
                                 <div class="admin-surface">
-                                    <h5 class="mb-2">Vedere rapida</h5>
-                                    <p class="admin-muted mb-3">Foloseste taburile pentru operatiuni zilnice fara sa parasesti pagina de admin.</p>
+                                    <h5 class="mb-2">Vue d'ensemble</h5>
+                                    <p class="admin-muted mb-3">Utilisez les onglets pour les opérations quotidiennes sans quitter la page d'administration.</p>
 
                                     <div class="admin-dashboard-grid">
                                         <div class="admin-dashboard-card">
-                                            <h6>Flux recomandat</h6>
+                                            <h6>Flux recommandé</h6>
                                             <ol class="admin-steps">
-                                                <li>Verifica tabul Utilizatori pentru profilul tinta.</li>
-                                                <li>Revino pe Notificari si alege destinatarul.</li>
-                                                <li>Trimite mesajul cu un link relevant.</li>
+                                                <li>Vérifiez l'onglet Utilisateurs pour trouver le profil ciblé.</li>
+                                                <li>Revenez à Notifications et choisissez le destinataire.</li>
+                                                <li>Envoyez le message avec un lien pertinent.</li>
                                             </ol>
                                         </div>
                                         <div class="admin-dashboard-card">
-                                            <h6>Sabloane rapide</h6>
+                                            <h6>Modèles rapides</h6>
                                             <div class="admin-template-buttons">
-                                                <button type="button" class="btn admin-template-btn" data-admin-template="reminder">Reminder eveniment</button>
-                                                <button type="button" class="btn admin-template-btn" data-admin-template="welcome">Mesaj bun venit</button>
-                                                <button type="button" class="btn admin-template-btn" data-admin-template="policy">Actualizare reguli</button>
+                                                 <button type="button" class="btn admin-template-btn" data-admin-template="reminder">Rappel événement</button>
+                                                 <button type="button" class="btn admin-template-btn" data-admin-template="welcome">Message de bienvenue</button>
+                                                 <button type="button" class="btn admin-template-btn" data-admin-template="policy">Mise à jour du règlement</button>
                                             </div>
-                                            <small class="admin-muted">Cand apesi pe un sablon, completeaza automat tabul Notificari.</small>
+                                            <small class="admin-muted">Lorsque vous cliquez sur un modèle, l'onglet Notifications est rempli automatiquement.</small>
                                         </div>
                                     </div>
                                 </div>
@@ -120,39 +120,39 @@
 
                             <div class="tab-pane fade" id="notifications-pane" role="tabpanel" aria-labelledby="notifications-tab" tabindex="0">
                                 <div class="admin-surface">
-                                    <h5 class="mb-2">Trimite notificare</h5>
-                                    <p class="admin-muted mb-3">Alege un utilizator individual sau trimite catre toata comunitatea.</p>
+                                    <h5 class="mb-2">Envoyer une notification</h5>
+                                    <p class="admin-muted mb-3">Choisissez un utilisateur individuel ou envoyez à toute la communauté.</p>
 
                                     <form class="custom-form auth-form admin-form" th:action="@{/admin}" th:object="${adminRequest}" method="post" role="form">
                                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 
                                         <div class="row g-3">
                                             <div class="col-md-6">
-                                                <label class="form-label">Destinatar</label>
+                                                 <label class="form-label">Destinataire</label>
                                                 <select class="form-control" th:field="*{targetType}" id="adminTargetType" required>
                                                     <option value="USER">Un utilizator</option>
                                                     <option value="ALL">Toti utilizatorii</option>
                                                 </select>
                                             </div>
                                             <div class="col-md-6">
-                                                <label class="form-label">Utilizator</label>
+                                                 <label class="form-label">Utilisateur</label>
                                                 <select class="form-control" th:field="*{recipientUserId}" id="adminRecipientUserId">
-                                                    <option value="">Selecteaza utilizatorul</option>
+                                                     <option value="">Sélectionnez un utilisateur</option>
                                                     <option th:each="u : ${users}" th:value="${u.id}" th:text="${u.fullName + ' (' + u.email + ')'}"></option>
                                                 </select>
                                             </div>
                                         </div>
 
-                                        <label class="form-label mt-3">Titlu</label>
+                                         <label class="form-label mt-3">Titre</label>
                                         <input type="text" class="form-control" th:field="*{title}" id="adminTitle" maxlength="160" required>
 
-                                        <label class="form-label mt-3">Mesaj</label>
+                                         <label class="form-label mt-3">Message</label>
                                         <textarea class="form-control" th:field="*{message}" id="adminMessage" rows="4" maxlength="500" required></textarea>
 
-                                        <label class="form-label mt-3">Link (optional)</label>
-                                        <input type="text" class="form-control" th:field="*{link}" id="adminLink" maxlength="255" placeholder="/activities sau /profile">
+                                         <label class="form-label mt-3">Lien (optionnel)</label>
+                                         <input type="text" class="form-control" th:field="*{link}" id="adminLink" maxlength="255" placeholder="/activities ou /profile">
 
-                                        <button type="submit" class="form-control mt-4">Trimite notificare</button>
+                                        <button type="submit" class="form-control mt-4">Envoyer la notification</button>
                                     </form>
                                 </div>
                             </div>
@@ -161,25 +161,25 @@
                                 <div class="admin-surface">
                                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
                                         <div>
-                                            <h5 class="mb-1">Utilizatori</h5>
-                                            <p class="admin-muted mb-0">Filtreaza rapid lista si deschide profilul public al utilizatorului.</p>
+                                            <h5 class="mb-1">Utilisateurs</h5>
+                                             <p class="admin-muted mb-0">Filtrez rapidement la liste et ouvrez le profil public de l'utilisateur.</p>
                                         </div>
-                                        <span class="admin-count-badge" th:text="${'Total: ' + totalUsers}">Total: 0</span>
+                                         <span class="admin-count-badge" th:text="${'Total : ' + totalUsers}">Total : 0</span>
                                     </div>
 
                                     <div class="admin-user-search-wrap mb-3">
                                         <i class="bi bi-search"></i>
-                                        <input type="text" class="form-control" id="adminUserSearch" placeholder="Cauta dupa nume sau email">
+                                         <input type="text" class="form-control" id="adminUserSearch" placeholder="Rechercher par nom ou email">
                                     </div>
 
                                     <div class="admin-user-table-wrap">
                                         <table class="table admin-user-table align-middle mb-0">
                                             <thead>
                                             <tr>
-                                                <th>Nume</th>
+                                                <th>Nom</th>
                                                 <th>Email</th>
-                                                <th>Rol</th>
-                                                <th class="text-end">Actiuni</th>
+                                                <th>Rôle</th>
+                                                <th class="text-end">Actions</th>
                                             </tr>
                                             </thead>
                                             <tbody id="adminUsersTableBody">
@@ -191,7 +191,7 @@
                                                     <a th:href="${'mailto:' + u.email}" th:text="${u.email}">email@example.com</a>
                                                 </td>
                                                 <td>
-                                                    <span class="admin-role-badge" th:classappend="${u.role.name() == 'ADMIN'} ? ' is-admin' : ' is-user'" th:text="${u.role.name() == 'ADMIN' ? 'Admin' : 'User'}">User</span>
+                                                     <span class="admin-role-badge" th:classappend="${u.role.name() == 'ADMIN'} ? ' is-admin' : ' is-user'" th:text="${u.role.name() == 'ADMIN' ? 'Admin' : 'Utilisateur'}">Utilisateur</span>
                                                 </td>
                                                 <td class="text-end">
                                                     <a class="btn btn-sm admin-table-action" th:href="@{/users/{id}(id=${u.id})}">Profil</a>
@@ -230,18 +230,18 @@
 
         const templates = {
             reminder: {
-                title: 'Reminder activitate in comunitate',
-                message: 'Buna! Te asteptam la activitatile noi din aceasta saptamana. Intra pe pagina de activitati si confirma participarea.',
+                title: 'Rappel événement communautaire',
+                message: 'Bonjour ! Nous vous attendons aux nouveaux événements de cette semaine. Rendez-vous sur la page des activités et confirmez votre participation.',
                 link: '/activities'
             },
             welcome: {
-                title: 'Bine ai venit in JoinUs',
-                message: 'Ne bucuram ca esti aici. Completeaza-ti profilul si descopera activitatile comunitatii.',
+                title: 'Bienvenue sur JoinUs',
+                message: 'Nous sommes ravis que vous soyez ici. Complétez votre profil et découvrez les activités de la communauté.',
                 link: '/profile'
             },
             policy: {
-                title: 'Actualizare regulament comunitate',
-                message: 'Am actualizat regulile de interactiune pentru a pastra un mediu placut si sigur. Te rugam sa le verifici.',
+                title: 'Mise à jour du règlement de la communauté',
+                message: 'Nous avons mis à jour les règles de conduite pour maintenir un environnement agréable et sûr. Veuillez les consulter.',
                 link: '/activities'
             }
         };

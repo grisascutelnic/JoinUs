@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import com.scutelnic.joinus.dto.CreateActivityChecks;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -20,7 +21,7 @@ public class ActivityDto {
     private String description;
 
     @NotNull
-    @FutureOrPresent
+    @FutureOrPresent(groups = CreateActivityChecks.class)
     private LocalDate date;
 
     @NotNull
